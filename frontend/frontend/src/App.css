@@ -1,0 +1,187 @@
+.sidebarbg {
+  background-color: #252728;
+  height: 100vh;
+  width: 250px;
+}
+
+.maincontent {
+  width: auto;
+  height: 100vh;
+  background-color: black;
+}
+
+#root {
+  overflow: hidden;
+}
+
+.sidebartop {
+  display: flex;
+  justify-content: center;
+  height: auto;
+}
+.background1 {
+  width: 250px;
+  margin-top: -100px;
+}
+
+.logo1 {
+  position: absolute;
+  width: 75px;
+  height: 75px;
+  margin-top: 20px;
+}
+
+.label1 {
+  z-index: 1;
+  color: white;
+  margin-top: 100px;
+  font-weight: 400;
+  font-size: 1.5em;
+  font-family: "Poppins", serif;
+  position: absolute;
+}
+
+.sidebarmiddle {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
+  flex: 1; /* Make it take the remaining space */
+  gap: 12px;
+}
+.button {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  width: 100%;
+  height: 50px;
+  border-radius: 50px;
+  background-color: #252728;
+  font-family: "Poppins";
+  font-size: 1em;
+  font-weight: 350;
+  justify-content: left;
+  justify-items: baseline;
+}
+
+.button:hover {
+  background-color: #333334;
+  font-weight: 600;
+}
+
+.button.active {
+  background-color: #333334;
+  font-weight: 600;
+}
+
+.logout-container {
+  align-self: ;
+}
+.sidebarbg {
+  display: flex;
+  flex-direction: column; /* Arrange items vertically */
+  background-color: #252728;
+  height: 100vh;
+  width: 250px;
+}
+
+.sidebartop {
+  display: flex;
+  justify-content: center;
+  height: auto;
+}
+
+.sidebarmiddle {
+  flex: 1; /* Make it take the remaining space */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  gap: 30px;
+  width: 100%;
+  height: 50px;
+  border-radius: 50px;
+  background-color: #252728;
+  font-family: "Poppins";
+  font-size: 1em;
+  font-weight: 350;
+  justify-content: left;
+  justify-items: baseline;
+}
+
+.button:hover {
+  background-color: #333334;
+  font-weight: 600;
+}
+
+.button.active {
+  background-color: #333334;
+  font-weight: 600;
+}
+
+.logout-container {
+  padding: 20px 10px; /* Add spacing around the logout button */
+}
+
+.logoutbtn {
+  width: 100%;
+  height: 50px;
+  border-radius: 10px;
+  background-color: #252728;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  font-size: 1em;
+  font-weight: 350;
+  text-align: center;
+  cursor: pointer;
+}
+
+.logoutbtn:hover {
+  background-color: #333334;
+  font-weight: 600;
+}
+
+.rootcontent {
+  display: flex; /* To place Sidebar and Dashboard side by side */
+  width: 100vw; /* Full width of the screen */
+  background-color: #f0f0f0;
+  height: 100vh; /* Full height of the screen */
+}
+
+.dashboardbg {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Take up remaining space after Sidebar */
+  background-color: #111111; /* Example background color for the dashboard */
+}
+
+.postsbg {
+  flex: 1;
+  background-color: aqua;
+}
+
+.navBar {
+  height: 70px;
+  display: flex;
+  background-color: #1c1c1d;
+  width: 100%;
+  align-items: center;
+  padding-left: 20px;
+}
+
+.navbartext {
+  color: whitesmoke;
+  font-family: "Poppins";
+  font-weight: 500;
+  font-size: 1.6em;
+}
