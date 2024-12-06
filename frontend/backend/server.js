@@ -30,16 +30,14 @@ app.post("/api/register", async (req, res) => {
   const userId = uuidv4();
 
   try {
-    // Hash the password, first name, and email
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedFirstName = await bcrypt.hash(firstName, 10);
-    const hashedEmail = await bcrypt.hash(email, 10); // Hashing email here
 
     const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, NOW())`;
 
     db.query(
       sql,
-      [userId, hashedFirstName, lastName, dateofbirth, hashedEmail, hashedPassword],
+      [userId, firstName, lastName, dateofbirth, email, hashedPassword],
       (error, results) => {
         if (error) {
           console.error("Error inserting user:", error);
@@ -56,36 +54,46 @@ app.post("/api/register", async (req, res) => {
 });
 
 
+
+
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
-  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    // Query the database to get the user by email
+    db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
+      if (results.length === 0) {
+        console.log("User not found");
+        return res.status(404).json({ error: "User not found" });
+      }
 
-    const user = results[0];
+      const user = results[0];
+      console.log("User found:", user);
 
-    // Hash the email provided by the user and compare with stored hashed email
-    const emailMatch = await bcrypt.compare(email, user.email);
-    if (!emailMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+      // Compare the entered password with the stored password hash
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
+        console.log("Invalid password");
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    // Success
-    return res.status(200).json({ message: "User authenticated successfully!" });
-  });
+      console.log("User authenticated successfully");
+      const { id, firstname, lastname, email, dateofbirth, isModerator } = user;
+      return res.status(200).json({ id, firstname, lastname, email, dateofbirth, isModerator });
+    });
+  } catch (error) {
+    console.error("Error processing login:", error);
+    return res.status(500).json({ error: "Error processing login" });
+  }
 });
+
+
+
 
 
 
