@@ -369,3 +369,28 @@ td {
   color: #111111;
   font-weight: 700;
 }
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0; /* Hide the default calendar icon */
+}
+
+input[type="date"] {
+
+
+
+
+
+  font-family: "Poppins"; /* Use the same font as the parent element */
+  font-weight: 500;
+  font-size: 12px;
+
+
+  /* Remove default date arrow in WebKit browsers */
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+  background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" fill="%2335408f" viewBox="0 0 24 24" width="10" height="24"%3E%3Cpath d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM5 20V9h14v11H5zm7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/%3E%3C/svg%3E')
+    no-repeat right 8px center;
+  background-color: white; /* Input background color */
+  background-size: 24px;
+}

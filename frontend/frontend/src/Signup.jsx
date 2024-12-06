@@ -3,6 +3,10 @@ import "./Signup.css";
 import TS from './assets/tsaaritsa.png';
 import axios from "axios";
 import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCalendar
+} from "@fortawesome/free-solid-svg-icons";
 
 function Signup() {
   const [firstName, setFirstName] = useState("");
@@ -80,7 +84,8 @@ function Signup() {
 
       {/* Right Section */}
       <div className="right-sectionr">
-        <h1 className="main-headingr">Everyone’s cup of tea</h1>
+        <h1 className="main-headingr">Everyone’s cup of tea </h1>
+        
         <p className="sub-headingr">Join Today.</p>
         <form className="formr" onSubmit={handleSubmit}>
           <div className="form-rowr">
@@ -91,7 +96,7 @@ function Signup() {
           <input type="email" placeholder="Email" className="input" onChange={(e) => setEmail(e.target.value)}/>
           <div className="form-rowr">
             <input type="password" placeholder="Password" className="input" onChange={(e) => setPassword(e.target.value)}/>
-            <input type="password" placeholder="Confirm" className="input" onChange={(e) => setConfirmPassword(e.target.value)}/>
+            <input type="password" placeholder="Confirm Password" className="input" onChange={(e) => setConfirmPassword(e.target.value)}/>
           </div>
           <button type="submit" className="buttonr">
             Register
