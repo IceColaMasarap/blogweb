@@ -77,7 +77,7 @@ app.post("/api/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    console.log("User authenticated successfully:", email);
+    console.log("User authenticated successfully:", user.email);
     const { id, firstName, lastName, email, dateofbirth, isModerator } = user;
     return res.status(200).json({ id, firstName, lastName, email, dateofbirth, isModerator });
   });
