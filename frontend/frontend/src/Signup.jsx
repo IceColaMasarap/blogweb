@@ -42,8 +42,6 @@ function Signup() {
       return;
     }
 
- 
-
     try {
       const response = await axios.post("http://localhost:5005/api/register",{
         firstName,
