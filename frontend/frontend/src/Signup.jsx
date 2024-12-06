@@ -100,7 +100,7 @@ function Signup() {
         {error && <p style={{ color: "red" }}>{error}</p>}
         {successMessage && <p style={{ color: "#15bc11" }}>{successMessage}</p>}
         <p className="login-linkr">
-          Already have an account? 
+          Already have an account?&nbsp;
           <span
             className="registerlabelnav"
             id="tologin"

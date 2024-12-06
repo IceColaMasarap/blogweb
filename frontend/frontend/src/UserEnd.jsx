@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./Login";
 import Signup from "./Signup";
 import AdminEnd from "./AdminEnd";
-import PhHomepage from "./PhHomepage";
+import Homepage from "./HomePage";
 import "./App.css";
 
 function UserEnd() {
@@ -13,7 +13,7 @@ function UserEnd() {
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/phhomepage" element={<PhHomepage />} />
+          <Route path="/home" element={<Homepage />} />
           {/* Use AdminEnd as a parent for all admin routes */}
           <Route path="/adminpage/*" element={<AdminEnd />} />
         </Routes>

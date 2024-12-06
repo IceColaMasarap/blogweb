@@ -5,10 +5,10 @@ import IP from './assets/Photos.png';
 import LK from './assets/Like.png';
 import DP from './assets/DP.jpg';
 import GI from './assets/GI.jpg';
-import CS from './assets/CLASS_SCHEDULE_BSIT_PHONE_1.png';
-import POSTSAMPLE from './assets/GENSHIN_4TH_ANNIVERSARY.jpg';
-
-import NavigationBar from "./NavigationBar.jsx"; // Adjust the path as needed
+import CS from './assets/CLASS SCHEDULE BSIT PHONE 1.png';
+import POSTSAMPLE from './assets/GENSHIN 4TH ANNIVERSARY.jpg';
+import { useNavigate } from "react-router-dom";
+// Adjust the path as needed
 import "./Homepage.css"; // Add styles for the sections if needed
 
 const Homepage = () => {
@@ -27,7 +27,7 @@ const Homepage = () => {
   return (
     <div>
       {/* Add the Navigation Bar */}
-      <NavigationBar />
+    
 
       <div className="HomePage">
         {/* Left Sidebar */}
