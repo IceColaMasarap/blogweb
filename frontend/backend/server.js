@@ -3,7 +3,7 @@ const mysql = require("mysql");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid"); // Import uuidv4
 
 const app = express();
 
@@ -23,6 +23,23 @@ db.connect((err) => {
   } else {
     console.log("Connected to MySQL");
   }
+});
+
+app.post("/api/register", async (req, res) => {
+  const { firstName, lastName, email, dateofbirth, password, created_at } = req.body;
+  const userId = uuidv4();
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, NOW())`;
+
+  db.query(sql, [userId, firstName, lastName, dateofbirth, email, hashedPassword], (error, results) => {
+    if (error) {
+      console.error("Error inserting user:", error);
+      res.status(500).json({ message: "Error registering user" });
+    } else {
+      res.status(201).json({ message: "Account created successfully!" });
+    }
+  });
 });
 
 app.listen(5005, () => {
