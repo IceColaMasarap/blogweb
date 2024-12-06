@@ -43,8 +43,6 @@ function Signup() {
       return;
     }
 
-    const hashedEmail = bcrypt.hashSync(email, 10);
-
     try {
       const response = await axios.post("http://localhost:5005/api/register",{
         firstName,
