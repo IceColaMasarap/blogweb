@@ -4,90 +4,59 @@ import TS from "./assets/tsaaritsa.png";
 import axios from "axios";
 import React, { useState } from "react";
 
-function Posts() {
-  const [posts, setPosts] = useState([]); // State to store all posts
-  const [email, setEmail] = useState(""); // State to store email filter value
-  const [startDate, setStartDate] = useState(""); // State to store start date
-  const [endDate, setEndDate] = useState(""); // State to store end date
-  const [firstName, setFirstName] = useState("Admin");
-  const [lastName, setLastName] = useState("Page");
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [image, setImage] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+function Signup() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [dateofbirth, setDateOfBirth] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    if (
+      !firstName ||
+      !lastName ||
+      !dateofbirth ||
+      !email ||
+      !password ||
+      !confirmPassword
+    ) {
+      setError("Please fill in all fields");
+      return;
+    }
 
-    // Create form data to send to the server
-    const formData = new FormData();
-    formData.append("firstName", firstName);
-    formData.append("lastName", lastName);
-    formData.append("title", title);
-    formData.append("content", content);
-    formData.append("email", email);
-    if (image) formData.append("image", image);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
-    // Here you can make an API call to submit the data, for example:
-    // axios.post("/api/posts", formData)
-    //   .then(response => {
-    //     console.log("Post submitted", response);
-    //   })
-    //   .catch(error => {
-    //     console.error("Error submitting post", error);
-    //   });
-
-    // For now, just log the form data
-    console.log("Form data submitted:", formData);
-  };
-
-  // Fetch all posts when the component mounts
-  useEffect(() => {
-    axios
-      .get("http://localhost:5005/api/posts2") // Fetch all posts
-      .then((response) => {
-        setPosts(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching posts:", error);
+    try {
+      const response = await axios.post("http://localhost:5005/api/register", {
+        firstName,
+        lastName,
+        email,
+        dateofbirth,
+        password,
       });
-  }, []);
-
-  const handleImageChange = (e) => {
-    const selectedImage = e.target.files[0];
-    if (selectedImage) {
-      setImage(selectedImage);
+      setSuccessMessage(response.data.message);
+      setTimeout(() => navigate("/login", 2000));
+    } catch (err) {
+      setError(
+        err.response
+          ? err.response.data.message
+          : "Error occured during registration"
+      );
+      console.log(err);
     }
   };
 
-  // Handle Date End validation
-  const handleEndDateChange = (e) => {
-    const newEndDate = e.target.value;
-    if (newEndDate && newEndDate < startDate) {
-      alert("End Date cannot be before Start Date");
-    } else {
-      setEndDate(newEndDate);
-    }
-  };
-
-  // Toggle modal visibility
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
-
-  // Filter posts based on the selected filters
-  const filteredPosts = posts.filter((post) => {
-    const matchesEmail = email
-      ? post.author_email.toLowerCase().includes(email.toLowerCase())
-      : true;
-    const postDate = new Date(post.postdate);
-    const matchesDateRange =
-      (!startDate || postDate >= new Date(startDate)) &&
-      (!endDate || postDate <= new Date(endDate));
-    return matchesEmail && matchesDateRange;
-  });
-
+  const navigate = useNavigate();
   return (
     <div className="containerr">
       {/* Left Section */}
@@ -172,5 +141,4 @@ function Posts() {
     </div>
   );
 }
-
-export default Posts;
+export default Signup;
