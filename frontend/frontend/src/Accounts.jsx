@@ -1,23 +1,15 @@
 import Sidebar from "./Sidebar";
 import "./App.css";
 
-function Posts() {
+function Accounts() {
   const data = [
     {
-      Name: "Jones Hilario",
-      Title: "Totoo ang chismis!?",
-      Content: "Maris x Anthony (sino ba yan!?)",
-      Date: "06/06/2004",
-      Flagged: false,
-      Like: 427,
-    },
-    {
-      Name: "Catriona White",
-      Title: "Thoughts kay Chelsea",
-      Content: "Oks naman s'ya, luto nga laban e wews tsk tsk tsk",
-      Date: "07/03/2004",
-      Flagged: true,
-      Like: 427,
+      FirstName: "Jones",
+      LastName: "Jones",
+      BirthDate: "06/06/2004",
+      Email: "johndoe@gmail.com",
+      UserType: "Moderator",
+      CreationDate: "06/06/2004",
     },
   ];
   return (
@@ -29,11 +21,12 @@ function Posts() {
         <div className="poststablecontainer">
           <div className="filters">
             <div className="filter1">
-              <label className="filterlabel">Email</label>
-              <input
-                className="userSearch"
-                placeholder="e.g. johndoe@gmail.com"
-              />
+              <label className="filterlabel">Account Type</label>
+              <select className="userSearch">
+                <option value="All">All</option>
+                <option value="User">User</option>
+                <option value="Moderator">Moderator</option>
+              </select>
             </div>
             <div className="filter1">
               <label className="filterlabel">Date Start</label>
@@ -47,23 +40,23 @@ function Posts() {
           <table>
             <thead>
               <tr>
-                <th>Author</th>
-                <th>Title</th>
-                <th>Content</th>
-                <th>Date Posted</th>
-                <th>Flagged</th>
-                <th>Like Count</th>
+                <th>Email</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Birthdate</th>
+                <th>User Type</th>
+                <th>Creation Date</th>
               </tr>
             </thead>
             <tbody>
               {data.map((item) => (
                 <tr key={item.name}>
-                  <td>{item.Name}</td>
-                  <td>{item.Title}</td>
-                  <td>{item.Content}</td>
-                  <td>{item.Date}</td>
-                  <td>{item.Flagged ? "Yes" : "No"}</td>
-                  <td>{item.Like}</td>
+                  <td>{item.Email}</td>
+                  <td>{item.FirstName}</td>
+                  <td>{item.LastName}</td>
+                  <td>{item.BirthDate}</td>
+                  <td>{item.UserType}</td>
+                  <td>{item.CreationDate}</td>
                 </tr>
               ))}
             </tbody>
@@ -74,4 +67,4 @@ function Posts() {
   );
 }
 
-export default Posts;
+export default Accounts;

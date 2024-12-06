@@ -5,9 +5,6 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// mga kelangang i-install:
-// npm install express mysql cors body-parser bcrypt jsonwebtoken
-
 const app = express();
 
 app.use(cors());

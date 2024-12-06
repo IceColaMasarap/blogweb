@@ -55,7 +55,10 @@ function Sidebar() {
               className={`button ${
                 activeButton === "accounts" ? "active" : ""
               }`}
-              onClick={() => handleClick("accounts")}
+              onClick={() => {
+                handleClick("accounts");
+                navigate("/accounts");
+              }}
             >
               <FontAwesomeIcon icon={faComment} />
               Accounts
