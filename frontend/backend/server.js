@@ -26,21 +26,63 @@ db.connect((err) => {
 });
 
 app.post("/api/register", async (req, res) => {
-  const { firstName, lastName, email, dateofbirth, password, created_at } = req.body;
+  const { firstName, lastName, email, dateofbirth, password } = req.body;
   const userId = uuidv4();
-  const hashedPassword = await bcrypt.hash(password, 10);
 
-  const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, NOW())`;
+  try {
+    // Hash the password and first name
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedFirstName = await bcrypt.hash(firstName, 10);
 
-  db.query(sql, [userId, firstName, lastName, dateofbirth, email, hashedPassword], (error, results) => {
-    if (error) {
-      console.error("Error inserting user:", error);
-      res.status(500).json({ message: "Error registering user" });
-    } else {
-      res.status(201).json({ message: "Account created successfully!" });
+    const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, NOW())`;
+
+    db.query(
+      sql,
+      [userId, hashedFirstName, lastName, dateofbirth, email, hashedPassword],
+      (error, results) => {
+        if (error) {
+          console.error("Error inserting user:", error);
+          res.status(500).json({ message: "Error registering user" });
+        } else {
+          res.status(201).json({ message: "Account created successfully!" });
+        }
+      }
+    );
+  } catch (error) {
+    console.error("Error hashing data:", error);
+    res.status(500).json({ message: "Error processing registration" });
+  }
+});
+
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
     }
+
+    if (results.length === 0) {
+      console.log("User not found:", email);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = results[0];
+    console.log("User found:", user);
+
+    const passwordMatch = await bcrypt.compare(password, user.password); // Hash comparison
+    if (!passwordMatch) {
+      console.log("Invalid password for user:", email);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    console.log("User authenticated successfully:", email);
+    const { id, firstName, lastName, email, dateofbirth, isModerator } = user;
+    return res.status(200).json({ id, firstName, lastName, email, dateofbirth, isModerator });
   });
 });
+
 
 app.listen(5005, () => {
   console.log("Server running on port 5005");
