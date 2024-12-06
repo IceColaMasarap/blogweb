@@ -1,0 +1,47 @@
+body {
+    overflow-x: hidden;
+  }
+  
+  
+  .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000; /* Ensures it stays above other content */
+      background-color: #333; /* Background color of navbar */
+      color: white; /* Text color */
+      width: 100%; /* Full-width navbar */
+    }
+    
+  
+  .navbar-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+  }
+  
+  .tsaaritsa img{
+      height: 40px;
+      width: 40px;
+  }
+  
+  .tsaaritsa {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+  }
+  
+  .nav-link-search-input {
+      width: 45%;
+      padding: 10px;
+      margin-right: 5rem;
+      border-radius: 100px;
+      border: none;
+      background-color: #222;
+      color: #fff;
+      font-size: 14px;
+  }
+  
+  .nav-link {
+      color: #2196f3;
+  }
