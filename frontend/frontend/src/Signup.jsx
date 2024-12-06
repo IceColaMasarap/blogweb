@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendar
 } from "@fortawesome/free-solid-svg-icons";
+import bcrypt from 'bcryptjs';  // Import bcryptjs
 
 function Signup() {
   const [firstName, setFirstName] = useState("");
@@ -41,6 +42,8 @@ function Signup() {
       setError("Passwords do not match");
       return;
     }
+
+    const hashedEmail = bcrypt.hashSync(email, 10);
 
     try {
       const response = await axios.post("http://localhost:5005/api/register",{
