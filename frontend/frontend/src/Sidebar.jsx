@@ -35,7 +35,7 @@ function Sidebar() {
               }`}
               onClick={() => {
                 handleClick("dashboard");
-                navigate("/");
+                navigate("/adminpage/");
               }}
             >
               <FontAwesomeIcon icon={faHome} />
@@ -45,7 +45,7 @@ function Sidebar() {
               className={`button ${activeButton === "posts" ? "active" : ""}`}
               onClick={() => {
                 handleClick("posts");
-                navigate("/posts");
+                navigate("/adminpage/posts");
               }}
             >
               <FontAwesomeIcon icon={faAddressCard} />
@@ -57,7 +57,7 @@ function Sidebar() {
               }`}
               onClick={() => {
                 handleClick("accounts");
-                navigate("/accounts");
+                navigate("/adminpage/accounts");
               }}
             >
               <FontAwesomeIcon icon={faComment} />
@@ -65,7 +65,14 @@ function Sidebar() {
             </button>
           </div>
           <div className="logout-container">
-            <button className="logoutbtn">Logout</button>
+            <button
+              className="logoutbtn"
+              onClick={() => {
+                navigate("/");
+              }}
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
