@@ -1,7 +1,20 @@
 import Sidebar from "./Sidebar";
 import "./App.css";
+import { useState, useEffect } from "react";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 function Accounts() {
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+
+  // Toggle modal visibility
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
   const data = [
     {
       FirstName: "Jones",
@@ -36,6 +49,9 @@ function Accounts() {
               <label className="filterlabel">Date End</label>
               <input className="dateSearch" type="date" />
             </div>
+            <button className="addButton" onClick={toggleModal}>
+              <FontAwesomeIcon icon={faPlus} />
+            </button>
           </div>
           <table>
             <thead>
@@ -63,6 +79,34 @@ function Accounts() {
           </table>
         </div>
       </div>
+      {isModalOpen && (
+        <div className="addpostoverlay show">
+          {" "}
+          <div className="overlaycontainer">
+            <form className="overlayform" onSubmit={handleSubmit}>
+              <div className="headeroverlay">
+                {" "}
+                <h2 className="overlaylabel2">Add a new Account</h2>
+              </div>
+
+              <label className="overlaylabel">Title</label>
+
+              <label className="overlaylabel">Content</label>
+
+              <label className="overlaylabel">Upload Image</label>
+
+              <div className="overlaybutton">
+                <button className="close-button" onClick={toggleModal}>
+                  Close
+                </button>
+                <button className="submit-button" type="submit">
+                  Add Post
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

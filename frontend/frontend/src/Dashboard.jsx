@@ -1,45 +1,38 @@
 import Sidebar from "./Sidebar";
 import "./App.css";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 function Dashboard() {
-  const data = [
-    {
-      Name: "Jones Hilario",
-      Date: "06/06/2004",
-      Content: "Merry Christmas!",
-      Flagged: false,
-    },
-    {
-      Name: "Meriam Cuddler",
-      Date: "05/02/2004",
-      Content: "This year is fun!",
-      Flagged: true,
-    },
-    {
-      Name: "Vice Kanda",
-      Date: "07/02/2004",
-      Content: "I hope this dog live. I am so saddened",
-      Flagged: false,
-    },
-    {
-      Name: "Vice Kanda",
-      Date: "07/02/2004",
-      Content: "I hope this dog live. I am so saddened",
-      Flagged: false,
-    },
-    {
-      Name: "Vice Kanda",
-      Date: "07/02/2004",
-      Content: "I hope this dog live. I am so saddened",
-      Flagged: false,
-    },
-    {
-      Name: "Vice Kanda",
-      Date: "07/02/2004",
-      Content: "I hope this dog live. I am so saddened",
-      Flagged: false,
-    },
-  ];
+  const [posts, setPosts] = useState([]); // State to store posts
+  const [usersCount, setUsersCount] = useState(0); // State to store user count
+  const [moderatorsCount, setModeratorsCount] = useState(0); // State to store moderator count
+  const navigate = useNavigate(); // Hook for navigation
+
+  useEffect(() => {
+    // Fetch posts data
+    axios
+      .get("http://localhost:5005/api/posts")
+      .then((response) => {
+        setPosts(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching posts:", error);
+      });
+
+    // Fetch user count
+    axios
+      .get("http://localhost:5005/api/users")
+      .then((response) => {
+        setUsersCount(response.data.totalUsers);
+        setModeratorsCount(response.data.totalModerators);
+      })
+      .catch((error) => {
+        console.error("Error fetching user stats:", error);
+      });
+  }, []);
+
   return (
     <div className="dashboardbg">
       <div className="navBar">
@@ -47,16 +40,28 @@ function Dashboard() {
       </div>
       <div className="dashboardcontent">
         <div className="dashboardpanelcontainer">
-          <div className="dashboardpanel">
-            <label className="dpanellabel">100</label>
+          {/* Posts Panel */}
+          <div
+            className="dashboardpanel"
+            onClick={() => navigate("/adminpage/posts")} // Navigate to the posts page
+          >
+            <label className="dpanellabel">{posts.length}</label>
             <label className="dpaneltext">Posts</label>
           </div>
-          <div className="dashboardpanel">
-            <label className="dpanellabel">100</label>
+          {/* Users Panel */}
+          <div
+            className="dashboardpanel"
+            onClick={() => navigate("/adminpage/accounts")} // Navigate to the users page
+          >
+            <label className="dpanellabel">{usersCount}</label>
             <label className="dpaneltext">Users</label>
           </div>
-          <div className="dashboardpanel">
-            <label className="dpanellabel">100</label>
+          {/* Moderators Panel */}
+          <div
+            className="dashboardpanel"
+            onClick={() => navigate("/adminpage/accounts")} // Navigate to the moderators page
+          >
+            <label className="dpanellabel">{moderatorsCount}</label>
             <label className="dpaneltext">Moderators</label>
           </div>
         </div>
@@ -72,12 +77,12 @@ function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {data.map((item) => (
-                <tr key={item.name}>
-                  <td>{item.Name}</td>
-                  <td>{item.Date}</td>
-                  <td>{item.Content}</td>
-                  <td>{item.Flagged ? "Yes" : "No"}</td>
+              {posts.map((item) => (
+                <tr key={item.post_id}>
+                  <td>{item.author_name}</td>
+                  <td>{new Date(item.date_posted).toLocaleString()}</td>
+                  <td>{item.content}</td>
+                  <td>{item.flagged ? "Yes" : "No"}</td>
                 </tr>
               ))}
             </tbody>
