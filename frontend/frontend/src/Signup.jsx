@@ -1,9 +1,8 @@
-import Sidebar from "./Sidebar";
-import "./App.css";
-import { useState, useEffect } from "react";
-import axios from "axios"; // Add axios to make API calls
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
+import "./Signup.css";
+import TS from "./assets/tsaaritsa.png";
+import axios from "axios";
+import React, { useState } from "react";
 
 function Posts() {
   const [posts, setPosts] = useState([]); // State to store all posts
@@ -90,132 +89,85 @@ function Posts() {
   });
 
   return (
-    <div className="dashboardbg">
-      <div className="navBar">
-        <label className="navbartext">Posts</label>
-      </div>
-      <div className="dashboardcontent">
-        <div className="poststablecontainer">
-          <div className="filters">
-            <div className="filter1">
-              <label className="filterlabel">Email</label>
-              <input
-                className="userSearch"
-                placeholder="e.g. johndoe@gmail.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="filter1">
-              <label className="filterlabel">Date Start</label>
-              <input
-                className="dateSearch"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div className="filter1">
-              <label className="filterlabel">Date End</label>
-              <input
-                className="dateSearch"
-                type="date"
-                value={endDate}
-                onChange={handleEndDateChange}
-              />
-            </div>
-            <button className="addButton" onClick={toggleModal}>
-              <FontAwesomeIcon icon={faPlus} />
-            </button>
+    <div className="containerr">
+      {/* Left Section */}
+      <div className="left-sectionr">
+        <div className="logo-containerr">
+          <div className="logor">
+            <img
+              src={TS} // Placeholder for the tea cup logo
+              alt="Tsaaritsa"
+              className="logo-imager"
+            />
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Author Email</th>
-                <th>Author Name</th>
-                <th>Title</th>
-                <th>Content</th>
-                <th>Date Posted</th>
-                <th>Flagged</th>
-                <th>Like Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPosts.map((item) => (
-                <tr key={item.post_id}>
-                  <td>{item.author_email}</td>
-                  <td>
-                    {item.author_firstname} {item.author_lastname}
-                  </td>
-                  <td>{item.title}</td>
-                  <td>{item.content}</td>
-                  <td>{new Date(item.postdate).toLocaleString()}</td>
-                  <td>{item.isFlagged ? "Yes" : "No"}</td>
-                  <td>{item.like_count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h1 className="brand-titler">Tsaaritsa.</h1>
         </div>
+      </div>
 
-        {/* Modal Overlay */}
-        {isModalOpen && (
-          <div className="addpostoverlay">
-            <button className="close-button" onClick={toggleModal}>
-              Close
-            </button>
-            <form onSubmit={handleSubmit}>
-              <input
-                className="addpostforminput"
-                type="text"
-                placeholder="First Name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                readOnly
-              />
-              <input
-                className="addpostforminput"
-                type="text"
-                placeholder="Last Name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                readOnly
-              />
-              <input
-                className="addpostforminput"
-                type="text"
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <textarea
-                className="addpostforminput"
-                placeholder="Content"
-                rows="4"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-              />
-              <input
-                className="addpostforminput"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                readOnly
-              />
-              <div className="image-upload">
-                <input
-                  className="addpostforminput"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </div>
-              <button className="submit-button" type="submit">
-                Submit Post
-              </button>
-            </form>
+      {/* Right Section */}
+      <div className="right-sectionr">
+        <h1 className="main-headingr">Everyone’s cup of tea</h1>
+        <p className="sub-headingr">Join Today.</p>
+        <form className="formr" onSubmit={handleSubmit}>
+          <div className="form-rowr">
+            <input
+              type="text"
+              placeholder="First Name"
+              className="input"
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              className="input"
+              onChange={(e) => setLastName(e.target.value)}
+            />
+            <input
+              type="date"
+              className="input"
+              onChange={(e) => setDateOfBirth(e.target.value)}
+            />
           </div>
-        )}
+          <input
+            type="email"
+            placeholder="Email"
+            className="input"
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <div className="form-rowr">
+            <input
+              type="password"
+              placeholder="Password"
+              className="input"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Confirm"
+              className="input"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="buttonr">
+            Register
+          </button>
+
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          {successMessage && (
+            <p style={{ color: "#15bc11" }}>{successMessage}</p>
+          )}
+          <p className="login-linkr">
+            Already have an account?
+            <span
+              className="registerlabelnav"
+              id="tologin"
+              onClick={() => navigate("/login")}
+              style={{ cursor: "pointer", color: "blue" }}
+            >
+              Log in here
+            </span>
+          </p>
+        </form>
       </div>
     </div>
   );
