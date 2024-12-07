@@ -48,9 +48,9 @@ const Homepage = () => {
             </button>
 
             <div className="footnotes">
-    <p><sup>1</sup> Footnote text goes here. You can explain something in more detail.</p>
-    <p><sup>2</sup> Another footnote, explaining a second point.</p>
-  </div>
+              <p><sup>1</sup> Footnote text goes here. You can explain something in more detail.</p>
+              <p><sup>2</sup> Another footnote, explaining a second point.</p>
+            </div>
 
           </div>
         </div>
@@ -98,8 +98,8 @@ const Homepage = () => {
               <img src={POSTSAMPLE} alt="NU Pep Squad" />
             </div>
             <button className="lk-btn">
-                  <img src={LK} alt="Like" />
-                </button>
+              <img src={LK} alt="Like" />
+            </button>
           </div>
 
           <div className="post">

@@ -8,8 +8,6 @@ body {
   }
   
   .HomePage {
-    margin-top: 60px;
-    /* Add margin equal to the NavigationBar height */
     height: 100vh;
     /* Adjust height to exclude NavigationBar */
     display: flex;
