@@ -76,7 +76,7 @@ const Homepage = () => {
                 </button>
               </div>
               <div className="p-btn">
-                <button>post</button>
+                <button>Post</button>
               </div>
             </div>
           </div>
