@@ -1,89 +1,92 @@
 /* Container */
 .containerr {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-    background-color: #000;
-    color: #fff;
-  }
-  
-  /* Left Section */
-  .left-sectionr {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .logo-imager {
-      width: 300px;
-      height: 300px;
-    }
-  
-  .brand-titler {
-    font-size: 24px;
-    font-weight: bold;
-    color: #fff;
-    text-align: center;
-  }
-  
-  /* Right Section */
-  .right-sectionr {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 20px;
-  }
-  
-  .main-headingr {
-    font-size: 36px;
-    margin-bottom: 10px;
-  }
-  
-  .sub-headingr {
-    font-size: 18px;
-    margin-bottom: 30px;
-  }
-  
-  .formr {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 0 250px 0 0;
-  }
-  
-  .form-rowr {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    color: #000;
-  }
-  
-  .buttonr {
-    padding: 10px;
-    background-color: #007bff;
-    border: none;
-    color: #fff;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .login-linkr {
-    margin-top: 10px;
-    font-size: 14px;
-    text-align: center;
-  }
-  
-  .login-linkr a {
-    color: #007bff;
-    text-decoration: none;
-  }
-  
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #000;
+  color: #fff;
+}
+
+/* Left Section */
+.left-sectionr {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-imager {
+  width: 300px;
+  height: 300px;
+}
+
+.brand-titler {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+}
+
+/* Right Section */
+.right-sectionr {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.main-headingr {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.sub-headingr {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+.formr {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 0 250px 0 0;
+}
+
+.form-rowr {
+  display: flex;
+  gap: 10px;
+}
+
+.input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  color: #000;
+}
+
+.buttonr {
+  padding: 10px;
+  background-color: #007bff;
+  border: none;
+  color: #fff;
+  border-radius: 100px;
+  cursor: pointer;
+}
+
+.login-linkr {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.login-linkr a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.logo-containerr {
+  margin-left: 14px;
+}
