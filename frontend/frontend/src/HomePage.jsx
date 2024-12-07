@@ -48,8 +48,8 @@ const Homepage = () => {
             </button>
 
             <div className="footnotes">
-              <p><sup>1</sup> Footnote text goes here. You can explain something in more detail.</p>
-              <p><sup>2</sup> Another footnote, explaining a second point.</p>
+              <p><sup></sup>Privacy  · Terms  · Advertising  · Ad Choices   · Cookies</p>
+              <p><sup></sup> Tsaaritsa © 2024</p>
             </div>
 
           </div>
