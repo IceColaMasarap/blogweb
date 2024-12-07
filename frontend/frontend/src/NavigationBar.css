@@ -45,3 +45,15 @@ body {
   .nav-link {
       color: #2196f3;
   }
+
+  .logout-btn {
+    width: 24px; /* Adjust width as needed */
+    height: 24px; /* Adjust height as needed */
+    cursor: pointer; /* Indicate it's clickable */
+    transition: transform 0.2s ease;
+  }
+  
+  .logout-btn:hover {
+    transform: scale(1.1); /* Slightly enlarge on hover for feedback */
+  }
+  

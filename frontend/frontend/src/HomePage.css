@@ -22,23 +22,23 @@ body {
     width: 25%;
     padding: 20px 10px;
     background-color: #000;
-    height: calc(100vh - 10vh);
-    /* Account for NavigationBar height */
-    overflow-y: auto;
-    /* Separate scrollbar for left sidebar */
+    height: calc(100vh - 15vh);
+  
   }
   
   .footnotes {
-    padding: 450px 16px 16px 16px;
+    padding: 470px 16px 0px 16px;
     margin: none;
   }
   
   .footnotes p{
     font-size: 12px;
+    margin: 0;
   }
   
   .left-sidebar {
     overflow: hidden; /* Hide scrollbar by default */
+    scrollbar-gutter: stable; /* Reserve space for the scrollbar */
   }
   
   .left-sidebar:hover {
@@ -232,21 +232,8 @@ body {
     width: 25%;
     padding: 20px 10px;
     background-color: #000;
-    height: calc(100vh - 10vh);
-    /* Account for NavigationBar height */
-    overflow-y: auto;
-    /* Separate scrollbar for right sidebar */
-    overflow-x: hidden;
-  }
-  
-  .trends {
-    background-color: #222;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  
-  
+    height: calc(100vh - 15vh);
+  }  
   
   .trends-container {
     
@@ -259,6 +246,11 @@ body {
     padding: 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
+
+  .trend-item {
+    padding: 10px;
+    border-bottom: 1px solid #222;
+  }
   
   .trends-title {
     font-size: 18px;
@@ -270,11 +262,6 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
-  }
-  
-  .trend-item {
-    padding: 10px;
-    border-bottom: 1px solid #222;
   }
   
   .trend-item:last-child {
@@ -301,6 +288,7 @@ body {
   
   .right-sidebar {
     overflow: hidden; /* Hide scrollbar by default */
+    scrollbar-gutter: stable; /* Reserve space for the scrollbar */
   }
   
   .right-sidebar:hover {
