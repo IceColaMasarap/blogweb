@@ -77,7 +77,7 @@
 }
 
 .logout-container {
-  align-self: ;
+  align-self: 0;
 }
 .sidebarbg {
   display: flex;

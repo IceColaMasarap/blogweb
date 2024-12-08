@@ -7,6 +7,8 @@ import DP from './assets/DP.jpg';
 import GI from './assets/GI.jpg';
 import CS from './assets/CLASS SCHEDULE BSIT PHONE 1.png';
 import POSTSAMPLE from './assets/GENSHIN 4TH ANNIVERSARY.jpg';
+import NavigationBar from "./Navigationbar.jsx";
+import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
 // Adjust the path as needed
 import "./Homepage.css"; // Add styles for the sections if needed
@@ -27,7 +29,7 @@ const Homepage = () => {
   return (
     <div>
       {/* Add the Navigation Bar */}
-    
+      <NavigationBar />
 
       <div className="HomePage">
         {/* Left Sidebar */}
@@ -46,9 +48,9 @@ const Homepage = () => {
             </button>
 
             <div className="footnotes">
-    <p><sup>1</sup> Footnote text goes here. You can explain something in more detail.</p>
-    <p><sup>2</sup> Another footnote, explaining a second point.</p>
-  </div>
+              <p><sup></sup>Privacy  · Terms  · Advertising  · Ad Choices   · Cookies</p>
+              <p><sup></sup> Tsaaritsa © 2024</p>
+            </div>
 
           </div>
         </div>
@@ -74,7 +76,7 @@ const Homepage = () => {
                 </button>
               </div>
               <div className="p-btn">
-                <button>post</button>
+                <button>Post</button>
               </div>
             </div>
           </div>
@@ -96,8 +98,8 @@ const Homepage = () => {
               <img src={POSTSAMPLE} alt="NU Pep Squad" />
             </div>
             <button className="lk-btn">
-                  <img src={LK} alt="Like" />
-                </button>
+              <img src={LK} alt="Like" />
+            </button>
           </div>
 
           <div className="post">

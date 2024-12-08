@@ -8,8 +8,6 @@ body {
   }
   
   .HomePage {
-    margin-top: 60px;
-    /* Add margin equal to the NavigationBar height */
     height: 100vh;
     /* Adjust height to exclude NavigationBar */
     display: flex;
@@ -24,19 +22,28 @@ body {
     width: 25%;
     padding: 20px 10px;
     background-color: #000;
-    height: calc(100vh - 10vh);
-    /* Account for NavigationBar height */
-    overflow-y: auto;
-    /* Separate scrollbar for left sidebar */
+    height: calc(100vh - 15vh);
+  
   }
   
   .footnotes {
-    padding: 16px;
+    padding: 470px 16px 0px 16px;
     margin: none;
   }
   
   .footnotes p{
     font-size: 12px;
+    margin: 0;
+    color: #aaa;
+  }
+  
+  .left-sidebar {
+    overflow: hidden; /* Hide scrollbar by default */
+    scrollbar-gutter: stable; /* Reserve space for the scrollbar */
+  }
+  
+  .left-sidebar:hover {
+    overflow-y: auto; /* Show vertical scrollbar on hover */
   }
   
   .left-sidebar::-webkit-scrollbar {
@@ -51,6 +58,7 @@ body {
   .left-sidebar::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+  
   
   
   .menu-button,
@@ -97,7 +105,7 @@ body {
     width: 50%;
     padding: 20px;
     background-color: #000;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 10vh);
     /* Match height with sidebars */
     overflow-y: auto;
     /* Enable scrolling for main content */
@@ -121,7 +129,7 @@ body {
   }
   
   .input-box {
-    width: 45%;
+    width: 100%;
     padding: 10px;
     border-radius: 100px;
     border: none;
@@ -133,7 +141,7 @@ body {
   .post {
     background-color: #222;
     border-radius: 10px;
-    padding: 20px;
+    padding: 20px 20px 15px 20px;
     margin-bottom: 20px;
   }
   
@@ -165,6 +173,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-left: 60px;
+    padding-top: 5px;
   }
   
   .post-header {
@@ -225,24 +234,12 @@ body {
     width: 25%;
     padding: 20px 10px;
     background-color: #000;
-    height: calc(100vh - 60px);
-    /* Account for NavigationBar height */
-    overflow-y: auto;
-    /* Separate scrollbar for right sidebar */
-    overflow-x: hidden;
-  }
-  
-  .trends {
-    background-color: #222;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  
-  
+    height: calc(100vh - 15vh);
+  }  
   
   .trends-container {
-    width: 350px;
+    
+    width: 90%;
     background-color: #000;
     border: 1px solid #222;
     border-radius: 16px;
@@ -250,6 +247,11 @@ body {
     color: #fff;
     padding: 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .trend-item {
+    padding: 10px;
+    border-bottom: 1px solid #222;
   }
   
   .trends-title {
@@ -262,11 +264,6 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
-  }
-  
-  .trend-item {
-    padding: 10px;
-    border-bottom: 1px solid #222;
   }
   
   .trend-item:last-child {
@@ -291,6 +288,15 @@ body {
     margin: 0;
   }
   
+  .right-sidebar {
+    overflow: hidden; /* Hide scrollbar by default */
+    scrollbar-gutter: stable; /* Reserve space for the scrollbar */
+  }
+  
+  .right-sidebar:hover {
+    overflow-y: auto; /* Show vertical scrollbar on hover */
+  }
+  
   .right-sidebar::-webkit-scrollbar {
     width: 7px;
   }
@@ -303,3 +309,4 @@ body {
   .right-sidebar::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+  
