@@ -10,37 +10,16 @@ function Posts() {
   const [email, setEmail] = useState(""); // State to store email filter value
   const [startDate, setStartDate] = useState(""); // State to store start date
   const [endDate, setEndDate] = useState(""); // State to store end date
-  const [firstName, setFirstName] = useState("Admin");
-  const [lastName, setLastName] = useState("Page");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [isModalOpen2, setIsModalOpen2] = useState(false); // State to control modal visibility
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Create form data to send to the server
-    const formData = new FormData();
-    formData.append("firstName", firstName);
-    formData.append("lastName", lastName);
-    formData.append("title", title);
-    formData.append("content", content);
-    formData.append("email", email);
-    if (image) formData.append("image", image);
-
-    // Here you can make an API call to submit the data, for example:
-    // axios.post("/api/posts", formData)
-    //   .then(response => {
-    //     console.log("Post submitted", response);
-    //   })
-    //   .catch(error => {
-    //     console.error("Error submitting post", error);
-    //   });
-
-    // For now, just log the form data
-    console.log("Form data submitted:", formData);
+  const [selectedPost, setSelectedPost] = useState(null); // State to track the selected post
+  const handleRowClick = (post) => {
+    setSelectedPost(post); // Set the selected post data
+    setIsModalOpen(true); // Open the modal
   };
 
   // Fetch all posts when the component mounts
@@ -76,6 +55,9 @@ function Posts() {
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
+  const toggleModal2 = () => {
+    setIsModalOpen2(!isModalOpen2);
+  };
 
   // Filter posts based on the selected filters
   const filteredPosts = posts.filter((post) => {
@@ -88,6 +70,38 @@ function Posts() {
       (!endDate || postDate <= new Date(endDate));
     return matchesEmail && matchesDateRange;
   });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("image", image); // Attach image to formData
+    console.log("Form Data:", formData);
+    console.log("Title:", title);
+    console.log("Content:", content);
+    console.log("Image:", image);
+    try {
+      const response = await axios.post(
+        "http://localhost:5005/api/addpost2",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Ensure the header supports file upload
+          },
+        }
+      );
+      alert("Post added successfully");
+      setTitle("");
+      setContent("");
+      setImage(null);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error adding post:", error);
+      alert("Error adding post.");
+    }
+  };
 
   return (
     <div className="dashboardbg">
@@ -142,7 +156,12 @@ function Posts() {
             </thead>
             <tbody>
               {filteredPosts.map((item) => (
-                <tr key={item.post_id}>
+                <tr
+                  key={item.post_id}
+                  onClick={() => {
+                    toggleModal2;
+                  }}
+                >
                   <td>{item.author_email}</td>
                   <td>
                     {item.author_firstname} {item.author_lastname}
@@ -158,7 +177,6 @@ function Posts() {
           </table>
         </div>
 
-        {/* Modal Overlay */}
         {isModalOpen && (
           <div className="addpostoverlay show">
             {" "}
@@ -203,6 +221,49 @@ function Posts() {
                   </button>
                   <button className="submit-button" type="submit">
                     Add Post
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+        {isModalOpen2 && (
+          <div className="editpostoverlay show">
+            <div className="overlaycontainer">
+              <form className="overlayform">
+                <div className="headeroverlay">
+                  <h2 className="overlaylabel2">Edit Post</h2>
+                </div>
+                <label className="overlaylabel">Title</label>
+                <input
+                  className="addpostforminput"
+                  type="text"
+                  value={selectedPost.title}
+                  onChange={(e) =>
+                    setSelectedPost({ ...selectedPost, title: e.target.value })
+                  }
+                />
+                <label className="overlaylabel">Content</label>
+                <textarea
+                  className="addpostforminput"
+                  rows="4"
+                  value={selectedPost.content}
+                  onChange={(e) =>
+                    setSelectedPost({
+                      ...selectedPost,
+                      content: e.target.value,
+                    })
+                  }
+                />
+                <div className="overlaybutton">
+                  <button
+                    className="close-button"
+                    onClick={() => setIsModalOpen2(false)}
+                  >
+                    Close
+                  </button>
+                  <button className="submit-button" type="submit">
+                    Update
                   </button>
                 </div>
               </form>

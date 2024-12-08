@@ -1,17 +1,14 @@
-
-import TS from './assets/tsaaritsa.png';
+import TS from "./assets/tsaaritsa.png";
 import "./Login.css"; // Importing the CSS file
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Use axios for making HTTP requests
 
 function Login() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,13 +33,12 @@ function Login() {
         setError("Invalid credentials, please try again.");
       } else {
         // Redirect based on user role
-        if (data.isModerator) {
+        if (data.email === "admin@gmail.com") {
           navigate("/adminpage/"); // Redirect to admin page
         } else {
           navigate("/home"); // Redirect to homepage for regular users
         }
       }
-
     } catch (err) {
       setError("An error occurred during login");
       console.log("Error logging in:", err);
@@ -87,7 +83,7 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
           <button type="submit" className="lbutton">
-          Login
+            Login
           </button>
           <p className="register-link">
             No account?&nbsp;
@@ -102,7 +98,6 @@ function Login() {
               Register
             </span>
           </p>
-
         </form>
         {error && <p style={{ color: "red" }}>{error}</p>} {/* Display error */}
       </div>

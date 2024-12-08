@@ -93,7 +93,7 @@ function Signup() {
             />
             <input
               type="date"
-              className="input"
+              className="inputDate"
               onChange={(e) => setDateOfBirth(e.target.value)}
             />
           </div>
