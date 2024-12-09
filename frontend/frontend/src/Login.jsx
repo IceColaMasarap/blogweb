@@ -28,10 +28,22 @@ function Login() {
 
       const data = response.data;
 
+      console.log("Logged in user data:", data); // Log user data here
+
       // Check if login is successful
       if (data.error) {
         setError("Invalid credentials, please try again.");
       } else {
+        // Log the user info on successful login
+        console.log("User Info:", {
+          id: data.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          dateofbirth: data.dateofbirth,
+          isModerator: data.isModerator,
+        });
+
         // Redirect based on user role
         if (data.email === "admin@gmail.com") {
           navigate("/adminpage/"); // Redirect to admin page

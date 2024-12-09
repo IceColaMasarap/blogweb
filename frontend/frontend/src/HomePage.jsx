@@ -1,12 +1,12 @@
 import React from "react";
-import HM from './assets/Home.png';
-import PS from './assets/PostSettings.png';
-import IP from './assets/Photos.png';
-import LK from './assets/Like.png';
-import DP from './assets/DP.jpg';
-import GI from './assets/GI.jpg';
-import CS from './assets/CLASS SCHEDULE BSIT PHONE 1.png';
-import POSTSAMPLE from './assets/GENSHIN 4TH ANNIVERSARY.jpg';
+import HM from "./assets/Home.png";
+import PS from "./assets/PostSettings.png";
+import IP from "./assets/Photos.png";
+import LK from "./assets/Like.png";
+import DP from "./assets/DP.jpg";
+import GI from "./assets/GI.jpg";
+import CS from "./assets/CLASS SCHEDULE BSIT PHONE 1.png";
+import POSTSAMPLE from "./assets/GENSHIN 4TH ANNIVERSARY.jpg";
 import NavigationBar from "./Navigationbar.jsx";
 import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
@@ -14,16 +14,49 @@ import { useNavigate } from "react-router-dom";
 import "./Homepage.css"; // Add styles for the sections if needed
 
 const Homepage = () => {
-
   const trends = [
-    { category: "Politics", topic: "Impeachment Talks", description: "Discussions intensify over VP Duterte's impeachment." },
-    { category: "Territorial Disputes", topic: "West Philippine Sea", description: "Tensions rise amid China’s continued aggression." },
-    { category: "Food", topic: "Adobo Reinventions", description: "Filipino cuisine gains global recognition with adobo twists." },
-    { category: "Tourism", topic: "Philippine Airlines", description: "Boosting connectivity through new international partnerships." },
-    { category: "Holidays", topic: "Christmas in Metro Manila", description: "Security tightened with 8,000 police deployed." },
-    { category: "Environment", topic: "Carbon-Neutral Shipping", description: "Sails return as shipping embraces eco-friendly solutions." },
-    { category: "Road Safety", topic: "Metro Manila Accidents", description: "Spike in road mishaps prompts calls for reforms." },
-    { category: "Tech", topic: "AI in Hospitality", description: "Advanced tech reshapes tourism and service industries." },
+    {
+      category: "Politics",
+      topic: "Impeachment Talks",
+      description: "Discussions intensify over VP Duterte's impeachment.",
+    },
+    {
+      category: "Territorial Disputes",
+      topic: "West Philippine Sea",
+      description: "Tensions rise amid China’s continued aggression.",
+    },
+    {
+      category: "Food",
+      topic: "Adobo Reinventions",
+      description:
+        "Filipino cuisine gains global recognition with adobo twists.",
+    },
+    {
+      category: "Tourism",
+      topic: "Philippine Airlines",
+      description:
+        "Boosting connectivity through new international partnerships.",
+    },
+    {
+      category: "Holidays",
+      topic: "Christmas in Metro Manila",
+      description: "Security tightened with 8,000 police deployed.",
+    },
+    {
+      category: "Environment",
+      topic: "Carbon-Neutral Shipping",
+      description: "Sails return as shipping embraces eco-friendly solutions.",
+    },
+    {
+      category: "Road Safety",
+      topic: "Metro Manila Accidents",
+      description: "Spike in road mishaps prompts calls for reforms.",
+    },
+    {
+      category: "Tech",
+      topic: "AI in Hospitality",
+      description: "Advanced tech reshapes tourism and service industries.",
+    },
   ];
 
   return (
@@ -48,10 +81,13 @@ const Homepage = () => {
             </button>
 
             <div className="footnotes">
-              <p><sup></sup>Privacy  · Terms  · Advertising  · Ad Choices   · Cookies</p>
-              <p><sup></sup> Tsaaritsa © 2024</p>
+              <p>
+                <sup></sup>Privacy · Terms · Advertising · Ad Choices · Cookies
+              </p>
+              <p>
+                <sup></sup> Tsaaritsa © 2024
+              </p>
             </div>
-
           </div>
         </div>
 
@@ -135,7 +171,6 @@ const Homepage = () => {
             </ul>
           </div>
         </div>
-
       </div>
     </div>
   );
