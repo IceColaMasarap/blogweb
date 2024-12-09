@@ -3,6 +3,7 @@ import "./Signup.css";
 import TS from "./assets/tsaaritsa.png";
 import axios from "axios";
 import React, { useState } from "react";
+import img1 from "../src/assets/logobg.png";
 
 function Signup() {
   const [firstName, setFirstName] = useState("");
@@ -69,13 +70,15 @@ function Signup() {
               className="logo-imager"
             />
           </div>
-          <h1 className="brand-titler">Tsaaritsa.</h1>
+          <h1 className="brand-titler">Tsaaritsa. </h1>
         </div>
       </div>
 
       {/* Right Section */}
       <div className="right-sectionr">
-        <h1 className="main-headingr">Everyone’s cup of tea</h1>
+        <h1 className="main-headingr">Everyone’s cup</h1>
+        <h1 className="main-headingr">of tea 🍃</h1>
+
         <p className="sub-headingr">Join Today.</p>
         <form className="formr" onSubmit={handleSubmit}>
           <div className="form-rowr">
@@ -91,15 +94,18 @@ function Signup() {
               className="input"
               onChange={(e) => setLastName(e.target.value)}
             />
-            <input
-              type="date"
-              className="inputDate"
-              onChange={(e) => setDateOfBirth(e.target.value)}
-            />
+            <div className="input-container">
+              <label className="bdaylabel">Birthdate</label>
+              <input
+                type="date"
+                className="inputDate"
+                onChange={(e) => setDateOfBirth(e.target.value)}
+              />
+            </div>
           </div>
           <input
             type="email"
-            placeholder="Email"
+            placeholder="Email Address"
             className="input"
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -112,7 +118,7 @@ function Signup() {
             />
             <input
               type="password"
-              placeholder="Confirm"
+              placeholder="Confirm Password"
               className="input"
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -125,17 +131,16 @@ function Signup() {
           {successMessage && (
             <p style={{ color: "#15bc11" }}>{successMessage}</p>
           )}
-          <p className="login-linkr">
-            Already have an account?
-            <span
-              className="registerlabelnav"
-              id="tologin"
+          <div className="linkers">
+            <label className="linklabel1">Already have an account? </label>
+            <label
+              className="linklabel2"
+              style={{ cursor: "pointer" }}
               onClick={() => navigate("/login")}
-              style={{ cursor: "pointer", color: "blue" }}
             >
-              Log in here
-            </span>
-          </p>
+              Login here
+            </label>
+          </div>
         </form>
       </div>
     </div>

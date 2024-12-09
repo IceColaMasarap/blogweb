@@ -1,12 +1,29 @@
-/* Container */
 .containerr {
   display: flex;
+  position: relative; /* Ensures proper positioning for the pseudo-element */
   height: 100vh;
   width: 100vw;
-  background-color: #000;
+  background-color: #000; /* Fallback background color */
   color: #fff;
+  z-index: 1; /* Ensures content is above the background */
+  overflow: hidden; /* Ensures no content overflows */
 }
 
+.containerr::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-image: url("./assets/logobg.png"); /* Make sure the image path is correct */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.4; /* Adjust this value for desired transparency */
+  z-index: -1; /* Sends the pseudo-element behind the content */
+  pointer-events: none; /* Ensures background doesn't interfere with content interaction */
+}
 /* Left Section */
 .left-sectionr {
   flex: 1;
@@ -22,9 +39,11 @@
 }
 
 .brand-titler {
-  font-size: 24px;
+  font-size: 30px;
   font-weight: bold;
   color: #fff;
+  font-family: "Poppins";
+  font-weight: 300;
   text-align: center;
 }
 
@@ -33,25 +52,29 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: baseline;
+  margin-top: 100px;
   padding: 0 20px;
 }
 
 .main-headingr {
-  font-size: 36px;
-  margin-bottom: 10px;
+  margin: 0;
+  font-size: 0.7in;
+  font-family: "Poppins";
 }
 
 .sub-headingr {
-  font-size: 18px;
+  font-size: 0.3in;
   margin-bottom: 30px;
+  font-family: "Poppins";
 }
 
 .formr {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  padding: 0 250px 0 0;
+  font-family: "Poppins";
+  padding-right: 250px;
 }
 
 .form-rowr {
@@ -63,30 +86,60 @@
   flex: 1;
   padding: 10px;
   border: 1px solid #ddd;
-  border-radius: 10px;
+  font-family: "Poppins";
+  border-radius: 20px;
   color: #000;
 }
-
+.bdaylabel {
+  display: none;
+  position: absolute;
+  left: 10px;
+  top: -20px;
+  font-size: 12px;
+  color: rgb(255, 255, 255);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.background2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image covers the entire background */
+  z-index: -1; /* Places the image behind all other elements */
+}
+.input-container {
+  position: relative;
+}
+.inputDate {
+  height: 100%;
+}
+.input-container:hover .bdaylabel {
+  display: block;
+  opacity: 1;
+}
 .buttonr {
   padding: 10px;
-  background-color: #007bff;
+  background-color: #757575;
   border: none;
-  color: #fff;
+  color: #ffffff;
+  font-weight: 600;
   border-radius: 100px;
   cursor: pointer;
 }
 
-.login-linkr {
-  margin-top: 10px;
-  font-size: 14px;
-  text-align: center;
+.linkers {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
 }
-
-.login-linkr a {
-  color: #007bff;
-  text-decoration: none;
+.linkers label {
+  font-size: smaller;
 }
-
+.linklabel1 {
+  font-weight: 700;
+}
 .logo-containerr {
   margin-left: 14px;
 }

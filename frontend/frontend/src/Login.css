@@ -1,16 +1,34 @@
-/* Container */
 .container {
   display: flex;
+  position: relative; /* Ensures proper positioning for the pseudo-element */
   height: 100vh;
   width: 100vw;
-  background-color: #000;
+  background-color: #000; /* Fallback background color */
   color: #fff;
+  z-index: 1; /* Ensures content is above the background */
+  overflow: hidden; /* Ensures no content overflows */
 }
 
+.container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-image: url("./assets/logobg.png"); /* Make sure the image path is correct */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.4; /* Adjust this value for desired transparency */
+  z-index: -1; /* Sends the pseudo-element behind the content */
+  pointer-events: none; /* Ensures background doesn't interfere with content interaction */
+}
 /* Left Section */
 .left-section {
   flex: 1;
   display: flex;
+  margin-left: -13.3px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -34,7 +52,6 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0 20px;
 }
 
 .main-heading {
@@ -51,7 +68,7 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  padding: 0 250px 0 0;
+  padding-right: 250px;
 }
 
 .input {

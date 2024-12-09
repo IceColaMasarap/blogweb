@@ -69,14 +69,15 @@ function Login() {
               className="logo-image"
             />
           </div>
-          <h1 className="brand-title">Tsaaritsa.</h1>
+          <h1 className="brand-titler">Tsaaritsa.</h1>
         </div>
       </div>
 
       {/* Right Section */}
-      <div className="right-section">
-        <h1 className="main-heading">Everyone’s cup of tea</h1>
-        <p className="sub-heading">Welcome back!</p>
+      <div className="right-sectionr">
+        <h1 className="main-headingr">Everyone’s cup</h1>
+        <h1 className="main-headingr">of tea 🍃</h1>
+        <p className="sub-headingr">Welcome back!</p>
         <form className="form" onSubmit={handleSubmit}>
           <input
             type="email"
@@ -94,22 +95,20 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit" className="lbutton">
+          <button type="submit" className="buttonr">
             Login
           </button>
-          <p className="register-link">
-            No account?&nbsp;
-            <span
-              className="registerlabelnav"
-              id="tologin"
-              style={{ cursor: "pointer", color: "blue" }}
-              onClick={() => {
-                navigate("/");
-              }}
+
+          <div className="linkers">
+            <label className="linklabel1">No account yet? </label>
+            <label
+              className="linklabel2"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/")}
             >
-              Register
-            </span>
-          </p>
+              Signup here.
+            </label>
+          </div>
         </form>
         {error && <p style={{ color: "red" }}>{error}</p>} {/* Display error */}
       </div>
