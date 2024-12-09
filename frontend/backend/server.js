@@ -55,15 +55,15 @@ db.connect((err) => {
 app.post("/api/register", async (req, res) => {
   const { firstName, lastName, email, dateofbirth, password } = req.body;
   const userId = uuidv4();
-
+  const isMod = "User";
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, NOW())`;
+    const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
 
     db.query(
       sql,
-      [userId, firstName, lastName, dateofbirth, email, hashedPassword],
+      [userId, firstName, lastName, dateofbirth, email, hashedPassword, isMod],
       (error, results) => {
         if (error) {
           console.error("Error inserting user:", error);
@@ -116,6 +116,22 @@ app.get("/api/posts2", (req, res) => {
         users.email AS author_email
     FROM posts
     JOIN users ON posts.author_id = users.id
+  `;
+
+  db.query(sql, (error, results) => {
+    if (error) {
+      console.error("Error fetching posts:", error);
+      res.status(500).json({ message: "Error retrieving posts" });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+app.get("/api/usershow", (req, res) => {
+  const sql = `
+    SELECT 
+        *
+    FROM users
   `;
 
   db.query(sql, (error, results) => {
