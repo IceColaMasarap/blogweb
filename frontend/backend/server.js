@@ -174,6 +174,25 @@ app.put("/api/updatepost2", (req, res) => {
     res.status(200).json({ message: "Post updated successfully" });
   });
 });
+// Endpoint: Update Post
+app.put("/api/updateaccount", (req, res) => {
+  const { id, firstname, lastname, dateofbirth, email, password, isModerator } =
+    req.body;
+
+  const query =
+    "UPDATE posts SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?, password = ?, isModerator = ? WHERE id = ?";
+  db.query(
+    query,
+    [firstname, lastname, dateofbirth, email, password, isModerator, id],
+    (err, result) => {
+      if (err) {
+        console.error("Error updating post:", err);
+        return res.status(500).json({ error: "Database query failed" });
+      }
+      res.status(200).json({ message: "Post updated successfully" });
+    }
+  );
+});
 
 // Endpoint: Delete Post
 app.delete("/api/deletepost2/:post_id", (req, res) => {
@@ -181,6 +200,19 @@ app.delete("/api/deletepost2/:post_id", (req, res) => {
 
   const query = "DELETE FROM posts WHERE id = ?";
   db.query(query, [post_id], (err, result) => {
+    if (err) {
+      console.error("Error deleting post:", err);
+      return res.status(500).json({ error: "Database query failed" });
+    }
+    res.status(200).json({ message: "Post deleted successfully" });
+  });
+});
+
+app.delete("/api/deleteaccount/:id", (req, res) => {
+  const { id } = req.params;
+
+  const query = "DELETE FROM users WHERE id = ?";
+  db.query(query, [id], (err, result) => {
     if (err) {
       console.error("Error deleting post:", err);
       return res.status(500).json({ error: "Database query failed" });

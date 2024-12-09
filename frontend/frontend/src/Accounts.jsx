@@ -18,15 +18,19 @@ function Accounts() {
   const [email1, setEmail1] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [isModalOpen2, setIsModalOpen2] = useState(false); // Modal visibility
+  const [selectedAccount, setSelectedAccount] = useState(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
   useEffect(() => {
     axios
       .get("http://localhost:5005/api/usershow")
       .then((response) => {
-        setUsers(response.data);
+        // Sort users by created_at in descending order
+        const sortedUsers = response.data.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        setUsers(sortedUsers);
       })
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
@@ -34,6 +38,16 @@ function Accounts() {
   // Handle the modal toggle
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+  const toggleModal2 = () => {
+    setIsModalOpen2(!isModalOpen2);
+  };
+  const handleRowClick = (account) => {
+    console.log("Row clicked:", account); // Debug log
+    setSelectedAccount(account);
+    setDateOfBirth(account?.dateofbirth || ""); // Set dateofbirth from the clicked account
+    setIsModalOpen2(true);
+    console.log("isModalOpen2 state after click:", isModalOpen2);
   };
 
   const handleSubmit = async (e) => {
@@ -118,7 +132,60 @@ function Accounts() {
 
     return matchesEmail && userTypeMatch && matchesDateRange;
   });
+  const handleUpdateAccount = async () => {
+    try {
+      console.log("Update data:", {
+        id: selectedAccount?.id,
+        firstname: selectedAccount?.firstName,
+        lastname: selectedAccount?.lastName,
+        dateofbirth: selectedAccount?.dateofbirth,
+        email: selectedAccount?.email,
+        password: selectedAccount?.password,
+        isModerator: selectedAccount?.isModerator,
+      });
+      const response = await axios.put(
+        "http://localhost:5005/api/updateaccount",
+        {
+          id: selectedAccount.id,
+          firstname: selectedAccount.firstName,
+          lastname: selectedAccount.lastName,
+          dateofbirth: selectedAccount.dateofbirth,
+          email: selectedAccount.email,
+          password: selectedAccount.password,
+          isModerator: selectedAccount.isModerator,
+        }
+      );
+      alert("Account updated successfully");
+      setIsModalOpen2(false);
+      setSelectedAccount(null);
+      // Optionally, refresh the posts
+      axios.get("http://localhost:5005/api/usershow").then((res) => {
+        setUsers(res.data);
+      });
+    } catch (error) {
+      console.error("Error updating post:", error);
+      alert("Failed to update account.");
+    }
+  };
 
+  // Handle Delete Post
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:5005/api/deleteaccount/${selectedAccount.id}`
+      );
+      alert("Account deleted successfully");
+      setIsModalOpen2(false);
+      setSelectedAccount(null);
+      // Optionally, refresh the posts
+      axios.get("http://localhost:5005/api/usershow").then((res) => {
+        setUsers(res.data);
+      });
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post.");
+    }
+  };
   return (
     <div className="dashboardbg">
       <div className="navBar">
@@ -188,7 +255,7 @@ function Accounts() {
             </thead>
             <tbody>
               {filteredUsers.map((item) => (
-                <tr key={item.id}>
+                <tr key={item.id} onClick={() => handleRowClick(item)}>
                   <td>{item.email}</td>
                   <td>{item.firstname}</td>
                   <td>{item.lastname}</td>
@@ -208,7 +275,7 @@ function Accounts() {
             <form className="overlayform" onSubmit={handleSubmit}>
               <div className="headeroverlay">
                 {" "}
-                <h2 className="overlaylabel2">Add a new Post</h2>
+                <h2 className="overlaylabel2">Add a new Account</h2>
               </div>
 
               <label className="overlaylabel">Email</label>
@@ -260,6 +327,121 @@ function Accounts() {
                 </button>
                 <button className="submit-button" type="submit">
                   Register
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isModalOpen2 && selectedAccount && (
+        <div className="editpostoverlay show">
+          {" "}
+          <div className="overlaycontainer">
+            <form className="overlayform" onSubmit={handleSubmit}>
+              <div className="headeroverlay">
+                {" "}
+                <h2 className="overlaylabel2">Configure an Account</h2>
+              </div>
+
+              <label className="overlaylabel">Email</label>
+              <input
+                className="addpostforminput"
+                type="email"
+                value={selectedAccount.email}
+                onChange={(e) =>
+                  setEmail1({ ...selectedAccount, email: e.target.value })
+                }
+              />
+              <label className="overlaylabel">First Name</label>
+              <input
+                className="addpostforminput"
+                type="text"
+                value={selectedAccount.firstname}
+                onChange={(e) =>
+                  setFirstName({
+                    ...selectedAccount,
+                    firstname: e.target.value,
+                  })
+                }
+              />
+
+              <label className="overlaylabel">Last Name</label>
+              <input
+                className="addpostforminput"
+                type="text"
+                value={selectedAccount.lastname}
+                onChange={(e) =>
+                  setLastName({ ...selectedAccount, lastname: e.target.value })
+                }
+              />
+              <label className="overlaylabel">Birthdate</label>
+              <input
+                className="addpostforminput"
+                type="date"
+                value={new Date(selectedAccount.dateofbirth)}
+                onChange={(e) =>
+                  setDateOfBirth({
+                    ...selectedAccount,
+                    dateofbirth: e.target.value,
+                  })
+                }
+              />
+              <label className="overlaylabel">Password</label>
+              <input
+                className="addpostforminput"
+                type="password"
+                onChange={(e) =>
+                  setPassword({ ...selectedAccount, password: e.target.value })
+                }
+              />
+              <label className="overlaylabel">Confirm Password</label>
+              <input
+                className="addpostforminput"
+                type="password"
+                value={selectedAccount.confirmPassword}
+                onChange={(e) =>
+                  setConfirmPassword({
+                    ...selectedAccount,
+                    confirmPassword: e.target.value,
+                  })
+                }
+              />
+              <label className="overlaylabel">Promote User</label>
+              <select
+                className="addpostforminput"
+                value={selectedAccount.isModerator}
+                onChange={(e) =>
+                  setPassword({
+                    ...selectedAccount,
+                    isModerator: e.target.value,
+                  })
+                }
+              >
+                <option value="User">User</option>
+                <option value="Moderator">Moderator</option>
+              </select>
+              <div className="overlaybutton">
+                <button
+                  className="close-button"
+                  type="button"
+                  onClick={toggleModal2}
+                >
+                  Close
+                </button>
+                <button
+                  className="submit-button"
+                  type="button"
+                  onClick={handleUpdateAccount}
+                >
+                  Update
+                </button>
+                <button
+                  className="submit-button"
+                  type="button"
+                  onClick={handleDeleteAccount}
+                >
+                  Delete
                 </button>
               </div>
             </form>

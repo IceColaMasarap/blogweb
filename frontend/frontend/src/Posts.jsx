@@ -22,7 +22,10 @@ function Posts() {
     axios
       .get("http://localhost:5005/api/posts2") // Fetch all posts
       .then((response) => {
-        setPosts(response.data);
+        const sortedPosts = response.data.sort(
+          (a, b) => new Date(b.postdate) - new Date(a.postdate)
+        );
+        setPosts(sortedPosts);
       })
       .catch((error) => {
         console.error("Error fetching posts:", error);
