@@ -145,6 +145,34 @@ app.get("/api/users", (req, res) => {
   });
 });
 
+// Endpoint: Update Post
+app.put("/api/updatepost2", (req, res) => {
+  const { post_id, title, content } = req.body;
+
+  const query = "UPDATE posts SET title = ?, content = ? WHERE id = ?";
+  db.query(query, [title, content, post_id], (err, result) => {
+    if (err) {
+      console.error("Error updating post:", err);
+      return res.status(500).json({ error: "Database query failed" });
+    }
+    res.status(200).json({ message: "Post updated successfully" });
+  });
+});
+
+// Endpoint: Delete Post
+app.delete("/api/deletepost2/:post_id", (req, res) => {
+  const { post_id } = req.params;
+
+  const query = "DELETE FROM posts WHERE id = ?";
+  db.query(query, [post_id], (err, result) => {
+    if (err) {
+      console.error("Error deleting post:", err);
+      return res.status(500).json({ error: "Database query failed" });
+    }
+    res.status(200).json({ message: "Post deleted successfully" });
+  });
+});
+
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 

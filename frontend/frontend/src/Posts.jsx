@@ -17,12 +17,7 @@ function Posts() {
   const [isModalOpen2, setIsModalOpen2] = useState(false); // State to control modal visibility
 
   const [selectedPost, setSelectedPost] = useState(null); // State to track the selected post
-  const handleRowClick = (post) => {
-    setSelectedPost(post); // Set the selected post data
-    setIsModalOpen(true); // Open the modal
-  };
 
-  // Fetch all posts when the component mounts
   useEffect(() => {
     axios
       .get("http://localhost:5005/api/posts2") // Fetch all posts
@@ -54,9 +49,6 @@ function Posts() {
   // Toggle modal visibility
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
-  };
-  const toggleModal2 = () => {
-    setIsModalOpen2(!isModalOpen2);
   };
 
   // Filter posts based on the selected filters
@@ -93,6 +85,9 @@ function Posts() {
         }
       );
       alert("Post added successfully");
+      axios.get("http://localhost:5005/api/posts2").then((res) => {
+        setPosts(res.data);
+      });
       setTitle("");
       setContent("");
       setImage(null);
@@ -100,6 +95,59 @@ function Posts() {
     } catch (error) {
       console.error("Error adding post:", error);
       alert("Error adding post.");
+    }
+  };
+  const handleRowClick = (post) => {
+    console.log("Row clicked:", post); // Debug log
+    setSelectedPost(post);
+    setIsModalOpen2(true);
+    console.log("isModalOpen2 state after click:", isModalOpen2);
+  };
+  // Handle Update Post
+  const handleUpdatePost = async () => {
+    try {
+      console.log("Update data:", {
+        post_id: selectedPost?.post_id,
+        title: selectedPost?.title,
+        content: selectedPost?.content,
+      });
+      const response = await axios.put(
+        "http://localhost:5005/api/updatepost2",
+        {
+          post_id: selectedPost.post_id,
+          title: selectedPost.title,
+          content: selectedPost.content,
+        }
+      );
+      alert("Post updated successfully");
+      setIsModalOpen2(false);
+      setSelectedPost(null);
+      // Optionally, refresh the posts
+      axios.get("http://localhost:5005/api/posts2").then((res) => {
+        setPosts(res.data);
+      });
+    } catch (error) {
+      console.error("Error updating post:", error);
+      alert("Failed to update post.");
+    }
+  };
+
+  // Handle Delete Post
+  const handleDeletePost = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:5005/api/deletepost2/${selectedPost.post_id}`
+      );
+      alert("Post deleted successfully");
+      setIsModalOpen2(false);
+      setSelectedPost(null);
+      // Optionally, refresh the posts
+      axios.get("http://localhost:5005/api/posts2").then((res) => {
+        setPosts(res.data);
+      });
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post.");
     }
   };
 
@@ -158,9 +206,7 @@ function Posts() {
               {filteredPosts.map((item) => (
                 <tr
                   key={item.post_id}
-                  onClick={() => {
-                    toggleModal2;
-                  }}
+                  onClick={() => handleRowClick(item)} // Properly call the function with the clicked row data
                 >
                   <td>{item.author_email}</td>
                   <td>
@@ -227,7 +273,7 @@ function Posts() {
             </div>
           </div>
         )}
-        {isModalOpen2 && (
+        {isModalOpen2 && selectedPost && (
           <div className="editpostoverlay show">
             <div className="overlaycontainer">
               <form className="overlayform">
@@ -262,8 +308,19 @@ function Posts() {
                   >
                     Close
                   </button>
-                  <button className="submit-button" type="submit">
+                  <button
+                    className="submit-button"
+                    type="button"
+                    onClick={handleUpdatePost}
+                  >
                     Update
+                  </button>
+                  <button
+                    className="submit-button"
+                    type="button"
+                    onClick={handleDeletePost}
+                  >
+                    Delete
                   </button>
                 </div>
               </form>

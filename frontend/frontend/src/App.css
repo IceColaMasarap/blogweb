@@ -374,8 +374,7 @@ td {
 
 .addButton {
   background-color: #252728;
-
-  padding: 15px;
+  padding: 5px;
 }
 
 textarea {
@@ -499,6 +498,9 @@ textarea {
   align-items: center;
 }
 
+.editpostoverlay.show {
+  display: flex; /* Show the modal */
+}
 .addpostoverlay.show {
   display: flex; /* Show the modal */
 }
