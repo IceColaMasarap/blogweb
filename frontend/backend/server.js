@@ -12,6 +12,19 @@ const dotenv = require("dotenv").config();
 const { v4: uuidv4 } = require("uuid"); // Import uuidv4
 const multer = require("multer");
 
+// Configure storage for multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Specify the folder to store uploaded files
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname); // Create a unique file name
+  },
+});
+
+const upload = multer({ storage: storage }); // Initialize multer with the storage configuration
+
 const app = express();
 
 app.use(cors());
@@ -228,6 +241,7 @@ app.post("/api/login", async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
 app.post("/api/addpost2", upload.single("image"), (req, res) => {
   const { title, content } = req.body;
   const image = req.file ? req.file.filename : null;
