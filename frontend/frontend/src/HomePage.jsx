@@ -154,7 +154,7 @@ const Homepage = () => {
           <div className="sidebar-menu">
             <div className="profile-image">
               <button className="menu-button">
-                <img src={DP} alt="Profile" />
+                <img src={GI} alt="Profile" />
                 <span>Profile</span>
               </button>
             </div>
@@ -180,19 +180,10 @@ const Homepage = () => {
           {/* Post Input */}
           <div className="post-mlg">
             <div className="post-input">
-              <div className="profile-image">
-                <img src={DP} alt="Profile" />
-                <label className="postsomething">What's your tea?</label>
-                <div className="p-btn">
-                  <button
-                    className="p-btn"
-                    onClick={handlePost}
-                    disabled={isPosting}
-                  >
-                    {isPosting ? "Posting..." : "Post"}
-                  </button>
-                </div>
+              <div className="postsomething1">
+                <label className="sdasda">What's your tea?</label>
               </div>
+              <div className="profile-imagexs"></div>
               <div className="post-input">
                 <textarea
                   type="text"
@@ -209,7 +200,7 @@ const Homepage = () => {
                 />
                 {/* Description textarea */}
                 <textarea
-                  rows={1}
+                  rows={2}
                   type="text"
                   className="input-desc"
                   placeholder="Description"
@@ -223,27 +214,22 @@ const Homepage = () => {
                 />
               </div>
             </div>
-            <div className="post-btn">
-              <div className="pv">
-                <label className="pv-btn">
-                  <input
-                    type="file"
-                    className="file-input"
-                    accept="image/*"
-                    onChange={(e) => handleFileInput(e)}
-                  />
-
-                  <img
-                    src={IP}
-                    alt="Profile"
-                    className="file-img"
-                    onClick={() =>
-                      document.querySelector(".file-input").click()
-                    }
-                  />
-                </label>
+            <div className="pv">
+              <div className="div12">
+                <label className="insertimg">Add to your post</label>
+                <img className="imgupd" src={IP} alt="Profile" />
               </div>
+
+              <input
+                type="file"
+                className="file-input"
+                accept="image/*" // Optional: restrict to images only
+                onChange={(e) => handleFileInput(e)}
+              />
             </div>
+            <button className="p-btn" onClick={handlePost} disabled={isPosting}>
+              {isPosting ? "Posting..." : "Post"}
+            </button>
           </div>
 
           {/* Posts */}
