@@ -11,46 +11,101 @@ function ProfilePage() {
     password: "",
     confirmpassword: "",
   });
+  const [originalData, setOriginalData] = useState({});
 
-  useEffect(() => {
-    // Retrieve the user ID from localStorage
-    const userId = localStorage.getItem("userId");
-
-    // Fetch the user data from the server
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5005/api/user/${userId}`);
-        const userData = response.data;
-
-        // Update formData with the retrieved user data
-        setFormData({
-          ...formData,
-          firstname: userData.firstname || "",
-          lastname: userData.lastname || "",
-          dateofbirth: userData.dateofbirth || "",
-          email: userData.email || "",
-        });
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    if (userId) {
-      fetchUserData();
+useEffect(() => {
+  const userId = localStorage.getItem("userId");
+  const fetchUserData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5005/api/user/${userId}`);
+      const userData = response.data;
+  
+      // Format dateofbirth to YYYY-MM-DD
+      const formattedDate = userData.dateofbirth
+      ? new Date(new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0]
+      : "";
+    
+  
+      setOriginalData(userData); // Save the original data
+      setFormData({
+        firstname: userData.firstname || "",
+        lastname: userData.lastname || "",
+        dateofbirth: formattedDate, // Set formatted date
+        email: userData.email || "",
+        password: "",
+        confirmpassword: "",
+      });
+    } catch (error) {
+      console.error("Error fetching user data:", error);
     }
-  }, []); // Empty dependency array ensures this runs only once when the component mounts
+  };
+  
+
+  if (userId) {
+    fetchUserData();
+  }
+}, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Data Submitted:", formData);
-    // You can add your submit logic here
+  
+    const changes = [];
+    const updates = {};
+  
+    // Check for changes in the input fields
+    if (formData.firstname !== originalData.firstname) {
+      changes.push("First Name");
+      updates.firstname = formData.firstname;
+    }
+    if (formData.lastname !== originalData.lastname) {
+      changes.push("Last Name");
+      updates.lastname = formData.lastname;
+    }
+    if (formData.dateofbirth !== originalData.dateofbirth) {
+      changes.push("Date of Birth");
+      updates.dateofbirth = formData.dateofbirth;
+    }
+    if (formData.email !== originalData.email) {
+      changes.push("Email");
+      updates.email = formData.email;
+    }
+  
+    // Handle password changes
+    if (formData.password || formData.confirmpassword) {
+      if (formData.password !== formData.confirmpassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+      changes.push("Password");
+      updates.password = formData.password;
+    }
+  
+    // If no changes, alert the user
+    if (changes.length === 0) {
+      alert("No changes were made.");
+      return;
+    }
+  
+    // Send the update request
+    const userId = localStorage.getItem("userId");
+    try {
+      const response = await axios.put(`http://localhost:5005/api/user/${userId}`, updates);
+      if (response.status === 200) {
+        alert(`The following fields were updated: ${changes.join(", ")}`);
+        setOriginalData({ ...originalData, ...updates }); // Update the original data
+      }
+    } catch (error) {
+      console.error("Error updating user data:", error);
+      alert("Failed to update user data. Please try again.");
+    }
   };
-
   return (
     <div id="profile-page">
       <h2>Profile Page Draft</h2>
@@ -106,6 +161,7 @@ function ProfilePage() {
             value={formData.password}
             onChange={handleChange}
             placeholder="Enter Password"
+             autoComplete="new-password"
           />
         </label>
         <br />
