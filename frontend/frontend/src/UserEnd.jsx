@@ -4,6 +4,7 @@ import Login from "./Login";
 import Signup from "./Signup";
 import AdminEnd from "./AdminEnd";
 import Homepage from "./HomePage";
+import ProfilePage from "./ProfilePage";
 import "./App.css";
 
 function UserEnd() {
@@ -13,6 +14,7 @@ function UserEnd() {
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/home" element={<Homepage />} />
           {/* Use AdminEnd as a parent for all admin routes */}
           <Route path="/adminpage/*" element={<AdminEnd />} />
