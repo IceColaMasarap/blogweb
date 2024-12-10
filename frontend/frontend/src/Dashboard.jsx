@@ -67,7 +67,7 @@ function Dashboard() {
         </div>
         <div className="dashboardtablecontainer">
           <label className="dtableheader">Displaying Recent Posts</label>
-          <table>
+          <table className="dashboardtable">
             <thead>
               <tr>
                 <th>Author Name</th>
@@ -77,7 +77,7 @@ function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {posts.map((item) => (
+              {posts.slice(0, 5).map((item) => (
                 <tr key={item.post_id}>
                   <td>{item.author_name}</td>
                   <td>{new Date(item.date_posted).toLocaleString()}</td>

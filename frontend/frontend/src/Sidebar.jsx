@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import img from "../src/assets/logo.png";
 import img1 from "../src/assets/logobg.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,10 +14,19 @@ import "./App.css";
 function Sidebar() {
   const [activeButton, setActiveButton] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleClick = (buttonName) => {
-    setActiveButton(buttonName); // Set active button by name
-  };
+  useEffect(() => {
+    // Set active button based on the current path
+    const currentPath = location.pathname;
+    if (currentPath.includes("/adminpage/posts")) {
+      setActiveButton("posts");
+    } else if (currentPath.includes("/adminpage/accounts")) {
+      setActiveButton("accounts");
+    } else if (currentPath === "/adminpage/") {
+      setActiveButton("dashboard");
+    }
+  }, [location]);
 
   return (
     <div className="maincontent">
@@ -33,20 +42,14 @@ function Sidebar() {
               className={`button ${
                 activeButton === "dashboard" ? "active" : ""
               }`}
-              onClick={() => {
-                handleClick("dashboard");
-                navigate("/adminpage/");
-              }}
+              onClick={() => navigate("/adminpage/")}
             >
               <FontAwesomeIcon icon={faHome} />
               Dashboard
             </button>
             <button
               className={`button ${activeButton === "posts" ? "active" : ""}`}
-              onClick={() => {
-                handleClick("posts");
-                navigate("/adminpage/posts");
-              }}
+              onClick={() => navigate("/adminpage/posts")}
             >
               <FontAwesomeIcon icon={faAddressCard} />
               Posts
@@ -55,10 +58,7 @@ function Sidebar() {
               className={`button ${
                 activeButton === "accounts" ? "active" : ""
               }`}
-              onClick={() => {
-                handleClick("accounts");
-                navigate("/adminpage/accounts");
-              }}
+              onClick={() => navigate("/adminpage/accounts")}
             >
               <FontAwesomeIcon icon={faComment} />
               Accounts

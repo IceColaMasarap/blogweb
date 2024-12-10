@@ -21,6 +21,10 @@ function Accounts() {
   const [isModalOpen2, setIsModalOpen2] = useState(false); // Modal visibility
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [error, setError] = useState("");
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editDateOfBirth, setEditDateOfBirth] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   useEffect(() => {
     axios
@@ -43,11 +47,12 @@ function Accounts() {
     setIsModalOpen2(!isModalOpen2);
   };
   const handleRowClick = (account) => {
-    console.log("Row clicked:", account); // Debug log
     setSelectedAccount(account);
-    setDateOfBirth(account?.dateofbirth || ""); // Set dateofbirth from the clicked account
+    setEditFirstName(account?.firstName || "");
+    setEditLastName(account?.lastName || "");
+    setEditEmail(account?.email || "");
+    setEditDateOfBirth(account?.dateofbirth || "");
     setIsModalOpen2(true);
-    console.log("isModalOpen2 state after click:", isModalOpen2);
   };
 
   const handleSubmit = async (e) => {
@@ -348,32 +353,23 @@ function Accounts() {
               <input
                 className="addpostforminput"
                 type="email"
-                value={selectedAccount.email}
-                onChange={(e) =>
-                  setEmail1({ ...selectedAccount, email: e.target.value })
-                }
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
               />
               <label className="overlaylabel">First Name</label>
               <input
                 className="addpostforminput"
                 type="text"
-                value={selectedAccount.firstname}
-                onChange={(e) =>
-                  setFirstName({
-                    ...selectedAccount,
-                    firstname: e.target.value,
-                  })
-                }
+                value={editFirstName}
+                onChange={(e) => setFirstName(e.target.value)}
               />
 
               <label className="overlaylabel">Last Name</label>
               <input
                 className="addpostforminput"
                 type="text"
-                value={selectedAccount.lastname}
-                onChange={(e) =>
-                  setLastName({ ...selectedAccount, lastname: e.target.value })
-                }
+                value={editLastName}
+                onChange={(e) => setLastName(e.target.value)}
               />
               <label className="overlaylabel">Birthdate</label>
               <input
@@ -387,10 +383,11 @@ function Accounts() {
                   })
                 }
               />
-              <label className="overlaylabel">Password</label>
+              <label className="overlaylabel">New Password</label>
               <input
                 className="addpostforminput"
                 type="password"
+                placeholder="Enter new password"
                 onChange={(e) =>
                   setPassword({ ...selectedAccount, password: e.target.value })
                 }
@@ -399,6 +396,7 @@ function Accounts() {
               <input
                 className="addpostforminput"
                 type="password"
+                placeholder="Re-enter new password"
                 value={selectedAccount.confirmPassword}
                 onChange={(e) =>
                   setConfirmPassword({
@@ -407,7 +405,7 @@ function Accounts() {
                   })
                 }
               />
-              <label className="overlaylabel">Promote User</label>
+              <label className="overlaylabel">User Type</label>
               <select
                 className="addpostforminput"
                 value={selectedAccount.isModerator}

@@ -142,3 +142,10 @@
 .logo-containerr {
   margin-left: 14px;
 }
+
+.errormsg {
+  font-size: small;
+  margin: 0;
+  width: 100%;
+  text-align: center;
+}

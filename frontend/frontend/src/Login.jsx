@@ -98,7 +98,11 @@ function Login() {
           <button type="submit" className="buttonr">
             Login
           </button>
-
+          {error && (
+            <p className="errormsg" style={{ color: "red" }}>
+              {error}
+            </p>
+          )}{" "}
           <div className="linkers">
             <label className="linklabel1">No account yet? </label>
             <label
@@ -110,7 +114,6 @@ function Login() {
             </label>
           </div>
         </form>
-        {error && <p style={{ color: "red" }}>{error}</p>} {/* Display error */}
       </div>
     </div>
   );

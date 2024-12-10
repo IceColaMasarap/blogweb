@@ -127,9 +127,15 @@ function Signup() {
             Register
           </button>
 
-          {error && <p style={{ color: "red" }}>{error}</p>}
+          {error && (
+            <p className="errormsg" style={{ color: "red" }}>
+              {error}
+            </p>
+          )}
           {successMessage && (
-            <p style={{ color: "#15bc11" }}>{successMessage}</p>
+            <p className="errormsg" style={{ color: "#15bc11" }}>
+              {successMessage}
+            </p>
           )}
           <div className="linkers">
             <label className="linklabel1">Already have an account? </label>
