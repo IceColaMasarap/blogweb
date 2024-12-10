@@ -1,312 +1,347 @@
 body {
-    margin: 0;
-    padding: 0;
-    overflow-y: hidden;
-    /* Enable scrolling for the body */
-    height: 100vh;
-    /* Allow scrolling within the viewport */
-  }
-  
-  .HomePage {
-    height: 100vh;
-    /* Adjust height to exclude NavigationBar */
-    display: flex;
-    background-color: #000;
-    color: #fff;
-    flex-grow: 1;
-  }
-  
-  
-  .left-sidebar {
-  
-    width: 25%;
-    padding: 20px 10px;
-    background-color: #000;
-    height: calc(100vh - 15vh);
-  
-  }
-  
-  .footnotes {
-    padding: 470px 16px 0px 16px;
-    margin: none;
-  }
-  
-  .footnotes p{
-    font-size: 12px;
-    margin: 0;
-    color: #aaa;
-  }
-  
-  .left-sidebar {
-    overflow: hidden; /* Hide scrollbar by default */
-    scrollbar-gutter: stable; /* Reserve space for the scrollbar */
-  }
-  
-  .left-sidebar:hover {
-    overflow-y: auto; /* Show vertical scrollbar on hover */
-  }
-  
-  .left-sidebar::-webkit-scrollbar {
-    width: 7px;
-  }
-  
-  .left-sidebar::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 5px;
-  }
-  
-  .left-sidebar::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
-  
-  
-  
-  .menu-button,
-  .menu-button2 {
-    width: 100%;
-    gap: 10px;
-    background: transparent;
-    color: #fff;
-    border: none;
-    margin: none;
-    padding: none;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: star;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .menu-button img {
-    width: 10px;
-    height: 10px;
-  }
-  
-  .menu-button2 img {
-    width: 30px;
-    height: 30px;
-  }
-  
-  .menu-button2 span {
-    margin-left: 6px;
-  }
-  
-  .menu-button:hover {
-    background-color: #333;
-  }
-  
-  .menu-button2:hover {
-    background-color: #333;
-  }
-  
-  
-  .content {
-    width: 50%;
-    padding: 20px;
-    background-color: #000;
-    height: calc(100vh - 10vh);
-    /* Match height with sidebars */
-    overflow-y: auto;
-    /* Enable scrolling for main content */
-    scrollbar-width: none;
-  }
-  
-  .post-settings img {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .post-settings {
-    background-color: transparent;
-    border: none;
-  }
-  
-  .profile-image img {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-  }
-  
-  .input-box {
-    width: 100%;
-    padding: 10px;
-    border-radius: 100px;
-    border: none;
-    background-color: #222;
-    color: #fff;
-    font-size: 14px;
-  }
-  
-  .post {
-    background-color: #222;
-    border-radius: 10px;
-    padding: 20px 20px 15px 20px;
-    margin-bottom: 20px;
-  }
-  
-  .pv {
-    display: flex;
-    align-items: center;
-  }
-  
-  .pv-btn {
-    display: flex;
-    align-items: center;
-    background-color: #222;
-    border: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .pv-btn img {
-    background-color: #222;
-    height: 25px;
-    width: 25px;
-  }
-  
-  .p-btn button {
-    background-color: #2196f3;
-  }
-  
-  .post-btn {
-    display: flex;
-    justify-content: space-between;
-    margin-left: 60px;
-    padding-top: 5px;
-  }
-  
-  .post-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    justify-content: space-between;
-  }
-  
-  
-  .post-user {
-    font-weight: bold;
-    margin-right: 10px;
-  }
-  
-  .post-time {
-    color: #aaa;
-  }
-  
-  .post-body {
-    margin-bottom: 10px;
-  }
-  
-  .post-image img {
-    margin-bottom: 5px;
-  }
-  
-  .post-image img {
-    width: 100%;
-    border-radius: 10px;
-  }
-  
-  .lk-btn {
-    display: flex;
-    align-items: center;
-    background-color: #222;
-    border: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .lk-btn img {
-    background-color: #222;
-    height: 20px;
-    width: 20px;
-  }
-  
-  
-  
-  .profile-image {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .right-sidebar {
-    width: 25%;
-    padding: 20px 10px;
-    background-color: #000;
-    height: calc(100vh - 15vh);
-  }  
-  
-  .trends-container {
-    
-    width: 90%;
-    background-color: #000;
-    border: 1px solid #222;
-    border-radius: 16px;
-    font-family: 'Arial', sans-serif;
-    color: #fff;
-    padding: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
+  margin: 0;
+  padding: 0;
+  overflow-y: hidden;
+  /* Enable scrolling for the body */
+  height: 100vh;
+  /* Allow scrolling within the viewport */
+}
 
-  .trend-item {
-    padding: 10px;
-    border-bottom: 1px solid #222;
-  }
-  
-  .trends-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 10px;
-  }
-  
-  .trends-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .trend-item:last-child {
-    border-bottom: none;
-  }
-  
-  .trend-category {
-    font-size: 12px;
-    color: #aaa;
-    margin: 0;
-  }
-  
-  .trend-topic {
-    font-size: 16px;
-    font-weight: 700;
-    margin: 0;
-  }
-  
-  .trend-description {
-    font-size: 14px;
-    color: #aaa;
-    margin: 0;
-  }
-  
-  .right-sidebar {
-    overflow: hidden; /* Hide scrollbar by default */
-    scrollbar-gutter: stable; /* Reserve space for the scrollbar */
-  }
-  
-  .right-sidebar:hover {
-    overflow-y: auto; /* Show vertical scrollbar on hover */
-  }
-  
-  .right-sidebar::-webkit-scrollbar {
-    width: 7px;
-  }
-  
-  .right-sidebar::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 5px;
-  }
-  
-  .right-sidebar::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
-  
+.HomePage {
+  height: 100vh;
+  /* Adjust height to exclude NavigationBar */
+  display: flex;
+  background-color: #000;
+  color: #fff;
+  flex-grow: 1;
+}
+
+.left-sidebar {
+  width: 25%;
+  padding: 20px 10px;
+  background-color: #000;
+  height: calc(100vh - 15vh);
+}
+
+.footnotes {
+  padding: 470px 16px 0px 16px;
+  margin: none;
+}
+
+.footnotes p {
+  font-size: 12px;
+  margin: 0;
+  color: #aaa;
+}
+
+.left-sidebar {
+  overflow: hidden; /* Hide scrollbar by default */
+  scrollbar-gutter: stable; /* Reserve space for the scrollbar */
+}
+
+.left-sidebar:hover {
+  overflow-y: auto; /* Show vertical scrollbar on hover */
+}
+
+.left-sidebar::-webkit-scrollbar {
+  width: 7px;
+}
+
+.left-sidebar::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 5px;
+}
+
+.left-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.menu-button,
+.menu-button2 {
+  width: 100%;
+  gap: 10px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  margin: none;
+  padding: none;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: star;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.menu-button img {
+  width: 10px;
+  height: 10px;
+}
+
+.menu-button2 img {
+  width: 30px;
+  height: 30px;
+}
+
+.menu-button2 span {
+  margin-left: 6px;
+}
+
+.menu-button:hover {
+  background-color: #333;
+}
+
+.menu-button2:hover {
+  background-color: #333;
+}
+
+.content {
+  width: 50%;
+  padding: 20px;
+  background-color: #000;
+  height: calc(100vh - 10vh);
+  /* Match height with sidebars */
+  overflow-y: auto;
+  /* Enable scrolling for main content */
+  scrollbar-width: none;
+}
+
+.post-settings img {
+  width: 20px;
+  height: 20px;
+}
+
+.post-settings {
+  background-color: transparent;
+  border: none;
+}
+
+.profile-image img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.input-box {
+  width: 100%;
+  padding: 10px;
+  border-radius: 100px;
+  border: none;
+  background-color: #222;
+  color: #fff;
+  font-size: 14px;
+}
+.postsx {
+  background-color: #222;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+}
+.post {
+  background-color: #222;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+.post label {
+  font-family: "Poppins";
+}
+
+.post-body {
+  display: flex;
+  padding-left: 5px;
+  flex-direction: column;
+}
+
+.posttitle {
+  font-weight: 500;
+  font-size: 16px;
+}
+.postdesc {
+  font-weight: 300;
+  font-size: 14px;
+  color: #cecece;
+}
+.authorname {
+  display: flex;
+  gap: 5px;
+}
+.likebtn {
+  padding: 0;
+  width: 50px;
+  background-color: transparent; /* Ensure no background */
+  border: none;
+  font-family: "Poppins";
+  outline: none;
+  margin-left: 15px;
+}
+
+.likebtn svg {
+  /* Target the SVG icon directly */
+  margin-right: 5px; /* Add space between the icon and the number */
+}
+.pv {
+  display: flex;
+  align-items: center;
+}
+
+.pv-btn {
+  display: flex;
+  align-items: center;
+  background-color: #222;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pv-btn img {
+  background-color: #222;
+  height: 25px;
+  width: 25px;
+}
+
+.p-btn button {
+  background-color: #2196f3;
+}
+
+.post-btn {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 60px;
+  padding-top: 5px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  justify-content: space-between;
+}
+
+.post-user {
+  font-family: "Poppins";
+  font-weight: 400;
+  font-size: 15px;
+}
+
+.post-time {
+  color: #aaa;
+  font-size: 13px;
+}
+
+.post-body {
+  padding: 13px;
+  padding-top: 0;
+  padding-bottom: 5px;
+}
+
+.post-image img {
+  margin-bottom: 5px;
+}
+
+.post-image img {
+  width: 100%;
+}
+
+.lk-btn {
+  display: flex;
+  align-items: center;
+  background-color: #222;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lk-btn img {
+  background-color: #222;
+  height: 20px;
+  width: 20px;
+}
+
+.profile-image {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.right-sidebar {
+  width: 25%;
+  padding: 20px 10px;
+  background-color: #000;
+  height: calc(100vh - 15vh);
+}
+
+.trends-container {
+  width: 90%;
+  background-color: #000;
+  border: 1px solid #222;
+  border-radius: 16px;
+  font-family: "Arial", sans-serif;
+  color: #fff;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.maincontentpost {
+  width: 100%;
+}
+.trend-item {
+  padding: 10px;
+  border-bottom: 1px solid #222;
+}
+
+.trends-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 10px;
+}
+
+.trends-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.trend-item:last-child {
+  border-bottom: none;
+}
+
+.trend-category {
+  font-size: 12px;
+  color: #aaa;
+  margin: 0;
+}
+
+.trend-topic {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.trend-description {
+  font-size: 14px;
+  color: #aaa;
+  margin: 0;
+}
+
+.right-sidebar {
+  overflow: hidden; /* Hide scrollbar by default */
+  scrollbar-gutter: stable; /* Reserve space for the scrollbar */
+}
+
+.right-sidebar:hover {
+  overflow-y: auto; /* Show vertical scrollbar on hover */
+}
+
+.right-sidebar::-webkit-scrollbar {
+  width: 7px;
+}
+
+.right-sidebar::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 5px;
+}
+
+.right-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

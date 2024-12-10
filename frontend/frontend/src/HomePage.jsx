@@ -1,21 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HM from "./assets/Home.png";
 import PS from "./assets/PostSettings.png";
 import IP from "./assets/Photos.png";
 import LK from "./assets/Like.png";
 import DP from "./assets/DP.jpg";
-import GI from "./assets/GI.jpg";
+import GI from "./assets/Iicon.png";
 import CS from "./assets/CLASS SCHEDULE BSIT PHONE 1.png";
 import POSTSAMPLE from "./assets/GENSHIN 4TH ANNIVERSARY.jpg";
 import NavigationBar from "./Navigationbar.jsx";
 import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
-import "./Homepage.css"; 
+import "./Homepage.css";
 import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
 
 const Homepage = () => {
+  const [posts, setPosts] = useState([]); // State to store all posts
   const [postContent, setPostContent] = useState(""); // State for post content
   const [isPosting, setIsPosting] = useState(false); // State for button loading
+  const [isToggled, setIsToggled] = useState(false); // State to track button toggle
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5005/api/showposts") // Fetch all posts
+      .then((response) => {
+        const sortedPosts = response.data.sort(
+          (a, b) => new Date(b.postdate) - new Date(a.postdate)
+        );
+        setPosts(sortedPosts);
+      })
+      .catch((error) => {
+        console.error("Error fetching posts:", error);
+      });
+  }, []);
+  const handleToggle = () => {
+    setIsToggled((prev) => !prev); // Toggle state
+  };
 
   // Function to handle post submission
   const handlePost = async () => {
@@ -26,10 +47,13 @@ const Homepage = () => {
 
     try {
       setIsPosting(true); // Disable button while posting
-      const response = await axios.post("http://localhost:5005/api/create-post", {
-        content: postContent,
-        userId: 1, // Replace with dynamic user ID if available
-      });
+      const response = await axios.post(
+        "http://localhost:5005/api/create-post",
+        {
+          content: postContent,
+          userId: 1, // Replace with dynamic user ID if available
+        }
+      );
 
       if (response.status === 201) {
         console.log("Post created successfully!");
@@ -46,7 +70,6 @@ const Homepage = () => {
     }
   };
 
-  
   const trends = [
     {
       category: "Politics",
@@ -93,7 +116,7 @@ const Homepage = () => {
   ];
 
   return (
-    <div>
+    <div className="maincontentpost">
       {/* Add the Navigation Bar */}
       <NavigationBar />
 
@@ -127,11 +150,11 @@ const Homepage = () => {
         {/* Main Content */}
         <main className="content">
           {/* Post Input */}
-          <div className="post">
+          <div className="postsx">
             <div className="post-input">
               <div className="profile-image">
                 <img src={DP} alt="Profile" />
-                  <input
+                <input
                   type="text"
                   className="input-box"
                   placeholder="What is happening?!"
@@ -147,47 +170,68 @@ const Homepage = () => {
                 </button>
               </div>
               <div className="p-btn">
-              <button className="p-btn" onClick={handlePost} disabled={isPosting}>{isPosting ? "Posting..." : "Post"}</button>
+                <button
+                  className="p-btn"
+                  onClick={handlePost}
+                  disabled={isPosting}
+                >
+                  {isPosting ? "Posting..." : "Post"}
+                </button>
               </div>
             </div>
           </div>
 
           {/* Posts */}
-          <div className="post">
-            <div className="post-header">
-              <div className="profile-image">
-                <img src={GI} alt="Profile" />
-                <span className="post-user">Genshin Impact</span>
-                <span className="post-time">1h</span>
-              </div>
-              <button className="post-settings">
-                <img src={PS} alt="Profile" />
-              </button>
-            </div>
-            <div className="post-body">Genhsin 4th Anniversary!</div>
-            <div className="post-image">
-              <img src={POSTSAMPLE} alt="NU Pep Squad" />
-            </div>
-            <button className="lk-btn">
-              <img src={LK} alt="Like" />
-            </button>
-          </div>
+          <div className="posts">
+            {posts.map((post) => (
+              <div className="post" key={post.id}>
+                {/* Post Header */}
+                <div className="post-header">
+                  <div className="profile-image">
+                    <img src={GI} alt="Profile" />
+                    <div className="authorname">
+                      <label className="post-user">{post.firstname}</label>
+                      <label className="post-user">{post.lastname}</label>
+                    </div>
+                    <label className="post-time">
+                      {new Date(post.postdate).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </label>
+                  </div>
+                  <button className="post-settings">
+                    <img src={PS} alt="Settings" />
+                  </button>
+                </div>
 
-          <div className="post">
-            <div className="post-header">
-              <div className="profile-image">
-                <img src={GI} alt="Profile" />
-                <span className="post-user">Genshin Impact</span>
-                <span className="post-time">1h</span>
+                <div className="post-body">
+                  <label className="posttitle">{post.title}</label>
+                  <label className="postdesc">{post.content}</label>
+                </div>
+
+                {post.imageurl && (
+                  <div className="post-image">
+                    <img
+                      className="postimg"
+                      src={`http://localhost:5005/uploads/${post.imageurl}`}
+                      alt="Post"
+                    />
+                  </div>
+                )}
+
+                <label
+                  className="likebtn"
+                  onClick={handleToggle}
+                  style={{
+                    color: isToggled ? "red" : "white", // Toggle color for demonstration
+                  }}
+                >
+                  <FontAwesomeIcon icon={faHeart} />
+                  {post.like_count}
+                </label>
               </div>
-              <div className="post-settings">
-                <img src={PS} alt="Profile" />
-              </div>
-            </div>
-            <div className="post-body">Genhsin 4th Anniversary!</div>
-            <div className="post-image">
-              <img src={CS} alt="NU Pep Squad" />
-            </div>
+            ))}
           </div>
         </main>
 

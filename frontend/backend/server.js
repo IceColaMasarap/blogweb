@@ -21,6 +21,8 @@ app.use(
     saveUninitialized: true,
   })
 );
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Configure storage for multer
 const storage = multer.diskStorage({
@@ -85,7 +87,9 @@ app.post("/api/create-post", async (req, res) => {
 
   // Validate Input
   if (!authorId || !content || !title) {
-    return res.status(400).json({ message: "Author ID, Title, and Content are required." });
+    return res
+      .status(400)
+      .json({ message: "Author ID, Title, and Content are required." });
   }
 
   const postId = uuidv4(); // Generate a unique ID for the post
@@ -107,7 +111,9 @@ app.post("/api/create-post", async (req, res) => {
           console.error("Error inserting post:", error);
           res.status(500).json({ message: "Error creating post" });
         } else {
-          res.status(201).json({ message: "Post created successfully!", postId });
+          res
+            .status(201)
+            .json({ message: "Post created successfully!", postId });
         }
       }
     );
@@ -116,7 +122,6 @@ app.post("/api/create-post", async (req, res) => {
     res.status(500).json({ message: "Error processing post creation" });
   }
 });
-
 
 // Fetch all posts endpoint
 app.get("/api/posts", (req, res) => {
@@ -182,6 +187,20 @@ app.get("/api/usershow", (req, res) => {
     }
   });
 });
+
+app.get("/api/showposts", (req, res) => {
+  const sql = `SELECT p.title, p.content, p.postdate, p.isFlagged, p.like_count, p.imageurl, a.firstname, a.lastname FROM posts p INNER JOIN users a ON p.author_id = a.id;`;
+
+  db.query(sql, (error, results) => {
+    if (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Error retrieving user stats" });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
 app.get("/api/users", (req, res) => {
   const sql = `
     SELECT 
