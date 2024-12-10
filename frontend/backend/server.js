@@ -297,6 +297,70 @@ app.put("/api/updateaccount", async (req, res) => {
   }
 });
 
+app.put("/api/user/:id", async (req, res) => {
+  const userId = req.params.id;
+  const { firstname, lastname, dateofbirth, email, password } = req.body;
+
+  // Construct the query dynamically based on the provided fields
+  const updates = [];
+  const values = [];
+
+  if (firstname) {
+    updates.push("firstname = ?");
+    values.push(firstname);
+  }
+
+  if (lastname) {
+    updates.push("lastname = ?");
+    values.push(lastname);
+  }
+
+  if (dateofbirth) {
+    updates.push("dateofbirth = ?");
+    values.push(dateofbirth);
+  }
+
+  if (email) {
+    updates.push("email = ?");
+    values.push(email);
+  }
+
+  if (password) {
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updates.push("password = ?");
+      values.push(hashedPassword);
+    } catch (err) {
+      console.error("Error hashing password:", err);
+      return res.status(500).json({ error: "Failed to hash password" });
+    }
+  }
+
+  // If no fields were provided, send an error response
+  if (updates.length === 0) {
+    return res.status(400).json({ message: "No fields to update" });
+  }
+
+  // Add userId to the values for the WHERE clause
+  values.push(userId);
+
+  // Build and execute the update query
+  const sql = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
+
+  db.query(sql, values, (err, results) => {
+    if (err) {
+      console.error("Error updating user:", err);
+      return res.status(500).json({ error: "Database query failed" });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "User updated successfully" });
+  });
+});
+
 // Endpoint: Delete Post
 app.delete("/api/deletepost2/:post_id", (req, res) => {
   const { post_id } = req.params;
