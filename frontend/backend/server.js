@@ -79,6 +79,45 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
+// Create Post API
+app.post("/api/create-post", async (req, res) => {
+  const { authorId, content, title } = req.body;
+
+  // Validate Input
+  if (!authorId || !content || !title) {
+    return res.status(400).json({ message: "Author ID, Title, and Content are required." });
+  }
+
+  const postId = uuidv4(); // Generate a unique ID for the post
+  const postDate = new Date(); // Use current timestamp
+  const isFlagged = 0; // Default value for isFlagged
+  const likeCount = 0; // Default value for like_count
+
+  const sql = `
+    INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  try {
+    db.query(
+      sql,
+      [postId, authorId, title, content, postDate, isFlagged, likeCount],
+      (error, results) => {
+        if (error) {
+          console.error("Error inserting post:", error);
+          res.status(500).json({ message: "Error creating post" });
+        } else {
+          res.status(201).json({ message: "Post created successfully!", postId });
+        }
+      }
+    );
+  } catch (error) {
+    console.error("Error processing post creation:", error);
+    res.status(500).json({ message: "Error processing post creation" });
+  }
+});
+
+
 // Fetch all posts endpoint
 app.get("/api/posts", (req, res) => {
   const sql = `

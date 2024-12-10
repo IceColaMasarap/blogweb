@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import HM from "./assets/Home.png";
 import PS from "./assets/PostSettings.png";
 import IP from "./assets/Photos.png";
@@ -10,10 +10,43 @@ import POSTSAMPLE from "./assets/GENSHIN 4TH ANNIVERSARY.jpg";
 import NavigationBar from "./Navigationbar.jsx";
 import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
-// Adjust the path as needed
-import "./Homepage.css"; // Add styles for the sections if needed
+import "./Homepage.css"; 
+import axios from "axios";
 
 const Homepage = () => {
+  const [postContent, setPostContent] = useState(""); // State for post content
+  const [isPosting, setIsPosting] = useState(false); // State for button loading
+
+  // Function to handle post submission
+  const handlePost = async () => {
+    if (!postContent.trim()) {
+      alert("Post content cannot be empty!");
+      return;
+    }
+
+    try {
+      setIsPosting(true); // Disable button while posting
+      const response = await axios.post("http://localhost:5005/api/create-post", {
+        content: postContent,
+        userId: 1, // Replace with dynamic user ID if available
+      });
+
+      if (response.status === 201) {
+        console.log("Post created successfully!");
+        setPostContent(""); // Clear input box
+        alert("Post submitted!");
+      } else {
+        console.error("Error creating post:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error creating post:", error.message);
+      alert("Failed to create post. Please try again.");
+    } finally {
+      setIsPosting(false); // Re-enable button
+    }
+  };
+
+  
   const trends = [
     {
       category: "Politics",
@@ -98,10 +131,12 @@ const Homepage = () => {
             <div className="post-input">
               <div className="profile-image">
                 <img src={DP} alt="Profile" />
-                <input
+                  <input
                   type="text"
                   className="input-box"
                   placeholder="What is happening?!"
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value)}
                 />
               </div>
             </div>
@@ -112,7 +147,7 @@ const Homepage = () => {
                 </button>
               </div>
               <div className="p-btn">
-                <button>Post</button>
+              <button className="p-btn" onClick={handlePost} disabled={isPosting}>{isPosting ? "Posting..." : "Post"}</button>
               </div>
             </div>
           </div>
