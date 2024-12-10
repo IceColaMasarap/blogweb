@@ -58,6 +58,7 @@
   width: 100%;
   height: 50px;
   border-radius: 50px;
+  border: #252728;
   background-color: #252728;
   font-family: "Poppins";
   font-size: 1em;
@@ -138,6 +139,7 @@
   height: 50px;
   border-radius: 10px;
   background-color: #252728;
+  border: #252728;
   color: white;
   font-family: "Poppins", sans-serif;
   font-size: 1em;

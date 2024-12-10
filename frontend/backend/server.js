@@ -175,23 +175,41 @@ app.put("/api/updatepost2", (req, res) => {
   });
 });
 // Endpoint: Update Post
-app.put("/api/updateaccount", (req, res) => {
+app.put("/api/updateaccount", async (req, res) => {
   const { id, firstname, lastname, dateofbirth, email, password, isModerator } =
     req.body;
 
-  const query =
-    "UPDATE posts SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?, password = ?, isModerator = ? WHERE id = ?";
-  db.query(
-    query,
-    [firstname, lastname, dateofbirth, email, password, isModerator, id],
-    (err, result) => {
-      if (err) {
-        console.error("Error updating post:", err);
-        return res.status(500).json({ error: "Database query failed" });
+  try {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const query =
+      "UPDATE users SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?, password = ?, isModerator = ? WHERE id = ?";
+
+    db.query(
+      query,
+      [
+        firstname,
+        lastname,
+        dateofbirth,
+        email,
+        hashedPassword,
+        isModerator,
+        id,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error("Error updating account:", err);
+          return res.status(500).json({ error: "Database query failed" });
+        }
+
+        res.status(200).json({ message: "Account updated successfully" });
       }
-      res.status(200).json({ message: "Post updated successfully" });
-    }
-  );
+    );
+  } catch (error) {
+    console.error("Error hashing password:", error);
+    res.status(500).json({ error: "Failed to hash password" });
+  }
 });
 
 // Endpoint: Delete Post

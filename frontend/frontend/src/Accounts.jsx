@@ -22,6 +22,8 @@ function Accounts() {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [error, setError] = useState("");
   const [editFirstName, setEditFirstName] = useState("");
+  const [editIsModerator, setEditIsModerator] = useState("");
+
   const [editLastName, setEditLastName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editDateOfBirth, setEditDateOfBirth] = useState("");
@@ -48,8 +50,8 @@ function Accounts() {
   };
   const handleRowClick = (account) => {
     setSelectedAccount(account);
-    setEditFirstName(account?.firstName || "");
-    setEditLastName(account?.lastName || "");
+    setEditFirstName(account?.firstname || "");
+    setEditLastName(account?.lastname || "");
     setEditEmail(account?.email || "");
     setEditDateOfBirth(account?.dateofbirth || "");
     setIsModalOpen2(true);
@@ -138,37 +140,55 @@ function Accounts() {
     return matchesEmail && userTypeMatch && matchesDateRange;
   });
   const handleUpdateAccount = async () => {
+    setError("");
+
+    // Ensure mandatory fields are filled
+    if (!editFirstName || !editLastName || !editDateOfBirth || !editEmail) {
+      alert(
+        "Please fill in all fields except password if you want to keep it unchanged"
+      );
+      return;
+    }
+
+    // Handle password check only if fields are filled
+    const payload = {
+      id: selectedAccount?.id,
+      firstname: editFirstName,
+      lastname: editLastName,
+      dateofbirth: editDateOfBirth,
+      email: editEmail,
+      isModerator:
+        editIsModerator === "" ? selectedAccount?.isModerator : editIsModerator, // Use existing value if not explicitly changed
+    };
+
+    // Include password only if fields aren't empty
+    if (password || confirmPassword) {
+      if (password !== confirmPassword) {
+        alert("Passwords do not match");
+        return;
+      }
+
+      payload.password = password; // Only send the password if user intends to update
+    }
+
     try {
-      console.log("Update data:", {
-        id: selectedAccount?.id,
-        firstname: selectedAccount?.firstName,
-        lastname: selectedAccount?.lastName,
-        dateofbirth: selectedAccount?.dateofbirth,
-        email: selectedAccount?.email,
-        password: selectedAccount?.password,
-        isModerator: selectedAccount?.isModerator,
-      });
+      console.log("Update data:", payload);
       const response = await axios.put(
         "http://localhost:5005/api/updateaccount",
-        {
-          id: selectedAccount.id,
-          firstname: selectedAccount.firstName,
-          lastname: selectedAccount.lastName,
-          dateofbirth: selectedAccount.dateofbirth,
-          email: selectedAccount.email,
-          password: selectedAccount.password,
-          isModerator: selectedAccount.isModerator,
-        }
+        payload
       );
+
       alert("Account updated successfully");
       setIsModalOpen2(false);
       setSelectedAccount(null);
-      // Optionally, refresh the posts
-      axios.get("http://localhost:5005/api/usershow").then((res) => {
-        setUsers(res.data);
-      });
+
+      // Refresh user list
+      const updatedUsers = await axios.get(
+        "http://localhost:5005/api/usershow"
+      );
+      setUsers(updatedUsers.data);
     } catch (error) {
-      console.error("Error updating post:", error);
+      console.error("Error updating account:", error);
       alert("Failed to update account.");
     }
   };
@@ -264,7 +284,9 @@ function Accounts() {
                   <td>{item.email}</td>
                   <td>{item.firstname}</td>
                   <td>{item.lastname}</td>
-                  <td>{new Date(item.dateofbirth).toLocaleString()}</td>
+                  <td>
+                    {new Date(item.dateofbirth).toISOString().slice(0, 10)}
+                  </td>
                   <td>{item.isModerator}</td>
                   <td>{new Date(item.created_at).toLocaleString()}</td>
                 </tr>
@@ -352,6 +374,7 @@ function Accounts() {
               <label className="overlaylabel">Email</label>
               <input
                 className="addpostforminput"
+                placeholder="Enter new email"
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
@@ -360,61 +383,45 @@ function Accounts() {
               <input
                 className="addpostforminput"
                 type="text"
+                placeholder="Enter first name"
                 value={editFirstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => setEditFirstName(e.target.value)}
               />
 
               <label className="overlaylabel">Last Name</label>
               <input
                 className="addpostforminput"
                 type="text"
+                placeholder="Enter last name"
                 value={editLastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={(e) => setEditLastName(e.target.value)}
               />
               <label className="overlaylabel">Birthdate</label>
               <input
                 className="addpostforminput"
                 type="date"
-                value={new Date(selectedAccount.dateofbirth)}
-                onChange={(e) =>
-                  setDateOfBirth({
-                    ...selectedAccount,
-                    dateofbirth: e.target.value,
-                  })
-                }
+                value={new Date(editDateOfBirth).toISOString().slice(0, 10)}
+                onChange={(e) => setEditDateOfBirth(e.target.value)}
               />
               <label className="overlaylabel">New Password</label>
               <input
                 className="addpostforminput"
                 type="password"
                 placeholder="Enter new password"
-                onChange={(e) =>
-                  setPassword({ ...selectedAccount, password: e.target.value })
-                }
+                onChange={(e) => setPassword(e.target.value)}
               />
               <label className="overlaylabel">Confirm Password</label>
               <input
                 className="addpostforminput"
                 type="password"
                 placeholder="Re-enter new password"
-                value={selectedAccount.confirmPassword}
-                onChange={(e) =>
-                  setConfirmPassword({
-                    ...selectedAccount,
-                    confirmPassword: e.target.value,
-                  })
-                }
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <label className="overlaylabel">User Type</label>
               <select
                 className="addpostforminput"
-                value={selectedAccount.isModerator}
-                onChange={(e) =>
-                  setPassword({
-                    ...selectedAccount,
-                    isModerator: e.target.value,
-                  })
-                }
+                value={editIsModerator}
+                onChange={(e) => setEditIsModerator(e.target.value)}
               >
                 <option value="User">User</option>
                 <option value="Moderator">Moderator</option>
