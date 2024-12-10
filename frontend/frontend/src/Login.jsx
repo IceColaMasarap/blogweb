@@ -34,6 +34,9 @@ function Login() {
       if (data.error) {
         setError("Invalid credentials, please try again.");
       } else {
+
+        localStorage.setItem("userId", data.id); // Save the user ID
+        
         // Log the user info on successful login
         console.log("User Info:", {
           id: data.id,

@@ -79,43 +79,73 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-// Create Post API
-app.post("/api/create-post", async (req, res) => {
-  const { authorId, content, title } = req.body;
 
-  // Validate Input
-  if (!authorId || !content || !title) {
-    return res.status(400).json({ message: "Author ID, Title, and Content are required." });
+// Create Post API with File Upload Support
+app.post("/api/create-post", upload.single("file"), (req, res) => {
+  const { userId, content, title } = req.body;
+  const file = req.file ? req.file.filename : null;
+
+  // Check if all required fields are provided
+  if (!userId || !content || !title) {
+    return res.status(400).json({ message: "User ID, Title, and Content are required." });
   }
 
-  const postId = uuidv4(); // Generate a unique ID for the post
-  const postDate = new Date(); // Use current timestamp
-  const isFlagged = 0; // Default value for isFlagged
-  const likeCount = 0; // Default value for like_count
+  // Validate userId exists in the users table
+  const sqlValidateUser = `SELECT id FROM users WHERE id = ?`;
+  db.query(sqlValidateUser, [userId], (err, results) => {
+    if (err) {
+      console.error("Error validating user ID:", err);
+      return res.status(500).json({ message: "Error validating user ID." });
+    }
 
-  const sql = `
-    INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
+    if (results.length === 0) {
+      return res.status(400).json({ message: "Invalid User ID. User does not exist." });
+    }
 
-  try {
+    // Proceed to create the post if userId is valid
+    const postId = uuidv4();
+    const postDate = new Date();
+    const isFlagged = 0;
+    const likeCount = 0;
+
+    const sqlInsertPost = `
+      INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
     db.query(
-      sql,
-      [postId, authorId, title, content, postDate, isFlagged, likeCount],
+      sqlInsertPost,
+      [postId, userId, title, content, postDate, isFlagged, likeCount, file],
       (error, results) => {
         if (error) {
           console.error("Error inserting post:", error);
-          res.status(500).json({ message: "Error creating post" });
-        } else {
-          res.status(201).json({ message: "Post created successfully!", postId });
+          return res.status(500).json({ message: "Error creating post." });
         }
+        res.status(201).json({ message: "Post created successfully!", postId });
       }
     );
-  } catch (error) {
-    console.error("Error processing post creation:", error);
-    res.status(500).json({ message: "Error processing post creation" });
-  }
+  });
 });
+
+app.get("/api/user/:id", (req, res) => {
+  const userId = req.params.id;
+
+  const sql = "SELECT firstname, lastname, dateofbirth, email FROM users WHERE id = ?";
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error("Error fetching user:", err);
+      return res.status(500).json({ message: "Error retrieving user data" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(results[0]); // Send user data back to the client
+  });
+});
+
+
+
 
 
 // Fetch all posts endpoint
@@ -345,6 +375,7 @@ app.post("/api/addpost2", upload.single("image"), (req, res) => {
     }
   );
 });
+
 
 app.post("/api/addpost", (req, res) => {
   const { title, content, imageUrl } = req.body;
