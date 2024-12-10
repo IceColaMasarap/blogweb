@@ -11,54 +11,57 @@ import NavigationBar from "./Navigationbar.jsx";
 import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
 import "./Homepage.css";
+import "./Homepage.css";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 
 const Homepage = () => {
   const [posts, setPosts] = useState([]); // State to store all posts
+  const [postContentTitle, setPostContentTitle] = useState(""); 
   const [postContent, setPostContent] = useState(""); // State for post content
   const [isPosting, setIsPosting] = useState(false); // State for button loading
-  const [isToggled, setIsToggled] = useState(false); // State to track button toggle
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:5005/api/showposts") // Fetch all posts
-      .then((response) => {
-        const sortedPosts = response.data.sort(
-          (a, b) => new Date(b.postdate) - new Date(a.postdate)
-        );
-        setPosts(sortedPosts);
-      })
-      .catch((error) => {
-        console.error("Error fetching posts:", error);
-      });
-  }, []);
-  const handleToggle = () => {
-    setIsToggled((prev) => !prev); // Toggle state
+
+  const handleFileInput = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("Selected file:", file);
+      // Process the file (e.g., upload to server or display preview)
+    }
   };
 
-  // Function to handle post submission
+
   const handlePost = async () => {
-    if (!postContent.trim()) {
-      alert("Post content cannot be empty!");
+    const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
+    if (!postContent.trim() || !postContentTitle.trim()) {
+      alert("Both Title and Content cannot be empty!");
       return;
     }
-
+  
+    const fileInput = document.querySelector(".file-input");
+    const file = fileInput?.files[0];
+  
+    const formData = new FormData();
+    formData.append("title", postContentTitle);
+    formData.append("content", postContent);
+    formData.append("userId", userId); // Add the userId to the form data
+    if (file) {
+      formData.append("file", file);
+    }
+  
     try {
-      setIsPosting(true); // Disable button while posting
-      const response = await axios.post(
-        "http://localhost:5005/api/create-post",
-        {
-          content: postContent,
-          userId: 1, // Replace with dynamic user ID if available
-        }
-      );
-
+      setIsPosting(true);
+  
+      const response = await axios.post("http://localhost:5005/api/create-post", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+  
       if (response.status === 201) {
-        console.log("Post created successfully!");
-        setPostContent(""); // Clear input box
         alert("Post submitted!");
+        setPostContent("");
+        setPostContentTitle("");
+        fileInput.value = ""; // Clear file input
       } else {
         console.error("Error creating post:", response.data.message);
       }
@@ -66,9 +69,14 @@ const Homepage = () => {
       console.error("Error creating post:", error.message);
       alert("Failed to create post. Please try again.");
     } finally {
-      setIsPosting(false); // Re-enable button
+      setIsPosting(false);
     }
   };
+  
+  
+  
+
+
 
   const trends = [
     {
@@ -157,6 +165,18 @@ const Homepage = () => {
                 <input
                   type="text"
                   className="input-box"
+                  placeholder="Title"
+                  value={postContentTitle}
+                  onChange={(e) => setPostContentTitle(e.target.value)}
+                />
+              </div>
+              <div className="post-input">
+
+
+                <input
+                <input
+                  type="text"
+                  className="input-box"
                   placeholder="What is happening?!"
                   value={postContent}
                   onChange={(e) => setPostContent(e.target.value)}
@@ -165,18 +185,19 @@ const Homepage = () => {
             </div>
             <div className="post-btn">
               <div className="pv">
-                <button className="pv-btn">
+                <label className="pv-btn">
+                  <input
+                    type="file"
+                    className="file-input"
+                    accept="image/*" // Optional: restrict to images only
+                    onChange={(e) => handleFileInput(e)} 
+                  />
                   <img src={IP} alt="Profile" />
-                </button>
+                </label>
               </div>
+
               <div className="p-btn">
-                <button
-                  className="p-btn"
-                  onClick={handlePost}
-                  disabled={isPosting}
-                >
-                  {isPosting ? "Posting..." : "Post"}
-                </button>
+                <button className="p-btn" onClick={handlePost} disabled={isPosting}>{isPosting ? "Posting..." : "Post"}</button>
               </div>
             </div>
           </div>
