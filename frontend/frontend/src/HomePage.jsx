@@ -11,26 +11,38 @@ import NavigationBar from "./Navigationbar.jsx";
 import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
 import "./Homepage.css";
-import "./Homepage.css";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 
 const Homepage = () => {
   const [posts, setPosts] = useState([]); // State to store all posts
-  const [postContentTitle, setPostContentTitle] = useState(""); 
   const [postContent, setPostContent] = useState(""); // State for post content
   const [isPosting, setIsPosting] = useState(false); // State for button loading
+  const [isToggled, setIsToggled] = useState(false); // State to track button toggle
+  const [postContentTitle, setPostContentTitle] = useState("");
 
-
-  const handleFileInput = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      console.log("Selected file:", file);
-      // Process the file (e.g., upload to server or display preview)
-    }
+  useEffect(() => {
+    axios
+      .get("http://localhost:5005/api/showposts") // Fetch all posts
+      .then((response) => {
+        const sortedPosts = response.data.sort(
+          (a, b) => new Date(b.postdate) - new Date(a.postdate)
+        );
+        setPosts(sortedPosts);
+      })
+      .catch((error) => {
+        console.error("Error fetching posts:", error);
+      });
+  }, []);
+  const autoResize = (e) => {
+    const textarea = e.target;
+    textarea.style.height = "auto"; // Resetting the height
+    textarea.style.height = `${textarea.scrollHeight}px`; // Set the height dynamically
   };
-
+  const handleToggle = () => {
+    setIsToggled((prev) => !prev); // Toggle state
+  };
 
   const handlePost = async () => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
@@ -38,10 +50,10 @@ const Homepage = () => {
       alert("Both Title and Content cannot be empty!");
       return;
     }
-  
+
     const fileInput = document.querySelector(".file-input");
     const file = fileInput?.files[0];
-  
+
     const formData = new FormData();
     formData.append("title", postContentTitle);
     formData.append("content", postContent);
@@ -49,18 +61,24 @@ const Homepage = () => {
     if (file) {
       formData.append("file", file);
     }
-  
+
     try {
       setIsPosting(true);
-  
-      const response = await axios.post("http://localhost:5005/api/create-post", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-  
+
+      const response = await axios.post(
+        "http://localhost:5005/api/create-post",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
       if (response.status === 201) {
         alert("Post submitted!");
         setPostContent("");
         setPostContentTitle("");
+        window.location.reload(); // Refresh the entire page
+
         fileInput.value = ""; // Clear file input
       } else {
         console.error("Error creating post:", response.data.message);
@@ -72,11 +90,13 @@ const Homepage = () => {
       setIsPosting(false);
     }
   };
-  
-  
-  
-
-
+  const handleFileInput = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("Selected file:", file);
+      // Process the file (e.g., upload to server or display preview)
+    }
+  };
 
   const trends = [
     {
@@ -158,28 +178,48 @@ const Homepage = () => {
         {/* Main Content */}
         <main className="content">
           {/* Post Input */}
-          <div className="postsx">
+          <div className="post-mlg">
             <div className="post-input">
               <div className="profile-image">
                 <img src={DP} alt="Profile" />
-                <input
-                  type="text"
-                  className="input-box"
-                  placeholder="Title"
-                  value={postContentTitle}
-                  onChange={(e) => setPostContentTitle(e.target.value)}
-                />
+                <label className="postsomething">What's your tea?</label>
+                <div className="p-btn">
+                  <button
+                    className="p-btn"
+                    onClick={handlePost}
+                    disabled={isPosting}
+                  >
+                    {isPosting ? "Posting..." : "Post"}
+                  </button>
+                </div>
               </div>
               <div className="post-input">
-
-
-                <input
-                <input
+                <textarea
                   type="text"
-                  className="input-box"
-                  placeholder="What is happening?!"
+                  rows={1}
+                  className="input-title"
+                  placeholder="Title"
+                  value={postContentTitle}
+                  onChange={(e) => {
+                    setPostContentTitle(e.target.value);
+                    autoResize(e);
+                  }}
+                  onInput={autoResize}
+                  style={{ overflow: "hidden", resize: "none" }} // Prevent manual resize
+                />
+                {/* Description textarea */}
+                <textarea
+                  rows={1}
+                  type="text"
+                  className="input-desc"
+                  placeholder="Description"
                   value={postContent}
-                  onChange={(e) => setPostContent(e.target.value)}
+                  onChange={(e) => {
+                    setPostContent(e.target.value);
+                    autoResize(e);
+                  }}
+                  onInput={autoResize}
+                  style={{ overflow: "hidden", resize: "none" }} // Prevent manual resize
                 />
               </div>
             </div>
@@ -189,15 +229,19 @@ const Homepage = () => {
                   <input
                     type="file"
                     className="file-input"
-                    accept="image/*" // Optional: restrict to images only
-                    onChange={(e) => handleFileInput(e)} 
+                    accept="image/*"
+                    onChange={(e) => handleFileInput(e)}
                   />
-                  <img src={IP} alt="Profile" />
-                </label>
-              </div>
 
-              <div className="p-btn">
-                <button className="p-btn" onClick={handlePost} disabled={isPosting}>{isPosting ? "Posting..." : "Post"}</button>
+                  <img
+                    src={IP}
+                    alt="Profile"
+                    className="file-img"
+                    onClick={() =>
+                      document.querySelector(".file-input").click()
+                    }
+                  />
+                </label>
               </div>
             </div>
           </div>

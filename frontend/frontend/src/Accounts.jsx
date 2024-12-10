@@ -203,9 +203,7 @@ function Accounts() {
       setIsModalOpen2(false);
       setSelectedAccount(null);
       // Optionally, refresh the posts
-      axios.get("http://localhost:5005/api/usershow").then((res) => {
-        setUsers(res.data);
-      });
+      window.location.reload(); // Refresh the entire page
     } catch (error) {
       console.error("Error deleting post:", error);
       alert("Failed to delete post.");

@@ -88,9 +88,8 @@ function Posts() {
         }
       );
       alert("Post added successfully");
-      axios.get("http://localhost:5005/api/posts2").then((res) => {
-        setPosts(res.data);
-      });
+      window.location.reload(); // Refresh the entire page
+
       setTitle("");
       setContent("");
       setImage(null);
@@ -126,9 +125,7 @@ function Posts() {
       setIsModalOpen2(false);
       setSelectedPost(null);
       // Optionally, refresh the posts
-      axios.get("http://localhost:5005/api/posts2").then((res) => {
-        setPosts(res.data);
-      });
+      window.location.reload(); // Refresh the entire page
     } catch (error) {
       console.error("Error updating post:", error);
       alert("Failed to update post.");
@@ -145,9 +142,7 @@ function Posts() {
       setIsModalOpen2(false);
       setSelectedPost(null);
       // Optionally, refresh the posts
-      axios.get("http://localhost:5005/api/posts2").then((res) => {
-        setPosts(res.data);
-      });
+      window.location.reload(); // Refresh the entire page
     } catch (error) {
       console.error("Error deleting post:", error);
       alert("Failed to delete post.");

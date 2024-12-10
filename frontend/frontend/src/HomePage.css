@@ -143,6 +143,23 @@ body {
   margin-bottom: 20px;
   padding-bottom: 10px;
 }
+.file-input {
+  display: none; /* Hide the actual file input */
+}
+
+.file-img {
+  cursor: pointer; /* Change cursor to indicate it's clickable */
+  width: 50px; /* Adjust size to your design */
+  height: 50px;
+  object-fit: cover;
+}
+.post-mlg {
+  background-color: #222;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  height: auto;
+}
 .post label {
   font-family: "Poppins";
 }
@@ -199,7 +216,12 @@ body {
   height: 25px;
   width: 25px;
 }
-
+.post-input textarea {
+  font-family: "Poppins";
+  background-color: transparent;
+  border: none;
+  width: 100%;
+}
 .p-btn button {
   background-color: #2196f3;
 }
@@ -207,7 +229,6 @@ body {
 .post-btn {
   display: flex;
   justify-content: space-between;
-  margin-left: 60px;
   padding-top: 5px;
 }
 
