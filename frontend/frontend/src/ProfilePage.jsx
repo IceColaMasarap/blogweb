@@ -563,46 +563,10 @@ function ProfilePage() {
                     </label>
                   </div>
                   {/* Post Settings Button */}
-                  <button className="post-settings" onClick={toggleModal}>
+                  <button className="post-settings">
                     <img src={PS} alt="Settings" />
                   </button>
                 </div>
-                {/* Modal */}
-                {isModalOpen && selectedPost && (
-                  <div className="modal-overlay">
-                    <div className="modal-content">
-                      <input
-                        type="text"
-                        placeholder="Title"
-                        className="modal-input"
-                        value={selectedPost.title}
-                        onChange={(e) => handleChange2("title", e.target.value)}
-                      />
-                      <br />
-                      <input
-                        type="text"
-                        placeholder="Description"
-                        className="modal-input"
-                        value={selectedPost.content}
-                        onChange={(e) =>
-                          handleChange2("content", e.target.value)
-                        }
-                      />
-                      <br />
-                      <button onClick={toggleModal}>Close</button>
-                      <button
-                        onClick={() => handleEdit(selectedPost.id)}
-                        disabled={!selectedPost.title || !selectedPost.content} // Disable button if fields are empty
-                      >
-                        Edit
-                      </button>
-                      <button onClick={() => handleDelete(selectedPost.id)}>
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 <div className="post-body">
                   <label className="posttitle">{post.title}</label>
                   <label className="postdesc">{post.content}</label>
