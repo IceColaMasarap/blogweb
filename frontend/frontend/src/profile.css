@@ -506,7 +506,7 @@ gap: 0.5rem;
 
 .elabel {
 font-weight: bold;
-color: #333;
+color: #fff;
 }
 
 .edittxt {
@@ -546,11 +546,12 @@ background-color: #0056b3;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding-top: 30px;
 }
 
 .modal-container {
   background: #222;
-  padding: 20px;
+  padding: 5px 20px 20px 20px;
   border-radius: 8px;
   max-width: 500px;
   width: 100%;
@@ -571,7 +572,7 @@ background-color: #0056b3;
 }
 
 .edit-form {
-  margin-top: 20px;
+  margin-top: 0px;
 }
 
 /* Modal Overlay */
