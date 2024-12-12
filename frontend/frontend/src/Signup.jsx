@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import "./Signup.css";
 import TS from "./assets/tsaaritsa.png";
 import axios from "axios";
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import img1 from "../src/assets/logobg.png";
 
 function Signup() {
@@ -12,10 +12,9 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [maxDate, setMaxDate] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -58,6 +57,21 @@ function Signup() {
   };
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split("T")[0];
+    setMaxDate(formattedDate);
+  }, []);
+
+
+
+
+
+
+
+
+
   return (
     <div className="containerr">
       {/* Left Section */}
@@ -99,6 +113,7 @@ function Signup() {
               <input
                 type="date"
                 className="inputDate"
+                max={maxDate}
                 onChange={(e) => setDateOfBirth(e.target.value)}
               />
             </div>

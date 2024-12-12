@@ -161,6 +161,7 @@ body {
   border-radius: 10px;
   margin-bottom: 20px;
   padding-bottom: 10px;
+  padding: 0;
 }
 .p-btn {
   width: 100%;
@@ -478,7 +479,7 @@ body {
 .post-header {
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: 10px 0 10px 0;
   justify-content: space-between;
 }
 
@@ -490,6 +491,7 @@ body {
 
 .post-time {
   color: #aaa;
+  width: 100px;
   font-size: 13px;
 }
 
@@ -664,4 +666,70 @@ body {
 /* Hover effect for dropdown options */
 .post-settings-option:hover {
   background-color: #272727;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: rgb(30, 30, 30);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 300px;
+}
+
+.flagged-label svg {
+  margin-right: 5px; /* Space between the SVG and the text */
+  padding: 0;
+  margin-top: 10px;
+}
+.flagged-label label {
+  margin-top: 10px;
+}
+.flagged-label {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  color: rgb(168, 168, 168);
+  font-family: "Poppins";
+}
+.flagged-label2 {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  color: rgb(168, 168, 168);
+  font-family: "Poppins";
+}
+.postxx {
+  background-color: #222;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+.labelxxzz {
+  margin-top: 10px;
+  font-size: 10px;
+}
+.poststats {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.posttime {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+  padding-right: 10px;
 }

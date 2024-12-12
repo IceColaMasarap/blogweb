@@ -34,9 +34,8 @@ function Login() {
       if (data.error) {
         setError("Invalid credentials, please try again.");
       } else {
-
         localStorage.setItem("userId", data.id); // Save the user ID
-        
+
         // Log the user info on successful login
         console.log("User Info:", {
           id: data.id,
@@ -46,6 +45,7 @@ function Login() {
           dateofbirth: data.dateofbirth,
           isModerator: data.isModerator,
         });
+        localStorage.setItem("isModerator", data.isModerator.toString()); // Save as string
 
         // Redirect based on user role
         if (data.email === "admin@gmail.com") {
@@ -63,7 +63,7 @@ function Login() {
   return (
     <div className="container">
       {/* Left Section */}
-      <div className="left-section">
+      <div className="left-sectionl">
         <div className="logo-container">
           <div className="logo">
             <img
@@ -77,7 +77,7 @@ function Login() {
       </div>
 
       {/* Right Section */}
-      <div className="right-sectionr">
+      <div className="right-sectionl">
         <h1 className="main-headingr">Everyone’s cup</h1>
         <h1 className="main-headingr">of tea 🍃</h1>
         <p className="sub-headingr">Welcome back!</p>
