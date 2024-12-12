@@ -450,7 +450,7 @@ const Homepage = () => {
                     <button
                       className="post-settings-button"
                       onClick={() => toggleMenu(post.id)}
-                      onBlur={() => toggleMenu(post.id)} // Trigger toggle when unfocused
+                      onBlur={() => setTimeout(() => toggleMenu(post.id), 300)} // 1 second delay
                     >
                       &#x22EF; {/* Vertical three dots */}
                     </button>
