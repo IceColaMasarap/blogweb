@@ -10,7 +10,7 @@ import GI from "./assets/Iicon.png";
 import EI from "./assets/Edit.png";
 import CS from "./assets/CLASS SCHEDULE BSIT PHONE 1.png";
 import POSTSAMPLE from "./assets/GENSHIN 4TH ANNIVERSARY.jpg";
-import NavigationBar from "./Navigationbar.jsx";
+import NavigationBar from "./NavigationBar.jsx";
 import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
 import "./UserProfile.css";
@@ -259,10 +259,10 @@ function ProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const changes = [];
     const updates = {};
-
+  
     // Check for changes in the input fields
     if (formData.firstname !== originalData.firstname) {
       changes.push("First Name");
@@ -280,7 +280,7 @@ function ProfilePage() {
       changes.push("Email");
       updates.email = formData.email;
     }
-
+  
     // Handle password changes
     if (formData.password || formData.confirmpassword) {
       if (formData.password !== formData.confirmpassword) {
@@ -290,13 +290,13 @@ function ProfilePage() {
       changes.push("Password");
       updates.password = formData.password;
     }
-
+  
     // If no changes, alert the user
     if (changes.length === 0) {
       alert("No changes were made.");
       return;
     }
-
+  
     // Send the update request
     const userId = localStorage.getItem("userId");
     try {
@@ -307,12 +307,16 @@ function ProfilePage() {
       if (response.status === 200) {
         alert(`The following fields were updated: ${changes.join(", ")}`);
         setOriginalData({ ...originalData, ...updates }); // Update the original data
+  
+        // Close the modal
+        handleCloseModal();
       }
     } catch (error) {
       console.error("Error updating user data:", error);
       alert("Failed to update user data. Please try again.");
     }
   };
+  
   return (
     <div className="maincontentpost">
       {/* Add the Navigation Bar */}
