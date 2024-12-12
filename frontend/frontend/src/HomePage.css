@@ -108,6 +108,12 @@ body {
   scrollbar-width: none;
 }
 
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Adjust the gap to add space between elements */
+}
+
 .post-settings img {
   width: 20px;
   height: 20px;
@@ -219,6 +225,205 @@ body {
   /* Target the SVG icon directly */
   margin-right: 5px; /* Add space between the icon and the number */
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Black overlay with tint */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  position: relative; /* To position the close button relative to the modal */
+  width: 500px;
+  min-height: 600px;
+  background-color: #333333; /* White square */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Align items to both sides */
+  border-bottom: 1px solid #444; 
+  margin: 0 12px;
+
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1px;
+  left: -5px; 
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.modal-title {  
+  margin: 0;
+  font-size: 14px;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
+
+.modal-input-container {
+  background-color: #222;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px; 
+  margin-top: 20px;
+  width: calc(100% - 40px); 
+  padding: 0px 20px; 
+  gap: 20px;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 10px;
+  position: relative; 
+  margin-bottom: 20px;
+}
+
+.textarea-container {
+  resize: none;
+  border: none;
+  outline: none;
+  width: 100%; 
+  border-radius: 200; 
+  font-family: "Poppins", sans-serif;
+}
+
+.textarea-container textarea {
+  background-color: inherit; 
+  color: #fff; 
+  border: none;
+  outline: none;
+  width: 100%; 
+  resize: none;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px; 
+  padding-top: 10px; 
+  padding-bottom: 2px; 
+
+}
+
+.textarea-container textarea:focus {
+  outline: none; 
+}
+
+.button-container {
+  width: 100%;
+ height: 12px;
+ background-color:inherit;
+  position: relative;
+}
+
+.modal-reply-btn {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  position: absolute;
+  right: -15px; 
+  bottom: 5px; 
+
+  scrollbar-width: thin; 
+  scrollbar-color: #444 transparent; 
+}
+
+.modal-reply-input::-webkit-scrollbar {
+  width: 6px; 
+}
+
+.modal-reply-input::-webkit-scrollbar-thumb {
+  background-color: #444; /* Scrollbar color */
+  border-radius: 5px; /* Rounded edges */
+}
+
+.modal-comment-container {
+  margin: 0 12px;
+  max-height: 400px; 
+  overflow-y: auto; 
+  padding: 10px; 
+  scrollbar-width: none; 
+  border-bottom: 1px solid #444; 
+}
+
+.modal-comment-container::-webkit-scrollbar {
+  width: 0; /* For Chrome, Safari, and Opera */
+}
+
+/* Optional: Show scrollbar only on hover */
+.modal-comment-container:hover {
+  scrollbar-width: thin; /* For Firefox */
+}
+
+.modal-comment-container:hover::-webkit-scrollbar {
+  width: 6px; /* Show a thin scrollbar */
+}
+
+.modal-comment-container:hover::-webkit-scrollbar-thumb {
+  background-color: #444; /* Subtle scrollbar thumb */
+  border-radius: 5px;
+}
+
+
+.modal-comment-author {
+  display: flex;
+  gap: 10px; 
+  padding: 10px; 
+  background-color: #333; 
+  border-radius: 10px; 
+}
+
+.modal-author-details {
+  background-color: #1f1f1f;
+  border-radius: 8px;
+  padding: 5px 12px;
+  padding-bottom: 0px;
+  width: auto;
+  max-width: 90%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  display: inline-block;
+  word-wrap: break-word;
+  line-height: 1.4;
+  font-size: 16px;
+}
+
+.modal-author-details p{
+  margin-bottom: 8px;
+  margin-top: 1px;
+  color: #cccccc;
+
+}
+
+.modal-post-user {
+  font-weight: bold;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.modal-profile-image {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #444;
+}
+
 .pv {
   display: flex;
   align-items: center;

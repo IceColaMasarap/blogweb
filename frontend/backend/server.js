@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
 const session = require("express-session");
 
+
 const { v4: uuidv4 } = require("uuid"); // Import uuidv4
 const multer = require("multer");
 
@@ -512,9 +513,7 @@ app.post("/api/addpost", (req, res) => {
   });
 });
 
-app.listen(5005, () => {
-  console.log("Server running on port 5005");
-});
+
 
 app.post("/api/like-post", (req, res) => {
   const { postId, userId, action } = req.body;
@@ -576,6 +575,54 @@ app.post("/api/like-post", (req, res) => {
   });
 });
 
+app.post('/api/add-comment', async (req, res) => {
+  const { post_id, user_id, content } = req.body;
+
+  if (!post_id || !user_id || !content) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+
+  try {
+    const commentId = uuidv4(); // Generate a unique ID for the comment
+    const query = 'INSERT INTO comments (id, post_id, user_id, content, created_at) VALUES (?, ?, ?, ?, NOW())';
+    await db.query(query, [commentId, post_id, user_id, content]);
+    res.status(201).json({ message: 'Comment added successfully.' });
+  } catch (err) {
+    console.error('Failed to add comment:', err);
+    res.status(500).json({ error: 'Failed to add comment.' });
+  }
+});
 
 
+app.get("/api/get-comments", (req, res) => {
+  const { postId } = req.query;
 
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required." });
+  }
+
+  const sql = `
+    SELECT 
+      c.content, 
+      u.firstname, 
+      u.lastname, 
+      c.created_at 
+    FROM comments c
+    INNER JOIN users u ON c.user_id = u.id
+    WHERE c.post_id = ?
+    ORDER BY c.created_at ASC
+  `;
+
+  db.query(sql, [postId], (err, results) => {
+    if (err) {
+      console.error("Error fetching comments:", err);
+      return res.status(500).json({ message: "Error retrieving comments." });
+    }
+
+    res.status(200).json(results);
+  });
+});
+
+app.listen(5005, () => {
+  console.log("Server running on port 5005");
+});

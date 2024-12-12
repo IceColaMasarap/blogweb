@@ -13,7 +13,8 @@ import { useNavigate } from "react-router-dom";
 import "./Homepage.css";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faComment } from "@fortawesome/free-solid-svg-icons";
+
 
 const Homepage = () => {
   const [posts, setPosts] = useState([]); // State to store all posts
@@ -28,12 +29,14 @@ const Homepage = () => {
     axios
       .get(`http://localhost:5005/api/showposts?userId=${userId}`)
       .then((response) => {
-        const posts = response.data;
-        setPosts(posts);
-  
+        const sortedPosts = response.data.sort(
+          (a, b) => new Date(b.postdate) - new Date(a.postdate) // Sort by postdate, newest first
+        );
+        setPosts(sortedPosts);
+
         const initialLikes = {};
-        posts.forEach((post) => {
-          initialLikes[post.id] = post.liked;
+        sortedPosts.forEach((post) => {
+          initialLikes[post.id] = post.liked; // Initialize liked state for each post
         });
         setLikedPosts(initialLikes);
       })
@@ -41,7 +44,8 @@ const Homepage = () => {
         console.error("Error fetching posts:", error);
       });
   }, []);
-  
+
+
 
   const autoResize = (e) => {
     const textarea = e.target;
@@ -51,10 +55,10 @@ const Homepage = () => {
 
   const handleToggle = async (postId) => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
-  
+
     try {
       const isLiked = likedPosts[postId] || false; // Check if the post is already liked
-  
+
       // Optimistically update the UI before the server response
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
@@ -63,19 +67,19 @@ const Homepage = () => {
             : post
         )
       );
-  
+
       setLikedPosts((prevState) => ({
         ...prevState,
         [postId]: !isLiked, // Toggle like state
       }));
-  
+
       // Send the request to the server
       const response = await axios.post("http://localhost:5005/api/like-post", {
         postId,
         userId,
         action: isLiked ? "unlike" : "like", // Determine action
       });
-  
+
       if (response.status !== 200) {
         // Revert the changes if the server request fails
         setPosts((prevPosts) =>
@@ -92,7 +96,7 @@ const Homepage = () => {
       }
     } catch (error) {
       console.error("Error toggling like:", error);
-  
+
       // Revert the changes if an error occurs
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
@@ -107,11 +111,13 @@ const Homepage = () => {
       }));
     }
   };
-  
-  
-  
-  
 
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
 
   const handlePost = async () => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
@@ -340,22 +346,52 @@ const Homepage = () => {
                     />
                   </div>
                 )}
+                <div className="post-actions">
 
-                <label
-                  className="likebtn"
-                  onClick={() => handleToggle(post.id)} // Pass only the post ID
-                  style={{
-                    color: likedPosts[post.id] ? "red" : "white", // Show red if the post is liked
-                  }}
-                >
-                  <FontAwesomeIcon icon={faHeart} />
-                  {post.like_count} {/* Render updated like count */}
-                </label>
+                  <label
+                    className="likebtn"
+                    onClick={() => handleToggle(post.id)} // Pass only the post ID
+                    style={{
+                      color: likedPosts[post.id] ? "red" : "white",  // Show red if the post is liked
+                      cursor: "pointer",
+                    }}
+                  >
 
+                    <FontAwesomeIcon icon={faHeart} />
+                    {post.like_count} {/* Render updated like count */}
+                  </label>
 
+                  <label
+                    className="commentbtn"
+                    onClick={toggleModal} // Toggles the modal
+                    style={{
+                      cursor: "pointer", // Indicate it's clickable
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faComment} />
+                  </label>
+
+                </div>
               </div>
             ))}
           </div>
+
+          {isModalOpen && (
+            <div className="modal-overlay" onClick={toggleModal}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <button className="modal-close-btn" onClick={toggleModal}>
+                    &times;
+                  </button>
+                  <p className="modal-title">Comments</p>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+
+
 
         </main>
 
