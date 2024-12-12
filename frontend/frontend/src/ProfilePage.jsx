@@ -35,6 +35,30 @@ function ProfilePage() {
   const [postContentTitle, setPostContentTitle] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility
+  const [selectedPost, setSelectedPost] = useState(null);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+    if (isModalOpen) setSelectedPost(null); // Clear selectedPost when closing modal
+  };
+
+  const handleOpenModal = (post) => {
+    setSelectedPost(post); // Set the selected post
+    setIsModalOpen(true); // Open the modal
+  };
+
+  const handleEdit = (id) => {
+    console.log("Editing post:", selectedPost);
+    // Perform your edit logic here (e.g., API call)
+    toggleModal();
+  };
+
+  const handleDelete = (id) => {
+    console.log("Deleting post with ID:", id);
+    // Perform your delete logic here (e.g., API call)
+    toggleModal();
+  };
 
   useEffect(() => {
     axios
@@ -57,10 +81,10 @@ function ProfilePage() {
 
   const handleToggle = async (postId) => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
-  
+
     try {
       const isLiked = likedPosts[postId] || false; // Check if the post is already liked
-  
+
       // Optimistically update the UI before the server response
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
@@ -69,19 +93,19 @@ function ProfilePage() {
             : post
         )
       );
-  
+
       setLikedPosts((prevState) => ({
         ...prevState,
         [postId]: !isLiked, // Toggle like state
       }));
-  
+
       // Send the request to the server
       const response = await axios.post("http://localhost:5005/api/like-post", {
         postId,
         userId,
         action: isLiked ? "unlike" : "like", // Determine action
       });
-  
+
       if (response.status !== 200) {
         // Revert the changes if the server request fails
         setPosts((prevPosts) =>
@@ -98,7 +122,7 @@ function ProfilePage() {
       }
     } catch (error) {
       console.error("Error toggling like:", error);
-  
+
       // Revert the changes if an error occurs
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
@@ -113,8 +137,6 @@ function ProfilePage() {
       }));
     }
   };
-
-
 
   const handlePost = async () => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
@@ -170,18 +192,13 @@ function ProfilePage() {
     }
   };
 
-
-  
-
-
-
   useEffect(() => {
     const userId = localStorage.getItem("userId"); // Get the logged-in user's ID
     if (!userId) {
       console.error("No user ID found in localStorage");
       return;
     }
-  
+
     axios
       .get(`http://localhost:5005/api/userposts/${userId}`)
       .then((response) => {
@@ -195,7 +212,6 @@ function ProfilePage() {
       });
   }, []);
 
-  
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const fetchUserData = async () => {
@@ -204,19 +220,23 @@ function ProfilePage() {
           `http://localhost:5005/api/user/${userId}`
         );
         const userData = response.data;
-  
+
         // Format dateofbirth to YYYY-MM-DD
         const formattedDateOfBirth = userData.dateofbirth
-          ? new Date(new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000)
+          ? new Date(
+              new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000
+            )
               .toISOString()
               .split("T")[0]
           : "";
-  
-          const formattedCreatedAt = userData.created_at
-          ? new Date(userData.created_at).toLocaleString('en-US', { month: 'long', year: 'numeric' })
+
+        const formattedCreatedAt = userData.created_at
+          ? new Date(userData.created_at).toLocaleString("en-US", {
+              month: "long",
+              year: "numeric",
+            })
           : "";
-        
-  
+
         setOriginalData(userData); // Save the original data
         setFormData({
           firstname: userData.firstname || "",
@@ -231,16 +251,23 @@ function ProfilePage() {
         console.error("Error fetching user data:", error);
       }
     };
-  
+
     if (userId) {
       fetchUserData();
     }
   }, []);
-  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  // Update the title and content dynamically
+  const handleChange2 = (field, value) => {
+    setSelectedPost((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -309,15 +336,16 @@ function ProfilePage() {
         <div className="left-sidebar">
           <div className="sidebar-menu">
             <div className="profile-image">
-              <button className="menu-button"
-              onClick={() => navigate('/profile')}>
+              <button
+                className="menu-button"
+                onClick={() => navigate("/profile")}
+              >
                 <img src={GI} alt="Profile" />
                 <span>Profile</span>
               </button>
             </div>
 
-            <button className="menu-button2"
-            onClick={() => navigate('/home')}>
+            <button className="menu-button2" onClick={() => navigate("/home")}>
               <img src={HM} alt="Profile" />
               <span>Home</span>
             </button>
@@ -337,41 +365,31 @@ function ProfilePage() {
         <main className="content">
           {/* Profile Section */}
           <div className="profile-header">
-
             <div className="profile-details">
-              <img
-                className="profile-picture"
-                src={GI}
-                alt="Profile"
-              />
+              <img className="profile-picture" src={GI} alt="Profile" />
               <div className="info-containers">
                 <div className="profile-info">
-                <h2 className="profile-name">{formData.firstname || 'First Name'} {formData.lastname || 'Last Name'}</h2>
+                  <h2 className="profile-name">
+                    {formData.firstname || "First Name"}{" "}
+                    {formData.lastname || "Last Name"}
+                  </h2>
                   <p className="profile-name">{formData.email} </p>
                   <p className="profile-name">Joined {formData.created_at} </p>
                 </div>
 
                 <div className="edit-button">
                   <button>
-                  Edit 
-                    <img
-                      src={EI}
-                      alt="edit icon"
-                      className="edit-icon"
-                    />
+                    Edit
+                    <img src={EI} alt="edit icon" className="edit-icon" />
                   </button>
                 </div>
               </div>
             </div>
 
-
-
-
             <div className="bottomBorder">
               <p className="profile-name">Post</p>
             </div>
           </div>
-
 
           {/* Post Input */}
           <div className="post-mlg">
@@ -437,8 +455,8 @@ function ProfilePage() {
                   <div className="profile-image">
                     <img src={GI} alt="Profile" />
                     <div className="authorname">
-                      <label className="post-user">{post.firstname}</label>
-                      <label className="post-user">{post.lastname}</label>
+                      <label className="post-user">{formData.firstname}</label>
+                      <label className="post-user">{formData.lastname}</label>
                     </div>
                     <label className="post-time">
                       {new Date(post.postdate).toLocaleTimeString([], {
@@ -447,10 +465,46 @@ function ProfilePage() {
                       })}
                     </label>
                   </div>
-                  <button className="post-settings">
+                  {/* Post Settings Button */}
+                  <button className="post-settings" onClick={toggleModal}>
                     <img src={PS} alt="Settings" />
                   </button>
                 </div>
+                {/* Modal */}
+                {isModalOpen && selectedPost && (
+                  <div className="modal-overlay">
+                    <div className="modal-content">
+                      <input
+                        type="text"
+                        placeholder="Title"
+                        className="modal-input"
+                        value={selectedPost.title}
+                        onChange={(e) => handleChange2("title", e.target.value)}
+                      />
+                      <br />
+                      <input
+                        type="text"
+                        placeholder="Description"
+                        className="modal-input"
+                        value={selectedPost.content}
+                        onChange={(e) =>
+                          handleChange2("content", e.target.value)
+                        }
+                      />
+                      <br />
+                      <button onClick={toggleModal}>Close</button>
+                      <button
+                        onClick={() => handleEdit(selectedPost.id)}
+                        disabled={!selectedPost.title || !selectedPost.content} // Disable button if fields are empty
+                      >
+                        Edit
+                      </button>
+                      <button onClick={() => handleDelete(selectedPost.id)}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="post-body">
                   <label className="posttitle">{post.title}</label>
