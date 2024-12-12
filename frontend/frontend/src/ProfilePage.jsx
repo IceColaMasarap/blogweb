@@ -35,31 +35,18 @@ function ProfilePage() {
   const [postContentTitle, setPostContentTitle] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility
-  const [selectedPost, setSelectedPost] = useState(null);
 
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-    if (isModalOpen) setSelectedPost(null); // Clear selectedPost when closing modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleEditClick = () => {
+    setIsModalOpen(true);
   };
-
-  const handleOpenModal = (post) => {
-    setSelectedPost(post); // Set the selected post
-    setIsModalOpen(true); // Open the modal
+  
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
-
-  const handleEdit = (id) => {
-    console.log("Editing post:", selectedPost);
-    // Perform your edit logic here (e.g., API call)
-    toggleModal();
-  };
-
-  const handleDelete = (id) => {
-    console.log("Deleting post with ID:", id);
-    // Perform your delete logic here (e.g., API call)
-    toggleModal();
-  };
-
+  
+  
   useEffect(() => {
     axios
       .get("http://localhost:5005/api/showposts") // Fetch all posts
@@ -377,14 +364,124 @@ function ProfilePage() {
                   <p className="profile-name">Joined {formData.created_at} </p>
                 </div>
 
-                <div className="edit-button">
-                  <button>
-                    Edit
-                    <img src={EI} alt="edit icon" className="edit-icon" />
-                  </button>
+                <div>
+                  {/* Edit Button */}
+                  <div className="edit-button">
+                    <button onClick={handleEditClick}>
+                      Edit
+                      <img src={EI} alt="edit icon" className="edit-icon" />
+                    </button>
+                  </div>
+
+                  {/* Modal */}
+                  {isModalOpen && (
+                    <div className="modal-overlay" onClick={handleCloseModal}>
+                      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                          <h2>Edit Profile</h2>
+                          <button className="close-button" onClick={handleCloseModal}>
+                            &times;
+                          </button>
+                        </div>
+                        <form className="edit-form" onSubmit={handleSubmit}>
+                          {/* First Name */}
+                          <div className="eform-group">
+                            <label className="elabel" htmlFor="firstname">
+                              First Name
+                            </label>
+                            <input
+                              className="edittxt"
+                              type="text"
+                              name="firstname"
+                              value={formData.firstname}
+                              onChange={handleChange}
+                              placeholder="Enter First Name"
+                            />
+                          </div>
+                          {/* Last Name */}
+                          <div className="eform-group">
+                            <label className="elabel" htmlFor="lastname">
+                              Last Name
+                            </label>
+                            <input
+                              className="edittxt"
+                              type="text"
+                              name="lastname"
+                              value={formData.lastname}
+                              onChange={handleChange}
+                              placeholder="Enter Last Name"
+                            />
+                          </div>
+                          {/* Date of Birth */}
+                          <div className="eform-group">
+                            <label className="elabel" htmlFor="dob">
+                              Date of Birth
+                            </label>
+                            <input
+                              className="edittxt"
+                              type="date"
+                              name="dateofbirth"
+                              value={formData.dateofbirth}
+                              onChange={handleChange}
+                            />
+                          </div>
+                          {/* Email */}
+                          <div className="eform-group">
+                            <label className="elabel" htmlFor="email">
+                              Email
+                            </label>
+                            <input
+                              className="edittxt"
+                              type="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              placeholder="Enter Email"
+                            />
+                          </div>
+                          {/* Password */}
+                          <div className="eform-group">
+                            <label className="elabel" htmlFor="password">
+                              Password
+                            </label>
+                            <input
+                              className="edittxt"
+                              type="password"
+                              name="password"
+                              value={formData.password}
+                              onChange={handleChange}
+                              placeholder="Enter Password"
+                              autoComplete="new-password"
+                            />
+                          </div>
+                          {/* Confirm Password */}
+                          <div className="eform-group">
+                            <label className="elabel" htmlFor="confirmpassword">
+                              Confirm Password
+                            </label>
+                            <input
+                              className="edittxt"
+                              type="password"
+                              name="confirmpassword"
+                              value={formData.confirmpassword}
+                              onChange={handleChange}
+                              placeholder="Confirm Password"
+                            />
+                          </div>
+                          <button type="submit" className="update-button">
+                            Update
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+
+
+
+
 
             <div className="bottomBorder">
               <p className="profile-name">Post</p>
@@ -538,103 +635,7 @@ function ProfilePage() {
 
         {/* Right Sidebar */}
         <div className="right-sidebar">
-          <div className="edit-container">
-            <h2 className="about-title">Edit Profile</h2>
-            <form className="edit-form">
-              {/* First Name */}
-              <div className="eform-group">
-                <label className="elabel" htmlFor="firstname">
-                  First Name
-                </label>
-                <input
-                  className="edittxt"
-                  type="text"
-                  name="firstname"
-                  value={formData.firstname}
-                  onChange={handleChange}
-                  placeholder="Enter First Name"
-                />
-              </div>
-
-              {/* Last Name */}
-              <div className="eform-group">
-                <label className="elabel" htmlFor="lastname">
-                  Last Name
-                </label>
-                <input
-                  className="edittxt"
-                  type="text"
-                  name="lastname"
-                  value={formData.lastname}
-                  onChange={handleChange}
-                  placeholder="Enter Last Name"
-                />
-              </div>
-
-              {/* Date of Birth */}
-              <div className="eform-group">
-                <label className="elabel" htmlFor="dob">
-                  Date of Birth
-                </label>
-                <input
-                  className="edittxt"
-                  type="date"
-                  name="dateofbirth"
-                  value={formData.dateofbirth}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Email */}
-              <div className="eform-group">
-                <label className="elabel" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  className="edittxt"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter Email"
-                />
-              </div>
-
-              {/* Password */}
-              <div className="eform-group">
-                <label className="elabel" htmlFor="password">
-                  Password
-                </label>
-                <input
-                  className="edittxt"
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter Password"
-                  autoComplete="new-password"
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div className="eform-group">
-                <label className="elabel" htmlFor="confirm-password">
-                  Confirm Password
-                </label>
-                <input
-                  className="edittxt"
-                  type="password"
-                  name="confirmpassword"
-                  value={formData.confirmpassword}
-                  onChange={handleChange}
-                  placeholder="Confirm Password"
-                />
-              </div>
-              <button type="submit" className="update-button">
-                Update
-              </button>
-            </form>
-          </div>
+          
         </div>
       </div>
     </div>

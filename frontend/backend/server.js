@@ -53,6 +53,26 @@ db.connect((err) => {
     console.log("Connected to MySQL");
   }
 });
+app.post("/api/report-post", (req, res) => {
+  const { postId } = req.body;
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+
+  const query = `UPDATE posts SET isFlagged = true WHERE id = ?`;
+  db.query(query, [postId], (err, result) => {
+    // Changed 'connection' to 'db'
+    if (err) {
+      console.error("Error updating post:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Post flagged as reported" });
+    } else {
+      return res.status(404).json({ message: "Post not found" });
+    }
+  });
+});
 
 app.post("/api/register", async (req, res) => {
   const { firstName, lastName, email, dateofbirth, password } = req.body;
@@ -225,6 +245,7 @@ app.get("/api/showposts", (req, res) => {
       p.content, 
       p.postdate, 
       p.isFlagged, 
+      p.isHidden, 
       p.like_count, 
       p.imageurl, 
       a.firstname, 
@@ -260,7 +281,6 @@ app.get("/api/userposts/:userId", (req, res) => {
     }
   });
 });
-
 
 app.get("/api/users", (req, res) => {
   const sql = `
@@ -535,7 +555,9 @@ app.post("/api/like-post", (req, res) => {
   const { postId, userId, action } = req.body;
 
   if (!postId || !userId || !action) {
-    return res.status(400).json({ message: "Post ID, User ID, and action are required." });
+    return res
+      .status(400)
+      .json({ message: "Post ID, User ID, and action are required." });
   }
 
   const checkLikeSql = "SELECT id FROM likes WHERE post_id = ? AND user_id = ?";
@@ -549,8 +571,10 @@ app.post("/api/like-post", (req, res) => {
 
     if (action === "like" && !isLiked) {
       // Add a like
-      const addLikeSql = "INSERT INTO likes (id, user_id, post_id, created_at) VALUES (UUID(), ?, ?, NOW())";
-      const updatePostSql = "UPDATE posts SET like_count = like_count + 1 WHERE id = ?";
+      const addLikeSql =
+        "INSERT INTO likes (id, user_id, post_id, created_at) VALUES (UUID(), ?, ?, NOW())";
+      const updatePostSql =
+        "UPDATE posts SET like_count = like_count + 1 WHERE id = ?";
       db.query(addLikeSql, [userId, postId], (addErr) => {
         if (addErr) {
           console.error("Error adding like:", addErr);
@@ -560,16 +584,22 @@ app.post("/api/like-post", (req, res) => {
         db.query(updatePostSql, [postId], (updateErr) => {
           if (updateErr) {
             console.error("Error updating like count:", updateErr);
-            return res.status(500).json({ message: "Error updating like count." });
+            return res
+              .status(500)
+              .json({ message: "Error updating like count." });
           }
 
-          res.status(200).json({ message: "Post liked.", newLikeCount: isLiked + 1 });
+          res
+            .status(200)
+            .json({ message: "Post liked.", newLikeCount: isLiked + 1 });
         });
       });
     } else if (action === "unlike" && isLiked) {
       // Remove a like
-      const removeLikeSql = "DELETE FROM likes WHERE post_id = ? AND user_id = ?";
-      const updatePostSql = "UPDATE posts SET like_count = like_count - 1 WHERE id = ?";
+      const removeLikeSql =
+        "DELETE FROM likes WHERE post_id = ? AND user_id = ?";
+      const updatePostSql =
+        "UPDATE posts SET like_count = like_count - 1 WHERE id = ?";
       db.query(removeLikeSql, [postId, userId], (removeErr) => {
         if (removeErr) {
           console.error("Error removing like:", removeErr);
@@ -579,18 +609,82 @@ app.post("/api/like-post", (req, res) => {
         db.query(updatePostSql, [postId], (updateErr) => {
           if (updateErr) {
             console.error("Error updating like count:", updateErr);
-            return res.status(500).json({ message: "Error updating like count." });
+            return res
+              .status(500)
+              .json({ message: "Error updating like count." });
           }
 
-          res.status(200).json({ message: "Post unliked.", newLikeCount: isLiked - 1 });
+          res
+            .status(200)
+            .json({ message: "Post unliked.", newLikeCount: isLiked - 1 });
         });
       });
     } else {
-      res.status(400).json({ message: "Invalid action or post already in desired state." });
+      res
+        .status(400)
+        .json({ message: "Invalid action or post already in desired state." });
     }
   });
 });
 
+app.post("/api/unflag-post", (req, res) => {
+  const { postId } = req.body;
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
 
+  const query = `UPDATE posts SET isFlagged = false WHERE id = ?`;
+  db.query(query, [postId], (err, result) => {
+    if (err) {
+      console.error("Error unflagging post:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Post unflagged successfully" });
+    } else {
+      return res.status(404).json({ message: "Post not found" });
+    }
+  });
+});
 
+// API route to hide a post (Hide)
+app.post("/api/hide-post", (req, res) => {
+  const { postId } = req.body;
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
 
+  const query = `UPDATE posts SET isHidden = true WHERE id = ?`;
+  db.query(query, [postId], (err, result) => {
+    if (err) {
+      console.error("Error hiding post:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Post hidden successfully" });
+    } else {
+      return res.status(404).json({ message: "Post not found" });
+    }
+  });
+});
+
+// API route to unhide a post (Unhide)
+app.post("/api/unhide-post", (req, res) => {
+  const { postId } = req.body;
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+
+  const query = `UPDATE posts SET isHidden = false WHERE id = ?`;
+  db.query(query, [postId], (err, result) => {
+    if (err) {
+      console.error("Error unhiding post:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Post unhidden successfully" });
+    } else {
+      return res.status(404).json({ message: "Post not found" });
+    }
+  });
+});

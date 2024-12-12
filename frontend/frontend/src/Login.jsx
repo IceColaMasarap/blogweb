@@ -34,9 +34,8 @@ function Login() {
       if (data.error) {
         setError("Invalid credentials, please try again.");
       } else {
-
         localStorage.setItem("userId", data.id); // Save the user ID
-        
+
         // Log the user info on successful login
         console.log("User Info:", {
           id: data.id,
@@ -46,6 +45,7 @@ function Login() {
           dateofbirth: data.dateofbirth,
           isModerator: data.isModerator,
         });
+        localStorage.setItem("isModerator", data.isModerator.toString()); // Save as string
 
         // Redirect based on user role
         if (data.email === "admin@gmail.com") {
