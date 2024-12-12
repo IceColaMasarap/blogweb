@@ -308,32 +308,33 @@ body {
   resize: none;
   border: none;
   outline: none;
-  width: 100%;
-  border-radius: 200;
+  width: 100%; 
+  border-radius: 200; 
   font-family: "Poppins", sans-serif;
 }
 
 .textarea-container textarea {
-  background-color: inherit;
-  color: #fff;
+  background-color: inherit; 
+  color: #fff; 
   border: none;
   outline: none;
-  width: 100%;
+  width: 100%; 
   resize: none;
   font-family: "Poppins", sans-serif;
-  font-size: 14px;
-  padding-top: 10px;
-  padding-bottom: 2px;
+  font-size: 14px; 
+  padding-top: 10px; 
+  padding-bottom: 2px; 
+
 }
 
 .textarea-container textarea:focus {
-  outline: none;
+  outline: none; 
 }
 
 .button-container {
   width: 100%;
-  height: 12px;
-  background-color: inherit;
+ height: 12px;
+ background-color:inherit;
   position: relative;
 }
 
@@ -344,42 +345,56 @@ body {
   color: inherit;
   cursor: pointer;
   position: absolute;
-  right: -15px;
-  bottom: 5px;
+  right: -15px; 
+  bottom: 5px; 
+
+  scrollbar-width: thin; 
+  scrollbar-color: #444 transparent; 
+}
+
+.modal-reply-input::-webkit-scrollbar {
+  width: 6px; 
+}
+
+.modal-reply-input::-webkit-scrollbar-thumb {
+  background-color: #444; /* Scrollbar color */
+  border-radius: 5px; /* Rounded edges */
 }
 
 .modal-comment-container {
   margin: 0 12px;
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 10px;
-  scrollbar-width: none;
-  border-bottom: 1px solid #444;
+  max-height: 400px; 
+  overflow-y: auto; 
+  padding: 10px; 
+  scrollbar-width: none; 
+  border-bottom: 1px solid #444; 
 }
 
 .modal-comment-container::-webkit-scrollbar {
-  width: 0;
+  width: 0; /* For Chrome, Safari, and Opera */
 }
 
+/* Optional: Show scrollbar only on hover */
 .modal-comment-container:hover {
-  scrollbar-width: thin;
+  scrollbar-width: thin; /* For Firefox */
 }
 
 .modal-comment-container:hover::-webkit-scrollbar {
-  width: 6px;
+  width: 6px; /* Show a thin scrollbar */
 }
 
 .modal-comment-container:hover::-webkit-scrollbar-thumb {
-  background-color: #444;
+  background-color: #444; /* Subtle scrollbar thumb */
   border-radius: 5px;
 }
 
+
 .modal-comment-author {
   display: flex;
-  gap: 10px;
-  padding: 10px;
-  background-color: #333;
-  border-radius: 10px;
+  gap: 10px; 
+  padding: 10px; 
+  background-color: #333; 
+  border-radius: 10px; 
 }
 
 .modal-author-details {
@@ -390,16 +405,18 @@ body {
   width: auto;
   max-width: 90%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
   display: inline-block;
   word-wrap: break-word;
   line-height: 1.4;
   font-size: 16px;
 }
 
-.modal-author-details p {
+.modal-author-details p{
   margin-bottom: 8px;
   margin-top: 1px;
   color: #cccccc;
+
 }
 
 .modal-post-user {
