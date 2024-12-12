@@ -33,6 +33,7 @@ function ProfilePage() {
   const [isPosting, setIsPosting] = useState(false); // State for button loading
   const [isToggled, setIsToggled] = useState(false); // State to track button toggle
   const [postContentTitle, setPostContentTitle] = useState("");
+  const [likedPosts, setLikedPosts] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,9 +54,67 @@ function ProfilePage() {
     textarea.style.height = "auto"; // Resetting the height
     textarea.style.height = `${textarea.scrollHeight}px`; // Set the height dynamically
   };
-  const handleToggle = () => {
-    setIsToggled((prev) => !prev); // Toggle state
+
+  const handleToggle = async (postId) => {
+    const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
+  
+    try {
+      const isLiked = likedPosts[postId] || false; // Check if the post is already liked
+  
+      // Optimistically update the UI before the server response
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, like_count: post.like_count + (isLiked ? -1 : 1) }
+            : post
+        )
+      );
+  
+      setLikedPosts((prevState) => ({
+        ...prevState,
+        [postId]: !isLiked, // Toggle like state
+      }));
+  
+      // Send the request to the server
+      const response = await axios.post("http://localhost:5005/api/like-post", {
+        postId,
+        userId,
+        action: isLiked ? "unlike" : "like", // Determine action
+      });
+  
+      if (response.status !== 200) {
+        // Revert the changes if the server request fails
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.id === postId
+              ? { ...post, like_count: post.like_count + (isLiked ? 1 : -1) }
+              : post
+          )
+        );
+        setLikedPosts((prevState) => ({
+          ...prevState,
+          [postId]: isLiked, // Revert like state
+        }));
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+  
+      // Revert the changes if an error occurs
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, like_count: post.like_count + (isLiked ? 1 : -1) }
+            : post
+        )
+      );
+      setLikedPosts((prevState) => ({
+        ...prevState,
+        [postId]: isLiked, // Revert like state
+      }));
+    }
   };
+
+
 
   const handlePost = async () => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
@@ -113,6 +172,9 @@ function ProfilePage() {
 
 
   
+
+
+
   useEffect(() => {
     const userId = localStorage.getItem("userId"); // Get the logged-in user's ID
     if (!userId) {
