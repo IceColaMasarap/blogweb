@@ -102,6 +102,8 @@ body {
   height: calc(100vh - 10vh);
   /* Match height with sidebars */
   overflow-y: auto;
+
+  overflow-x: hidden;
   /* Enable scrolling for main content */
   scrollbar-width: none;
 }
@@ -410,4 +412,51 @@ body {
 
 .right-sidebar::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+/* Container for the three dots button and dropdown menu */
+.post-settings-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Styling for the three dots button */
+.post-settings-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 5px;
+}
+
+/* Dropdown menu styling */
+.post-settings-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  transition: opacity 0.3s ease;
+  background-color: #333333;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 100px;
+  overflow: hidden;
+}
+
+/* Styling for each option in the dropdown */
+.post-settings-option {
+  display: block;
+  width: 100%;
+  font-family: "Poppins";
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  text-align: left;
+  border-radius: 0px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Hover effect for dropdown options */
+.post-settings-option:hover {
+  background-color: #272727;
 }
