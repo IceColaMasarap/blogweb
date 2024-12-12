@@ -7,6 +7,7 @@ import IP from "./assets/Photos.png";
 import LK from "./assets/Like.png";
 import DP from "./assets/DP.jpg";
 import GI from "./assets/Iicon.png";
+import EI from "./assets/Edit.png";
 import CS from "./assets/CLASS SCHEDULE BSIT PHONE 1.png";
 import POSTSAMPLE from "./assets/GENSHIN 4TH ANNIVERSARY.jpg";
 import NavigationBar from "./Navigationbar.jsx";
@@ -24,6 +25,7 @@ function ProfilePage() {
     email: "",
     password: "",
     confirmpassword: "",
+    created_at: "",
   });
   const [originalData, setOriginalData] = useState({});
   const [posts, setPosts] = useState([]); // State to store all posts
@@ -31,6 +33,7 @@ function ProfilePage() {
   const [isPosting, setIsPosting] = useState(false); // State for button loading
   const [isToggled, setIsToggled] = useState(false); // State to track button toggle
   const [postContentTitle, setPostContentTitle] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -139,34 +142,39 @@ function ProfilePage() {
           `http://localhost:5005/api/user/${userId}`
         );
         const userData = response.data;
-
+  
         // Format dateofbirth to YYYY-MM-DD
-        const formattedDate = userData.dateofbirth
-          ? new Date(
-              new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000
-            )
+        const formattedDateOfBirth = userData.dateofbirth
+          ? new Date(new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000)
               .toISOString()
               .split("T")[0]
           : "";
-
+  
+          const formattedCreatedAt = userData.created_at
+          ? new Date(userData.created_at).toLocaleString('en-US', { month: 'long', year: 'numeric' })
+          : "";
+        
+  
         setOriginalData(userData); // Save the original data
         setFormData({
           firstname: userData.firstname || "",
           lastname: userData.lastname || "",
-          dateofbirth: formattedDate, // Set formatted date
+          dateofbirth: formattedDateOfBirth, // Set formatted dateofbirth
           email: userData.email || "",
           password: "",
           confirmpassword: "",
+          created_at: formattedCreatedAt, // Set formatted created_at
         });
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     };
-
+  
     if (userId) {
       fetchUserData();
     }
   }, []);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -239,13 +247,15 @@ function ProfilePage() {
         <div className="left-sidebar">
           <div className="sidebar-menu">
             <div className="profile-image">
-              <button className="menu-button">
+              <button className="menu-button"
+              onClick={() => navigate('/profile')}>
                 <img src={GI} alt="Profile" />
                 <span>Profile</span>
               </button>
             </div>
 
-            <button className="menu-button2">
+            <button className="menu-button2"
+            onClick={() => navigate('/home')}>
               <img src={HM} alt="Profile" />
               <span>Home</span>
             </button>
@@ -265,17 +275,41 @@ function ProfilePage() {
         <main className="content">
           {/* Profile Section */}
           <div className="profile-header">
+
             <div className="profile-details">
-              <img className="profile-picture" src={GI} alt="Profile" />
-              <div className="profile-info">
-                <h2 className="profile-name">Emergency Food </h2>
+              <img
+                className="profile-picture"
+                src={GI}
+                alt="Profile"
+              />
+              <div className="info-containers">
+                <div className="profile-info">
+                <h2 className="profile-name">{formData.firstname || 'First Name'} {formData.lastname || 'Last Name'}</h2>
+                  <p className="profile-name">{formData.email} </p>
+                  <p className="profile-name">Joined {formData.created_at} </p>
+                </div>
+
+                <div className="edit-button">
+                  <button>
+                  Edit 
+                    <img
+                      src={EI}
+                      alt="edit icon"
+                      className="edit-icon"
+                    />
+                  </button>
+                </div>
               </div>
             </div>
+
+
+
 
             <div className="bottomBorder">
               <p className="profile-name">Post</p>
             </div>
           </div>
+
 
           {/* Post Input */}
           <div className="post-mlg">

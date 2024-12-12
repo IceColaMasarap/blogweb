@@ -22,7 +22,8 @@ const Homepage = () => {
   const [isToggled, setIsToggled] = useState(false); // State to track button toggle
   const [postContentTitle, setPostContentTitle] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     axios
@@ -43,8 +44,6 @@ const Homepage = () => {
         console.error("Error fetching posts:", error);
       });
   }, []);
-  
-  
 
   const autoResize = (e) => {
     const textarea = e.target;
@@ -226,10 +225,11 @@ const Homepage = () => {
         <div className="left-sidebar">
           <div className="sidebar-menu">
             <div className="profile-image">
-              <button className="menu-button">
+              <button className="menu-button"
+              onClick={() => navigate('/profile')}>
                 <img src={GI} alt="Profile" />
                 <span>Profile</span>
-              </button>
+              </button> 
             </div>
 
             <button className="menu-button2">
