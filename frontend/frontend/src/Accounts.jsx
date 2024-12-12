@@ -209,6 +209,8 @@ function Accounts() {
       alert("Failed to delete post.");
     }
   };
+
+  
   return (
     <div className="dashboardbg">
       <div className="navBar">

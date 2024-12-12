@@ -22,6 +22,7 @@ const Homepage = () => {
   const [isToggled, setIsToggled] = useState(false); // State to track button toggle
   const [postContentTitle, setPostContentTitle] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
+  const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState({}); // State for menu visibility by post ID
   const [showReportModal, setShowReportModal] = useState(false); // State to manage the modal
   const [reportedPostId, setReportedPostId] = useState(null); // To track the reported post ID
@@ -323,7 +324,10 @@ const Homepage = () => {
         <div className="left-sidebar">
           <div className="sidebar-menu">
             <div className="profile-image">
-              <button className="menu-button">
+              <button
+                className="menu-button"
+                onClick={() => navigate("/profile")}
+              >
                 <img src={GI} alt="Profile" />
                 <span>Profile</span>
               </button>

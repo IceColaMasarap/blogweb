@@ -7,6 +7,7 @@ import IP from "./assets/Photos.png";
 import LK from "./assets/Like.png";
 import DP from "./assets/DP.jpg";
 import GI from "./assets/Iicon.png";
+import EI from "./assets/Edit.png";
 import CS from "./assets/CLASS SCHEDULE BSIT PHONE 1.png";
 import POSTSAMPLE from "./assets/GENSHIN 4TH ANNIVERSARY.jpg";
 import NavigationBar from "./Navigationbar.jsx";
@@ -24,6 +25,7 @@ function ProfilePage() {
     email: "",
     password: "",
     confirmpassword: "",
+    created_at: "",
   });
   const [originalData, setOriginalData] = useState({});
   const [posts, setPosts] = useState([]); // State to store all posts
@@ -31,6 +33,8 @@ function ProfilePage() {
   const [isPosting, setIsPosting] = useState(false); // State for button loading
   const [isToggled, setIsToggled] = useState(false); // State to track button toggle
   const [postContentTitle, setPostContentTitle] = useState("");
+  const [likedPosts, setLikedPosts] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -50,9 +54,67 @@ function ProfilePage() {
     textarea.style.height = "auto"; // Resetting the height
     textarea.style.height = `${textarea.scrollHeight}px`; // Set the height dynamically
   };
-  const handleToggle = () => {
-    setIsToggled((prev) => !prev); // Toggle state
+
+  const handleToggle = async (postId) => {
+    const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
+  
+    try {
+      const isLiked = likedPosts[postId] || false; // Check if the post is already liked
+  
+      // Optimistically update the UI before the server response
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, like_count: post.like_count + (isLiked ? -1 : 1) }
+            : post
+        )
+      );
+  
+      setLikedPosts((prevState) => ({
+        ...prevState,
+        [postId]: !isLiked, // Toggle like state
+      }));
+  
+      // Send the request to the server
+      const response = await axios.post("http://localhost:5005/api/like-post", {
+        postId,
+        userId,
+        action: isLiked ? "unlike" : "like", // Determine action
+      });
+  
+      if (response.status !== 200) {
+        // Revert the changes if the server request fails
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.id === postId
+              ? { ...post, like_count: post.like_count + (isLiked ? 1 : -1) }
+              : post
+          )
+        );
+        setLikedPosts((prevState) => ({
+          ...prevState,
+          [postId]: isLiked, // Revert like state
+        }));
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+  
+      // Revert the changes if an error occurs
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, like_count: post.like_count + (isLiked ? 1 : -1) }
+            : post
+        )
+      );
+      setLikedPosts((prevState) => ({
+        ...prevState,
+        [postId]: isLiked, // Revert like state
+      }));
+    }
   };
+
+
 
   const handlePost = async () => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
@@ -110,6 +172,9 @@ function ProfilePage() {
 
 
   
+
+
+
   useEffect(() => {
     const userId = localStorage.getItem("userId"); // Get the logged-in user's ID
     if (!userId) {
@@ -139,34 +204,39 @@ function ProfilePage() {
           `http://localhost:5005/api/user/${userId}`
         );
         const userData = response.data;
-
+  
         // Format dateofbirth to YYYY-MM-DD
-        const formattedDate = userData.dateofbirth
-          ? new Date(
-              new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000
-            )
+        const formattedDateOfBirth = userData.dateofbirth
+          ? new Date(new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000)
               .toISOString()
               .split("T")[0]
           : "";
-
+  
+          const formattedCreatedAt = userData.created_at
+          ? new Date(userData.created_at).toLocaleString('en-US', { month: 'long', year: 'numeric' })
+          : "";
+        
+  
         setOriginalData(userData); // Save the original data
         setFormData({
           firstname: userData.firstname || "",
           lastname: userData.lastname || "",
-          dateofbirth: formattedDate, // Set formatted date
+          dateofbirth: formattedDateOfBirth, // Set formatted dateofbirth
           email: userData.email || "",
           password: "",
           confirmpassword: "",
+          created_at: formattedCreatedAt, // Set formatted created_at
         });
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     };
-
+  
     if (userId) {
       fetchUserData();
     }
   }, []);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -239,13 +309,15 @@ function ProfilePage() {
         <div className="left-sidebar">
           <div className="sidebar-menu">
             <div className="profile-image">
-              <button className="menu-button">
+              <button className="menu-button"
+              onClick={() => navigate('/profile')}>
                 <img src={GI} alt="Profile" />
                 <span>Profile</span>
               </button>
             </div>
 
-            <button className="menu-button2">
+            <button className="menu-button2"
+            onClick={() => navigate('/home')}>
               <img src={HM} alt="Profile" />
               <span>Home</span>
             </button>
@@ -265,17 +337,41 @@ function ProfilePage() {
         <main className="content">
           {/* Profile Section */}
           <div className="profile-header">
+
             <div className="profile-details">
-              <img className="profile-picture" src={GI} alt="Profile" />
-              <div className="profile-info">
-                <h2 className="profile-name">Emergency Food </h2>
+              <img
+                className="profile-picture"
+                src={GI}
+                alt="Profile"
+              />
+              <div className="info-containers">
+                <div className="profile-info">
+                <h2 className="profile-name">{formData.firstname || 'First Name'} {formData.lastname || 'Last Name'}</h2>
+                  <p className="profile-name">{formData.email} </p>
+                  <p className="profile-name">Joined {formData.created_at} </p>
+                </div>
+
+                <div className="edit-button">
+                  <button>
+                  Edit 
+                    <img
+                      src={EI}
+                      alt="edit icon"
+                      className="edit-icon"
+                    />
+                  </button>
+                </div>
               </div>
             </div>
+
+
+
 
             <div className="bottomBorder">
               <p className="profile-name">Post</p>
             </div>
           </div>
+
 
           {/* Post Input */}
           <div className="post-mlg">
