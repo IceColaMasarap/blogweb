@@ -28,14 +28,12 @@ const Homepage = () => {
     axios
       .get(`http://localhost:5005/api/showposts?userId=${userId}`)
       .then((response) => {
-        const sortedPosts = response.data.sort(
-          (a, b) => new Date(b.postdate) - new Date(a.postdate) // Sort by postdate, newest first
-        );
-        setPosts(sortedPosts);
+        const posts = response.data;
+        setPosts(posts);
   
         const initialLikes = {};
-        sortedPosts.forEach((post) => {
-          initialLikes[post.id] = post.liked; // Initialize liked state for each post
+        posts.forEach((post) => {
+          initialLikes[post.id] = post.liked;
         });
         setLikedPosts(initialLikes);
       })
@@ -43,7 +41,6 @@ const Homepage = () => {
         console.error("Error fetching posts:", error);
       });
   }, []);
-  
   
 
   const autoResize = (e) => {

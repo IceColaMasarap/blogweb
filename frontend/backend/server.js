@@ -216,17 +216,36 @@ app.get("/api/usershow", (req, res) => {
 });
 
 app.get("/api/showposts", (req, res) => {
-  const sql = `SELECT p.title, p.content, p.postdate, p.isFlagged, p.like_count, p.imageurl, a.firstname, a.lastname FROM posts p INNER JOIN users a ON p.author_id = a.id;`;
+  const userId = req.query.userId; // Pass the logged-in user's ID as a query parameter
 
-  db.query(sql, (error, results) => {
+  const sql = `
+    SELECT 
+      p.id, 
+      p.title, 
+      p.content, 
+      p.postdate, 
+      p.isFlagged, 
+      p.like_count, 
+      p.imageurl, 
+      a.firstname, 
+      a.lastname, 
+      EXISTS (SELECT 1 FROM likes WHERE likes.post_id = p.id AND likes.user_id = ?) AS liked
+    FROM posts p 
+    INNER JOIN users a ON p.author_id = a.id;
+  `;
+
+  db.query(sql, [userId], (error, results) => {
     if (error) {
-      console.error("Error fetching user stats:", error);
-      res.status(500).json({ message: "Error retrieving user stats" });
+      console.error("Error fetching posts:", error);
+      res.status(500).json({ message: "Error retrieving posts." });
     } else {
       res.status(200).json(results);
     }
   });
 });
+
+
+
 
 app.get("/api/users", (req, res) => {
   const sql = `
@@ -496,3 +515,67 @@ app.post("/api/addpost", (req, res) => {
 app.listen(5005, () => {
   console.log("Server running on port 5005");
 });
+
+app.post("/api/like-post", (req, res) => {
+  const { postId, userId, action } = req.body;
+
+  if (!postId || !userId || !action) {
+    return res.status(400).json({ message: "Post ID, User ID, and action are required." });
+  }
+
+  const checkLikeSql = "SELECT id FROM likes WHERE post_id = ? AND user_id = ?";
+  db.query(checkLikeSql, [postId, userId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Database error." });
+    }
+
+    const isLiked = results.length > 0;
+
+    if (action === "like" && !isLiked) {
+      // Add a like
+      const addLikeSql = "INSERT INTO likes (id, user_id, post_id, created_at) VALUES (UUID(), ?, ?, NOW())";
+      const updatePostSql = "UPDATE posts SET like_count = like_count + 1 WHERE id = ?";
+      db.query(addLikeSql, [userId, postId], (addErr) => {
+        if (addErr) {
+          console.error("Error adding like:", addErr);
+          return res.status(500).json({ message: "Error adding like." });
+        }
+
+        db.query(updatePostSql, [postId], (updateErr) => {
+          if (updateErr) {
+            console.error("Error updating like count:", updateErr);
+            return res.status(500).json({ message: "Error updating like count." });
+          }
+
+          res.status(200).json({ message: "Post liked.", newLikeCount: isLiked + 1 });
+        });
+      });
+    } else if (action === "unlike" && isLiked) {
+      // Remove a like
+      const removeLikeSql = "DELETE FROM likes WHERE post_id = ? AND user_id = ?";
+      const updatePostSql = "UPDATE posts SET like_count = like_count - 1 WHERE id = ?";
+      db.query(removeLikeSql, [postId, userId], (removeErr) => {
+        if (removeErr) {
+          console.error("Error removing like:", removeErr);
+          return res.status(500).json({ message: "Error removing like." });
+        }
+
+        db.query(updatePostSql, [postId], (updateErr) => {
+          if (updateErr) {
+            console.error("Error updating like count:", updateErr);
+            return res.status(500).json({ message: "Error updating like count." });
+          }
+
+          res.status(200).json({ message: "Post unliked.", newLikeCount: isLiked - 1 });
+        });
+      });
+    } else {
+      res.status(400).json({ message: "Invalid action or post already in desired state." });
+    }
+  });
+});
+
+
+
+

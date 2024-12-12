@@ -102,6 +102,8 @@ body {
   height: calc(100vh - 10vh);
   /* Match height with sidebars */
   overflow-y: auto;
+
+  overflow-x: hidden;
   /* Enable scrolling for main content */
   scrollbar-width: none;
 }
