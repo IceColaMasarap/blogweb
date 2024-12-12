@@ -26,41 +26,147 @@ function ProfilePage() {
     confirmpassword: "",
   });
   const [originalData, setOriginalData] = useState({});
+  const [posts, setPosts] = useState([]); // State to store all posts
+  const [postContent, setPostContent] = useState(""); // State for post content
+  const [isPosting, setIsPosting] = useState(false); // State for button loading
+  const [isToggled, setIsToggled] = useState(false); // State to track button toggle
+  const [postContentTitle, setPostContentTitle] = useState("");
 
-useEffect(() => {
-  const userId = localStorage.getItem("userId");
-  const fetchUserData = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5005/api/user/${userId}`);
-      const userData = response.data;
-  
-      // Format dateofbirth to YYYY-MM-DD
-      const formattedDate = userData.dateofbirth
-      ? new Date(new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split("T")[0]
-      : "";
-    
-  
-      setOriginalData(userData); // Save the original data
-      setFormData({
-        firstname: userData.firstname || "",
-        lastname: userData.lastname || "",
-        dateofbirth: formattedDate, // Set formatted date
-        email: userData.email || "",
-        password: "",
-        confirmpassword: "",
+  useEffect(() => {
+    axios
+      .get("http://localhost:5005/api/showposts") // Fetch all posts
+      .then((response) => {
+        const sortedPosts = response.data.sort(
+          (a, b) => new Date(b.postdate) - new Date(a.postdate)
+        );
+        setPosts(sortedPosts);
+      })
+      .catch((error) => {
+        console.error("Error fetching posts:", error);
       });
+  }, []);
+  const autoResize = (e) => {
+    const textarea = e.target;
+    textarea.style.height = "auto"; // Resetting the height
+    textarea.style.height = `${textarea.scrollHeight}px`; // Set the height dynamically
+  };
+  const handleToggle = () => {
+    setIsToggled((prev) => !prev); // Toggle state
+  };
+
+  const handlePost = async () => {
+    const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
+    if (!postContent.trim() || !postContentTitle.trim()) {
+      alert("Both Title and Content cannot be empty!");
+      return;
+    }
+
+    const fileInput = document.querySelector(".file-input");
+    const file = fileInput?.files[0];
+
+    const formData = new FormData();
+    formData.append("title", postContentTitle);
+    formData.append("content", postContent);
+    formData.append("userId", userId); // Add the userId to the form data
+    if (file) {
+      formData.append("file", file);
+    }
+
+    try {
+      setIsPosting(true);
+
+      const response = await axios.post(
+        "http://localhost:5005/api/create-post",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (response.status === 201) {
+        alert("Post submitted!");
+        setPostContent("");
+        setPostContentTitle("");
+        window.location.reload(); // Refresh the entire page
+
+        fileInput.value = ""; // Clear file input
+      } else {
+        console.error("Error creating post:", response.data.message);
+      }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error("Error creating post:", error.message);
+      alert("Failed to create post. Please try again.");
+    } finally {
+      setIsPosting(false);
     }
   };
-  
+  const handleFileInput = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("Selected file:", file);
+      // Process the file (e.g., upload to server or display preview)
+    }
+  };
 
-  if (userId) {
-    fetchUserData();
-  }
-}, []);
+
+  
+  useEffect(() => {
+    const userId = localStorage.getItem("userId"); // Get the logged-in user's ID
+    if (!userId) {
+      console.error("No user ID found in localStorage");
+      return;
+    }
+  
+    axios
+      .get(`http://localhost:5005/api/userposts/${userId}`)
+      .then((response) => {
+        const sortedPosts = response.data.sort(
+          (a, b) => new Date(b.postdate) - new Date(a.postdate)
+        );
+        setPosts(sortedPosts);
+      })
+      .catch((error) => {
+        console.error("Error fetching user posts:", error);
+      });
+  }, []);
+
+  
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5005/api/user/${userId}`
+        );
+        const userData = response.data;
+
+        // Format dateofbirth to YYYY-MM-DD
+        const formattedDate = userData.dateofbirth
+          ? new Date(
+              new Date(userData.dateofbirth).getTime() + 24 * 60 * 60 * 1000
+            )
+              .toISOString()
+              .split("T")[0]
+          : "";
+
+        setOriginalData(userData); // Save the original data
+        setFormData({
+          firstname: userData.firstname || "",
+          lastname: userData.lastname || "",
+          dateofbirth: formattedDate, // Set formatted date
+          email: userData.email || "",
+          password: "",
+          confirmpassword: "",
+        });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (userId) {
+      fetchUserData();
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,10 +175,10 @@ useEffect(() => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const changes = [];
     const updates = {};
-  
+
     // Check for changes in the input fields
     if (formData.firstname !== originalData.firstname) {
       changes.push("First Name");
@@ -90,7 +196,7 @@ useEffect(() => {
       changes.push("Email");
       updates.email = formData.email;
     }
-  
+
     // Handle password changes
     if (formData.password || formData.confirmpassword) {
       if (formData.password !== formData.confirmpassword) {
@@ -100,17 +206,20 @@ useEffect(() => {
       changes.push("Password");
       updates.password = formData.password;
     }
-  
+
     // If no changes, alert the user
     if (changes.length === 0) {
       alert("No changes were made.");
       return;
     }
-  
+
     // Send the update request
     const userId = localStorage.getItem("userId");
     try {
-      const response = await axios.put(`http://localhost:5005/api/user/${userId}`, updates);
+      const response = await axios.put(
+        `http://localhost:5005/api/user/${userId}`,
+        updates
+      );
       if (response.status === 200) {
         alert(`The following fields were updated: ${changes.join(", ")}`);
         setOriginalData({ ...originalData, ...updates }); // Update the original data
@@ -122,173 +231,264 @@ useEffect(() => {
   };
   return (
     <div className="maincontentpost">
-    {/* Add the Navigation Bar */}
-    <NavigationBar />
+      {/* Add the Navigation Bar */}
+      <NavigationBar />
 
-    <div className="HomePage">
-      {/* Left Sidebar */}
-      <div className="left-sidebar">
-        <div className="sidebar-menu">
-          <div className="profile-image">
-            <button className="menu-button">
-              <img src={GI} alt="Profile" />
-              <span>Profile</span>
-            </button>
-          </div>
-
-          <button className="menu-button2">
-            <img src={HM} alt="Profile" />
-            <span>Home</span>
-          </button>
-
-          <div className="footnotes">
-            <p>
-              <sup></sup>Privacy · Terms · Advertising · Ad Choices · Cookies
-            </p>
-            <p>
-              <sup></sup> Tsaaritsa © 2024
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <main className="content">
-        {/* Profile Section */}
-      <div className="profile-header">
-         
-        <div className="profile-details">
-          <img
-            className="profile-picture"
-            src={GI}
-            alt="Profile"
-          />
-          <div className="profile-info">
-            <h2 className="profile-name">Emergency Food </h2>
-            
-          </div>
-          
-        </div>
-        
-
-        <div className="bottomBorder">
-        <p className="profile-name">Post</p>
-        </div>
-      </div>
-
-        {/* Posts */}
-        <div className="post">
-          <div className="post-header">
+      <div className="HomePage">
+        {/* Left Sidebar */}
+        <div className="left-sidebar">
+          <div className="sidebar-menu">
             <div className="profile-image">
-              <img src={GI} alt="Profile" />
-              <span className="post-user">Genshin Impact</span>
-              <span className="post-time">1h</span>
-            </div>
-            <button className="post-settings">
-              <img src={PS} alt="Profile" />
-            </button>
-          </div>
-          <div className="post-body">Genhsin 4th Anniversary!</div>
-          <div className="post-image">
-            <img src={POSTSAMPLE} alt="NU Pep Squad" />
-          </div>
-          <button className="lk-btn">
-                <img src={LK} alt="Like" />
+              <button className="menu-button">
+                <img src={GI} alt="Profile" />
+                <span>Profile</span>
               </button>
-        </div>
-
-        <div className="post">
-          <div className="post-header">
-            <div className="profile-image">
-              <img src={GI} alt="Profile" />
-              <span className="post-user">Genshin Impact</span>
-              <span className="post-time">1h</span>
             </div>
-            <div className="post-settings">
-              <img src={PS} alt="Profile" />
+
+            <button className="menu-button2">
+              <img src={HM} alt="Profile" />
+              <span>Home</span>
+            </button>
+
+            <div className="footnotes">
+              <p>
+                <sup></sup>Privacy · Terms · Advertising · Ad Choices · Cookies
+              </p>
+              <p>
+                <sup></sup> Tsaaritsa © 2024
+              </p>
             </div>
           </div>
-          <div className="post-body">Genhsin 4th Anniversary!</div>
-          <div className="post-image">
-            <img src={CS} alt="NU Pep Squad" />
+        </div>
+
+        {/* Main Content */}
+        <main className="content">
+          {/* Profile Section */}
+          <div className="profile-header">
+            <div className="profile-details">
+              <img className="profile-picture" src={GI} alt="Profile" />
+              <div className="profile-info">
+                <h2 className="profile-name">Emergency Food </h2>
+              </div>
+            </div>
+
+            <div className="bottomBorder">
+              <p className="profile-name">Post</p>
+            </div>
+          </div>
+
+          {/* Post Input */}
+          <div className="post-mlg">
+            <div className="post-input">
+              <div className="postsomething1">
+                <label className="sdasda">What's your tea?</label>
+              </div>
+              <div className="profile-imagexs"></div>
+              <div className="post-input">
+                <textarea
+                  type="text"
+                  rows={1}
+                  className="input-title"
+                  placeholder="Title"
+                  value={postContentTitle}
+                  onChange={(e) => {
+                    setPostContentTitle(e.target.value);
+                    autoResize(e);
+                  }}
+                  onInput={autoResize}
+                  style={{ overflow: "hidden", resize: "none" }} // Prevent manual resize
+                />
+                {/* Description textarea */}
+                <textarea
+                  rows={2}
+                  type="text"
+                  className="input-desc"
+                  placeholder="Description"
+                  value={postContent}
+                  onChange={(e) => {
+                    setPostContent(e.target.value);
+                    autoResize(e);
+                  }}
+                  onInput={autoResize}
+                  style={{ overflow: "hidden", resize: "none" }} // Prevent manual resize
+                />
+              </div>
+            </div>
+            <div className="pv">
+              <div className="div12">
+                <label className="insertimg">Add to your post</label>
+                <img className="imgupd" src={IP} alt="Profile" />
+              </div>
+
+              <input
+                type="file"
+                className="file-input"
+                accept="image/*" // Optional: restrict to images only
+                onChange={(e) => handleFileInput(e)}
+              />
+            </div>
+            <button className="p-btn" onClick={handlePost} disabled={isPosting}>
+              {isPosting ? "Posting..." : "Post"}
+            </button>
+          </div>
+
+          {/* Posts */}
+          <div className="posts">
+            {posts.map((post) => (
+              <div className="post" key={post.id}>
+                {/* Post Header */}
+                <div className="post-header">
+                  <div className="profile-image">
+                    <img src={GI} alt="Profile" />
+                    <div className="authorname">
+                      <label className="post-user">{post.firstname}</label>
+                      <label className="post-user">{post.lastname}</label>
+                    </div>
+                    <label className="post-time">
+                      {new Date(post.postdate).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </label>
+                  </div>
+                  <button className="post-settings">
+                    <img src={PS} alt="Settings" />
+                  </button>
+                </div>
+
+                <div className="post-body">
+                  <label className="posttitle">{post.title}</label>
+                  <label className="postdesc">{post.content}</label>
+                </div>
+
+                {post.imageurl && (
+                  <div className="post-image">
+                    <img
+                      className="postimg"
+                      src={`http://localhost:5005/uploads/${post.imageurl}`}
+                      alt="Post"
+                    />
+                  </div>
+                )}
+
+                <label
+                  className="likebtn"
+                  onClick={handleToggle}
+                  style={{
+                    color: isToggled ? "red" : "white", // Toggle color for demonstration
+                  }}
+                >
+                  <FontAwesomeIcon icon={faHeart} />
+                  {post.like_count}
+                </label>
+              </div>
+            ))}
+          </div>
+        </main>
+
+        {/* Right Sidebar */}
+        <div className="right-sidebar">
+          <div className="edit-container">
+            <h2 className="about-title">Edit Profile</h2>
+            <form className="edit-form">
+              {/* First Name */}
+              <div className="eform-group">
+                <label className="elabel" htmlFor="firstname">
+                  First Name
+                </label>
+                <input
+                  className="edittxt"
+                  type="text"
+                  name="firstname"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  placeholder="Enter First Name"
+                />
+              </div>
+
+              {/* Last Name */}
+              <div className="eform-group">
+                <label className="elabel" htmlFor="lastname">
+                  Last Name
+                </label>
+                <input
+                  className="edittxt"
+                  type="text"
+                  name="lastname"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  placeholder="Enter Last Name"
+                />
+              </div>
+
+              {/* Date of Birth */}
+              <div className="eform-group">
+                <label className="elabel" htmlFor="dob">
+                  Date of Birth
+                </label>
+                <input
+                  className="edittxt"
+                  type="date"
+                  name="dateofbirth"
+                  value={formData.dateofbirth}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* Email */}
+              <div className="eform-group">
+                <label className="elabel" htmlFor="email">
+                  Email
+                </label>
+                <input
+                  className="edittxt"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter Email"
+                />
+              </div>
+
+              {/* Password */}
+              <div className="eform-group">
+                <label className="elabel" htmlFor="password">
+                  Password
+                </label>
+                <input
+                  className="edittxt"
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter Password"
+                  autoComplete="new-password"
+                />
+              </div>
+
+              {/* Confirm Password */}
+              <div className="eform-group">
+                <label className="elabel" htmlFor="confirm-password">
+                  Confirm Password
+                </label>
+                <input
+                  className="edittxt"
+                  type="password"
+                  name="confirmpassword"
+                  value={formData.confirmpassword}
+                  onChange={handleChange}
+                  placeholder="Confirm Password"
+                />
+              </div>
+              <button type="submit" className="update-button">
+                Update
+              </button>
+            </form>
           </div>
         </div>
-      </main>
-
-      {/* Right Sidebar */}
-      <div className="right-sidebar">
-<div className="edit-container">
-  <h2 className="about-title">Edit Profile</h2>
-  <form className="edit-form">
-    {/* First Name */}
-    <div className="eform-group">
-      <label className="elabel" htmlFor="firstname">First Name</label>
-      <input className="edittxt" type="text"
-          name="firstname"
-          value={formData.firstname}
-          onChange={handleChange}
-          placeholder="Enter First Name" />
+      </div>
     </div>
-
-    {/* Last Name */}
-    <div className="eform-group">
-      <label className="elabel" htmlFor="lastname">Last Name</label>
-      <input className="edittxt" type="text"
-          name="lastname"
-          value={formData.lastname}
-          onChange={handleChange}
-          placeholder="Enter Last Name" />
-    </div>
-
-    {/* Date of Birth */}
-    <div className="eform-group">
-      <label className="elabel" htmlFor="dob">Date of Birth</label>
-      <input className="edittxt" type="date"
-          name="dateofbirth"
-          value={formData.dateofbirth}
-          onChange={handleChange} />
-    </div>
-
-    {/* Email */}
-    <div className="eform-group">
-      <label className="elabel" htmlFor="email">Email</label>
-      <input className="edittxt" type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="Enter Email" />
-    </div>
-
-    {/* Password */}
-    <div className="eform-group">
-      <label className="elabel" htmlFor="password">Password</label>
-      <input className="edittxt" type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Enter Password"
-           autoComplete="new-password" />
-    </div>
-
-    {/* Confirm Password */}
-    <div className="eform-group">
-      <label className="elabel" htmlFor="confirm-password">Confirm Password</label>
-      <input className="edittxt" type="password"
-          name="confirmpassword"
-          value={formData.confirmpassword}
-          onChange={handleChange}
-          placeholder="Confirm Password" />
-    </div>
-    <button type="submit" className="update-button">Update</button>
-    
-  </form>
-</div>
-</div>
-
-
-    </div>
-  </div>
-);
-};
+  );
+}
 
 export default ProfilePage;

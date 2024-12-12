@@ -228,6 +228,24 @@ app.get("/api/showposts", (req, res) => {
   });
 });
 
+app.get("/api/userposts/:userId", (req, res) => {
+  const userId = req.params.userId; // Get userId from request parameters
+  const sql = `SELECT p.title, p.content, p.postdate, p.isFlagged, p.like_count, p.imageurl 
+               FROM posts p 
+               WHERE p.author_id = ? 
+               ORDER BY p.postdate DESC;`;
+
+  db.query(sql, [userId], (error, results) => {
+    if (error) {
+      console.error("Error fetching user posts:", error);
+      res.status(500).json({ message: "Error retrieving user posts" });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+
 app.get("/api/users", (req, res) => {
   const sql = `
     SELECT 
