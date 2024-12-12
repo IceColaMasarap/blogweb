@@ -63,7 +63,7 @@ function Login() {
   return (
     <div className="container">
       {/* Left Section */}
-      <div className="left-section">
+      <div className="left-sectionl">
         <div className="logo-container">
           <div className="logo">
             <img
@@ -77,7 +77,7 @@ function Login() {
       </div>
 
       {/* Right Section */}
-      <div className="right-sectionr">
+      <div className="right-sectionl">
         <h1 className="main-headingr">Everyone’s cup</h1>
         <h1 className="main-headingr">of tea 🍃</h1>
         <p className="sub-headingr">Welcome back!</p>

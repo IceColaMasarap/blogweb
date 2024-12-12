@@ -25,13 +25,13 @@
   pointer-events: none; /* Ensures background doesn't interfere with content interaction */
 }
 /* Left Section */
-.left-section {
+.left-sectionl {
   flex: 1;
   display: flex;
-  margin-left: -13.3px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding-left: 8px;
 }
 
 .logo-image {
@@ -47,11 +47,13 @@
 }
 
 /* Right Section */
-.right-section {
+.right-sectionl {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: baseline;
+  margin-top: 100px;
+  padding: 0 0 0 15px;
 }
 
 .main-heading {
