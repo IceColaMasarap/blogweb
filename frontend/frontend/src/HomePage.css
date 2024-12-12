@@ -241,10 +241,19 @@ body {
 }
 
 .modal-content {
-  position: relative;
+  position: relative; /* To position the close button relative to the modal */
+  width: 500px;
+  min-height: 300px;
+  max-height: 600px;
+  background-color: #333333; /* White square */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.modal-contentt {
+  position: relative; /* To position the close button relative to the modal */
   width: 500px;
   min-height: 600px;
-  background-color: #333333;
+  background-color: #333333; /* White square */
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -253,7 +262,8 @@ body {
   padding: 16px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; /* Center the title */
+  position: relative; /* Ensure the close button stays positioned within the header */
   border-bottom: 1px solid #444;
   margin: 0 12px;
 }
@@ -271,11 +281,13 @@ body {
 }
 
 .modal-title {
-  margin: 0;
+  margin: 0 auto; /* Automatically adjust margins to center the title */
   font-size: 14px;
   color: white;
   font-family: "Poppins", sans-serif;
+  text-align: center; /* Ensure text alignment is centered */
 }
+
 
 .modal-input-container {
   background-color: #222;

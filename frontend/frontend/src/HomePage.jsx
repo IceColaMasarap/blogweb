@@ -630,7 +630,7 @@ const Homepage = () => {
 
           {isModalOpen && selectedPost && (
             <div className="modal-overlay" onClick={toggleModal}>
-              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-contentt" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                   <button className="modal-close-btn" onClick={toggleModal}>
                     &times;
