@@ -15,7 +15,7 @@ import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
 import "./UserProfile.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart, faPen, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faPen } from "@fortawesome/free-solid-svg-icons";
 
 function ProfilePage() {
   const [formData, setFormData] = useState({
@@ -388,8 +388,7 @@ function ProfilePage() {
                 className="menu-button"
                 onClick={() => navigate("/profile")}
               >
-                <FontAwesomeIcon icon={faUser} />
-
+                <img src={GI} alt="Profile" />
                 <span>Profile</span>
               </button>
             </div>
