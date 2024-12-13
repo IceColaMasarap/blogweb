@@ -210,7 +210,6 @@ function Accounts() {
     }
   };
 
-  
   return (
     <div className="dashboardbg">
       <div className="navBar">
@@ -349,7 +348,7 @@ function Accounts() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <div className="overlaybutton">
-                <button className="close-button" onClick={toggleModal}>
+                <button className="close-buttons" onClick={toggleModal}>
                   Close
                 </button>
                 <button className="submit-button" type="submit">
@@ -428,7 +427,7 @@ function Accounts() {
               </select>
               <div className="overlaybutton">
                 <button
-                  className="close-button"
+                  className="close-buttons"
                   type="button"
                   onClick={toggleModal2}
                 >
