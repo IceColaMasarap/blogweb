@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom"; // Import React Router's useNavigate
-import TS from "./assets/tsaaritsa.png";
+import TS from "./assets/logo.png";
 import LO from "./assets/LogOut.png";
 import "./NavigationBar.css"; // Import the CSS for styling
 
@@ -21,7 +21,7 @@ const NavigationBar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <div className="tsaaritsa">
-          <img src={TS} alt="Tsaaritsa Logo" className="logo" /> Tsaaritsa
+          <img src={TS} alt="Tsaaritsa Logo" className="logo" /> Tsaaritsa.
         </div>
         <input
           type="text"
