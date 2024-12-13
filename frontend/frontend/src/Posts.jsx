@@ -260,7 +260,7 @@ function Posts() {
                   />
                 </div>
                 <div className="overlaybutton">
-                  <button className="close-button" onClick={toggleModal}>
+                  <button className="close-buttons" onClick={toggleModal}>
                     Close
                   </button>
                   <button className="submit-button" type="submit">
@@ -301,7 +301,7 @@ function Posts() {
                 />
                 <div className="overlaybutton">
                   <button
-                    className="close-button"
+                    className="close-buttons"
                     onClick={() => setIsModalOpen2(false)}
                   >
                     Close

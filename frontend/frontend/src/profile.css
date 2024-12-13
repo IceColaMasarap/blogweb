@@ -629,8 +629,10 @@ body {
 
 .modal-header h2 {
   padding: 0;
-
   margin: 0;
   margin-bottom: 10px;
   color: #dddddd;
+}
+.postimg {
+  background-color: #49494932;
 }

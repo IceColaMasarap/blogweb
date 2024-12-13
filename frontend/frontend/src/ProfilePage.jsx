@@ -15,7 +15,7 @@ import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
 import "./UserProfile.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faPen, faUser } from "@fortawesome/free-solid-svg-icons";
 
 function ProfilePage() {
   const [formData, setFormData] = useState({
@@ -35,9 +35,24 @@ function ProfilePage() {
   const [postContentTitle, setPostContentTitle] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
   const navigate = useNavigate();
+  const [email, setEmail] = useState(""); // State to store email filter value
+  const [startDate, setStartDate] = useState(""); // State to store start date
+  const [endDate, setEndDate] = useState(""); // State to store end date
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [image, setImage] = useState(null);
+  const [isModalOpen2, setIsModalOpen2] = useState(false); // State to control modal visibility
+
+  const [selectedPost, setSelectedPost] = useState(null); // State to track the selected post
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const handleRowClick = (post) => {
+    console.log("Row clicked:", post); // Debug log
+    setSelectedPost(post);
+    setIsModalOpen2(true);
+    console.log("selectedPost:", selectedPost);
+    console.log("isModalOpen2 state after click:", isModalOpen2);
+  };
   const handleEditClick = () => {
     setIsModalOpen(true);
   };
@@ -45,20 +60,63 @@ function ProfilePage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-
   useEffect(() => {
+    const userId = localStorage.getItem("userId"); // Get the current user's ID from local storage
+
     axios
       .get("http://localhost:5005/api/showposts") // Fetch all posts
       .then((response) => {
-        const sortedPosts = response.data.sort(
-          (a, b) => new Date(b.postdate) - new Date(a.postdate)
-        );
-        setPosts(sortedPosts);
+        const userPosts = response.data
+          .filter((post) => post.author_id === userId) // Filter posts by the current user's ID
+          .sort((a, b) => new Date(b.postdate) - new Date(a.postdate)); // Sort by date (latest to oldest)
+        setPosts(userPosts);
       })
       .catch((error) => {
         console.error("Error fetching posts:", error);
       });
   }, []);
+  const handleUpdatePost = async () => {
+    try {
+      console.log("Update data:", {
+        post_id: selectedPost?.id,
+        title: selectedPost?.title,
+        content: selectedPost?.content,
+      });
+      const response = await axios.put(
+        "http://localhost:5005/api/updatepost2",
+        {
+          post_id: selectedPost.id,
+          title: selectedPost.title,
+          content: selectedPost.content,
+        }
+      );
+      alert("Post updated successfully");
+      setIsModalOpen2(false);
+      setSelectedPost(null);
+      // Optionally, refresh the posts
+      window.location.reload(); // Refresh the entire page
+    } catch (error) {
+      console.error("Error updating post:", error);
+      alert("Failed to update post.");
+    }
+  };
+
+  // Handle Delete Post
+  const handleDeletePost = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:5005/api/deletepost2/${selectedPost.id}`
+      );
+      alert("Post deleted successfully");
+      setIsModalOpen2(false);
+      setSelectedPost(null);
+      // Optionally, refresh the posts
+      window.location.reload(); // Refresh the entire page
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post.");
+    }
+  };
   const autoResize = (e) => {
     const textarea = e.target;
     textarea.style.height = "auto"; // Resetting the height
@@ -330,7 +388,8 @@ function ProfilePage() {
                 className="menu-button"
                 onClick={() => navigate("/profile")}
               >
-                <img src={GI} alt="Profile" />
+                <FontAwesomeIcon icon={faUser} />
+
                 <span>Profile</span>
               </button>
             </div>
@@ -557,7 +616,7 @@ function ProfilePage() {
           {/* Posts */}
           <div className="posts">
             {posts.map((post) => (
-              <div className="post" key={post.id}>
+              <div className="postxx" key={post.id}>
                 {/* Post Header */}
                 <div className="post-header">
                   <div className="profile-image">
@@ -574,8 +633,11 @@ function ProfilePage() {
                     </label>
                   </div>
                   {/* Post Settings Button */}
-                  <button className="post-settings">
-                    <img src={PS} alt="Settings" />
+                  <button
+                    className="post-settings"
+                    onClick={() => handleRowClick(post)}
+                  >
+                    <FontAwesomeIcon icon={faPen} />
                   </button>
                 </div>
                 <div className="post-body">
@@ -595,7 +657,6 @@ function ProfilePage() {
 
                 <label
                   className="likebtn"
-                  onClick={handleToggle}
                   style={{
                     color: isToggled ? "red" : "white", // Toggle color for demonstration
                   }}
@@ -611,6 +672,60 @@ function ProfilePage() {
         {/* Right Sidebar */}
         <div className="right-sidebar"></div>
       </div>
+      {isModalOpen2 && selectedPost && (
+        <div className="editpostoverlay show">
+          <div className="overlaycontainer">
+            <form className="overlayform">
+              <div className="headeroverlay">
+                <h2 className="overlaylabel2">Edit Post</h2>
+              </div>
+              <label className="overlaylabel">Title</label>
+              <input
+                className="addpostforminput"
+                type="text"
+                value={selectedPost.title}
+                onChange={(e) =>
+                  setSelectedPost({ ...selectedPost, title: e.target.value })
+                }
+              />
+              <label className="overlaylabel">Content</label>
+              <textarea
+                className="addpostforminput"
+                rows="4"
+                value={selectedPost.content}
+                onChange={(e) =>
+                  setSelectedPost({
+                    ...selectedPost,
+                    content: e.target.value,
+                  })
+                }
+              />
+              <div className="overlaybutton">
+                <button
+                  className="close-buttons"
+                  onClick={() => setIsModalOpen2(false)}
+                >
+                  Close
+                </button>
+                <button
+                  className="submit-button"
+                  type="button"
+                  onClick={handleUpdatePost}
+                >
+                  Update
+                </button>
+                <button
+                  className="submit-button"
+                  type="button"
+                  onClick={handleDeletePost}
+                >
+                  Delete
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

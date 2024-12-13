@@ -9,7 +9,6 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
 const session = require("express-session");
 
-
 const { v4: uuidv4 } = require("uuid"); // Import uuidv4
 const multer = require("multer");
 
@@ -226,6 +225,7 @@ app.get("/api/showposts", (req, res) => {
       p.content, 
       p.postdate, 
       p.isFlagged, 
+      p.author_id,
       p.like_count, 
       p.imageurl, 
       a.firstname, 
@@ -244,9 +244,6 @@ app.get("/api/showposts", (req, res) => {
     }
   });
 });
-
-
-
 
 app.get("/api/users", (req, res) => {
   const sql = `
@@ -513,13 +510,13 @@ app.post("/api/addpost", (req, res) => {
   });
 });
 
-
-
 app.post("/api/like-post", (req, res) => {
   const { postId, userId, action } = req.body;
 
   if (!postId || !userId || !action) {
-    return res.status(400).json({ message: "Post ID, User ID, and action are required." });
+    return res
+      .status(400)
+      .json({ message: "Post ID, User ID, and action are required." });
   }
 
   const checkLikeSql = "SELECT id FROM likes WHERE post_id = ? AND user_id = ?";
@@ -533,8 +530,10 @@ app.post("/api/like-post", (req, res) => {
 
     if (action === "like" && !isLiked) {
       // Add a like
-      const addLikeSql = "INSERT INTO likes (id, user_id, post_id, created_at) VALUES (UUID(), ?, ?, NOW())";
-      const updatePostSql = "UPDATE posts SET like_count = like_count + 1 WHERE id = ?";
+      const addLikeSql =
+        "INSERT INTO likes (id, user_id, post_id, created_at) VALUES (UUID(), ?, ?, NOW())";
+      const updatePostSql =
+        "UPDATE posts SET like_count = like_count + 1 WHERE id = ?";
       db.query(addLikeSql, [userId, postId], (addErr) => {
         if (addErr) {
           console.error("Error adding like:", addErr);
@@ -544,16 +543,22 @@ app.post("/api/like-post", (req, res) => {
         db.query(updatePostSql, [postId], (updateErr) => {
           if (updateErr) {
             console.error("Error updating like count:", updateErr);
-            return res.status(500).json({ message: "Error updating like count." });
+            return res
+              .status(500)
+              .json({ message: "Error updating like count." });
           }
 
-          res.status(200).json({ message: "Post liked.", newLikeCount: isLiked + 1 });
+          res
+            .status(200)
+            .json({ message: "Post liked.", newLikeCount: isLiked + 1 });
         });
       });
     } else if (action === "unlike" && isLiked) {
       // Remove a like
-      const removeLikeSql = "DELETE FROM likes WHERE post_id = ? AND user_id = ?";
-      const updatePostSql = "UPDATE posts SET like_count = like_count - 1 WHERE id = ?";
+      const removeLikeSql =
+        "DELETE FROM likes WHERE post_id = ? AND user_id = ?";
+      const updatePostSql =
+        "UPDATE posts SET like_count = like_count - 1 WHERE id = ?";
       db.query(removeLikeSql, [postId, userId], (removeErr) => {
         if (removeErr) {
           console.error("Error removing like:", removeErr);
@@ -563,36 +568,42 @@ app.post("/api/like-post", (req, res) => {
         db.query(updatePostSql, [postId], (updateErr) => {
           if (updateErr) {
             console.error("Error updating like count:", updateErr);
-            return res.status(500).json({ message: "Error updating like count." });
+            return res
+              .status(500)
+              .json({ message: "Error updating like count." });
           }
 
-          res.status(200).json({ message: "Post unliked.", newLikeCount: isLiked - 1 });
+          res
+            .status(200)
+            .json({ message: "Post unliked.", newLikeCount: isLiked - 1 });
         });
       });
     } else {
-      res.status(400).json({ message: "Invalid action or post already in desired state." });
+      res
+        .status(400)
+        .json({ message: "Invalid action or post already in desired state." });
     }
   });
 });
 
-app.post('/api/add-comment', async (req, res) => {
+app.post("/api/add-comment", async (req, res) => {
   const { post_id, user_id, content } = req.body;
 
   if (!post_id || !user_id || !content) {
-    return res.status(400).json({ error: 'All fields are required.' });
+    return res.status(400).json({ error: "All fields are required." });
   }
 
   try {
     const commentId = uuidv4(); // Generate a unique ID for the comment
-    const query = 'INSERT INTO comments (id, post_id, user_id, content, created_at) VALUES (?, ?, ?, ?, NOW())';
+    const query =
+      "INSERT INTO comments (id, post_id, user_id, content, created_at) VALUES (?, ?, ?, ?, NOW())";
     await db.query(query, [commentId, post_id, user_id, content]);
-    res.status(201).json({ message: 'Comment added successfully.' });
+    res.status(201).json({ message: "Comment added successfully." });
   } catch (err) {
-    console.error('Failed to add comment:', err);
-    res.status(500).json({ error: 'Failed to add comment.' });
+    console.error("Failed to add comment:", err);
+    res.status(500).json({ error: "Failed to add comment." });
   }
 });
-
 
 app.get("/api/get-comments", (req, res) => {
   const { postId } = req.query;
