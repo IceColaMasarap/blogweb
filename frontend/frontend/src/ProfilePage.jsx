@@ -41,12 +41,11 @@ function ProfilePage() {
   const handleEditClick = () => {
     setIsModalOpen(true);
   };
-  
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-  
-  
+
   useEffect(() => {
     axios
       .get("http://localhost:5005/api/showposts") // Fetch all posts
@@ -259,10 +258,10 @@ function ProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const changes = [];
     const updates = {};
-  
+
     // Check for changes in the input fields
     if (formData.firstname !== originalData.firstname) {
       changes.push("First Name");
@@ -280,7 +279,7 @@ function ProfilePage() {
       changes.push("Email");
       updates.email = formData.email;
     }
-  
+
     // Handle password changes
     if (formData.password || formData.confirmpassword) {
       if (formData.password !== formData.confirmpassword) {
@@ -290,13 +289,13 @@ function ProfilePage() {
       changes.push("Password");
       updates.password = formData.password;
     }
-  
+
     // If no changes, alert the user
     if (changes.length === 0) {
       alert("No changes were made.");
       return;
     }
-  
+
     // Send the update request
     const userId = localStorage.getItem("userId");
     try {
@@ -307,7 +306,7 @@ function ProfilePage() {
       if (response.status === 200) {
         alert(`The following fields were updated: ${changes.join(", ")}`);
         setOriginalData({ ...originalData, ...updates }); // Update the original data
-  
+
         // Close the modal
         handleCloseModal();
       }
@@ -316,7 +315,7 @@ function ProfilePage() {
       alert("Failed to update user data. Please try again.");
     }
   };
-  
+
   return (
     <div className="maincontentpost">
       {/* Add the Navigation Bar */}
@@ -380,42 +379,46 @@ function ProfilePage() {
                   {/* Modal */}
                   {isModalOpen && (
                     <div className="modal-overlay" onClick={handleCloseModal}>
-                      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="modal-container"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="modal-header">
                           <h2>Edit Profile</h2>
-                          <button className="close-button" onClick={handleCloseModal}>
-                            &times;
-                          </button>
                         </div>
                         <form className="edit-form" onSubmit={handleSubmit}>
                           {/* First Name */}
-                          <div className="eform-group">
-                            <label className="elabel" htmlFor="firstname">
-                              First Name
-                            </label>
-                            <input
-                              className="edittxt"
-                              type="text"
-                              name="firstname"
-                              value={formData.firstname}
-                              onChange={handleChange}
-                              placeholder="Enter First Name"
-                            />
+                          <div className="usernames">
+                            <div className="usernames2">
+                              <label className="elabel" htmlFor="firstname">
+                                First Name
+                              </label>
+                              <input
+                                className="edittxt"
+                                type="text"
+                                name="firstname"
+                                value={formData.firstname}
+                                onChange={handleChange}
+                                placeholder="Enter First Name"
+                              />
+                            </div>
+                            <div className="usernames2">
+                              <label className="elabel" htmlFor="lastname">
+                                Last Name
+                              </label>
+                              <input
+                                className="edittxt"
+                                type="text"
+                                name="lastname"
+                                value={formData.lastname}
+                                onChange={handleChange}
+                                placeholder="Enter Last Name"
+                              />
+                            </div>
                           </div>
+
                           {/* Last Name */}
-                          <div className="eform-group">
-                            <label className="elabel" htmlFor="lastname">
-                              Last Name
-                            </label>
-                            <input
-                              className="edittxt"
-                              type="text"
-                              name="lastname"
-                              value={formData.lastname}
-                              onChange={handleChange}
-                              placeholder="Enter Last Name"
-                            />
-                          </div>
+
                           {/* Date of Birth */}
                           <div className="eform-group">
                             <label className="elabel" htmlFor="dob">
@@ -472,9 +475,17 @@ function ProfilePage() {
                               placeholder="Confirm Password"
                             />
                           </div>
-                          <button type="submit" className="update-button">
-                            Update
-                          </button>
+                          <div className="buttonsupdate">
+                            <button
+                              className="update-button"
+                              onClick={handleCloseModal}
+                            >
+                              Cancel
+                            </button>
+                            <button type="submit" className="update-button">
+                              Update
+                            </button>
+                          </div>
                         </form>
                       </div>
                     </div>
@@ -483,12 +494,8 @@ function ProfilePage() {
               </div>
             </div>
 
-
-
-
-
             <div className="bottomBorder">
-              <p className="profile-name">Post</p>
+              <p className="profile-name2">Post</p>
             </div>
           </div>
 
@@ -602,9 +609,7 @@ function ProfilePage() {
         </main>
 
         {/* Right Sidebar */}
-        <div className="right-sidebar">
-          
-        </div>
+        <div className="right-sidebar"></div>
       </div>
     </div>
   );
