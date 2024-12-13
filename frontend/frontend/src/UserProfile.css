@@ -73,12 +73,14 @@ body {
   transition: background-color 0.3s;
 }
 
-.menu-button img {
+.menu-button img,
+svg {
   width: 10px;
   height: 10px;
 }
 
-.menu-button2 img {
+.menu-button2 img,
+svg {
   width: 30px;
   height: 30px;
 }
