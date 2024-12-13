@@ -38,26 +38,29 @@ const Homepage = () => {
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
-
     const isMod = localStorage.getItem("isModerator");
-    setIsModerator(isMod);
+    setIsModerator(isMod === "Moderator");
+
     axios
       .get(`http://localhost:5005/api/showposts?userId=${userId}`)
       .then((response) => {
         const sortedPosts = response.data.sort(
           (a, b) => new Date(b.postdate) - new Date(a.postdate) // Sort by postdate, newest first
         );
-        setPosts(sortedPosts);
+
+        // Filter posts based on isHidden and isModerator
+        const visiblePosts =
+          isMod === "Moderator"
+            ? sortedPosts
+            : sortedPosts.filter((post) => !post.isHidden);
+
+        setPosts(visiblePosts);
 
         const initialLikes = {};
-        sortedPosts.forEach((post) => {
+        visiblePosts.forEach((post) => {
           initialLikes[post.id] = post.liked; // Initialize liked state for each post
         });
         setLikedPosts(initialLikes);
-        setIsModerator(isMod === "Moderator");
-
-        // Log the state of isHidden and isFlagged for each post
-        sortedPosts.forEach((post) => {});
       })
       .catch((error) => {
         console.error("Error fetching posts:", error);
@@ -630,7 +633,7 @@ const Homepage = () => {
                 className="modal-contentt"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="modal-header">
+                <div className="modal-header2">
                   <button className="modal-close-btn" onClick={toggleModal}>
                     &times;
                   </button>
@@ -698,7 +701,7 @@ const Homepage = () => {
       </div>
       {showReportModal && (
         <div className="modal">
-          <div className="modal-content">
+          <div className="modal-contentxd">
             <p>Post reported successfully!</p>
             <button onClick={() => setShowReportModal(false)}>Close</button>
           </div>

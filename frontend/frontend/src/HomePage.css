@@ -258,6 +258,19 @@ body {
   z-index: 2;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+.modal-contentxd {
+  width: auto;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+  font-family: "Poppins";
+  background-color: #333; /* White square */
+  border-radius: 10px;
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
 .modal-header {
   padding: 16px;
@@ -268,7 +281,11 @@ body {
   border-bottom: 1px solid #444;
   margin: 0 12px;
 }
-
+.modal-header2 {
+  padding-top: 10px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+}
 .modal-close-btn {
   position: absolute;
   top: 1px;

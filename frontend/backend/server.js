@@ -224,7 +224,8 @@ app.get("/api/showposts", (req, res) => {
       p.title, 
       p.content, 
       p.postdate, 
-      p.isFlagged, 
+      p.isFlagged,       
+      p.isHidden, 
       p.author_id,
       p.like_count, 
       p.imageurl, 
@@ -636,4 +637,82 @@ app.get("/api/get-comments", (req, res) => {
 
 app.listen(5005, () => {
   console.log("Server running on port 5005");
+});
+
+app.post("/api/report-post", (req, res) => {
+  const { postId } = req.body;
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+  const query = `UPDATE posts SET isFlagged = true WHERE id = ?`;
+  db.query(query, [postId], (err, result) => {
+    // Changed 'connection' to 'db'
+    if (err) {
+      console.error("Error updating post:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Post flagged as reported" });
+    } else {
+      return res.status(404).json({ message: "Post not found" });
+    }
+  });
+});
+
+app.post("/api/unflag-post", (req, res) => {
+  const { postId } = req.body;
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+
+  const query = `UPDATE posts SET isFlagged = false WHERE id = ?`;
+  db.query(query, [postId], (err, result) => {
+    if (err) {
+      console.error("Error unflagging post:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Post unflagged successfully" });
+    } else {
+      return res.status(404).json({ message: "Post not found" });
+    }
+  });
+});
+
+app.post("/api/hide-post", (req, res) => {
+  const { postId } = req.body;
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+  const query = `UPDATE posts SET isHidden = true WHERE id = ?`;
+  db.query(query, [postId], (err, result) => {
+    if (err) {
+      console.error("Error hiding post:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Post hidden successfully" });
+    } else {
+      return res.status(404).json({ message: "Post not found" });
+    }
+  });
+});
+app.post("/api/unhide-post", (req, res) => {
+  const { postId } = req.body;
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+
+  const query = `UPDATE posts SET isHidden = false WHERE id = ?`;
+  db.query(query, [postId], (err, result) => {
+    if (err) {
+      console.error("Error unhiding post:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Post unhidden successfully" });
+    } else {
+      return res.status(404).json({ message: "Post not found" });
+    }
+  });
 });
