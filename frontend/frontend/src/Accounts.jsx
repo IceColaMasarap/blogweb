@@ -54,6 +54,7 @@ function Accounts() {
     setEditLastName(account?.lastname || "");
     setEditEmail(account?.email || "");
     setEditDateOfBirth(account?.dateofbirth || "");
+    setEditIsModerator(account?.isModerator || "");
     setIsModalOpen2(true);
   };
 
@@ -150,7 +151,7 @@ function Accounts() {
       return;
     }
 
-    // Handle password check only if fields are filled
+    // Prepare the payload
     const payload = {
       id: selectedAccount?.id,
       firstname: editFirstName,
@@ -161,14 +162,13 @@ function Accounts() {
         editIsModerator === "" ? selectedAccount?.isModerator : editIsModerator, // Use existing value if not explicitly changed
     };
 
-    // Include password only if fields aren't empty
-    if (password || confirmPassword) {
+    // Include password only if provided
+    if (password) {
       if (password !== confirmPassword) {
         alert("Passwords do not match");
         return;
       }
-
-      payload.password = password; // Only send the password if user intends to update
+      payload.password = password; // Add password to payload only if entered
     }
 
     try {

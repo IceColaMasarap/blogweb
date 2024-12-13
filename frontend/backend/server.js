@@ -135,7 +135,7 @@ app.get("/api/user/:id", (req, res) => {
   const userId = req.params.id;
 
   const sql =
-    "SELECT firstname, lastname, dateofbirth, email FROM users WHERE id = ?";
+    "SELECT firstname, lastname, created_at, dateofbirth, email FROM users WHERE id = ?";
   db.query(sql, [userId], (err, results) => {
     if (err) {
       console.error("Error fetching user:", err);
