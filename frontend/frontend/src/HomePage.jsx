@@ -29,6 +29,8 @@ const Homepage = () => {
   const [isToggled, setIsToggled] = useState(false); // State to track button toggle
   const [postContentTitle, setPostContentTitle] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
+  const [commentc, setCommentc] = useState({});
+
   const [comments, setComments] = useState([]);
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState({}); // State for menu visibility by post ID
@@ -299,14 +301,13 @@ const Homepage = () => {
       return;
     }
 
-    const userId = localStorage.getItem("userId"); // Assume user ID is stored in localStorage
+    const userId = localStorage.getItem("userId");
 
     try {
-      // Send the comment to the server
       const response = await axios.post(
         "http://localhost:5005/api/add-comment",
         {
-          post_id: selectedPost.id, // The ID of the post the comment is for
+          post_id: selectedPost.id,
           user_id: userId,
           content: comment,
         }
@@ -314,14 +315,17 @@ const Homepage = () => {
 
       if (response.status === 201) {
         alert("Comment added successfully.");
-        setComment(""); // Clear the textarea
-
-        // Re-fetch the comments to refresh the UI
-        fetchComments(selectedPost.id);
+        setComment("");
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.id === selectedPost.id
+              ? { ...post, comment_count: post.comment_count + 1 }
+              : post
+          )
+        );
       }
     } catch (error) {
-      console.error("Failed to add comment:", error);
-      alert("Failed to add comment. Please try again.");
+      console.error("Error adding comment:", error);
     }
   };
 
@@ -621,6 +625,7 @@ const Homepage = () => {
                     }}
                   >
                     <FontAwesomeIcon icon={faComment} />
+                    {post.comment_count}
                   </label>
                 </div>
               </div>

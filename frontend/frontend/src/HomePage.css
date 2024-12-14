@@ -749,3 +749,8 @@ body {
   width: 100%;
   padding-right: 10px;
 }
+
+.commentbtn svg {
+  margin-right: 5px;
+  font-family: "Poppins";
+}
