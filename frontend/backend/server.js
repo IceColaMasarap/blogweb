@@ -453,6 +453,53 @@ app.post("/api/login", (req, res) => {
   });
 });
 
+app.post("/api/adminlogin", (req, res) => {
+  const { email, password } = req.body;
+
+  db.query("SELECT * FROM admin WHERE email = ?", [email], (err, results) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ error: "Server error" });
+    }
+
+    if (results.length === 0) {
+      console.log("User not found:", email);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = results[0];
+
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err) {
+        console.error("Error comparing passwords:", err);
+        return res.status(500).json({ error: "Server error" });
+      }
+
+      if (!isMatch) {
+        console.log("Invalid password for user:", email);
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Store user information in the session
+      req.session.userId = user.id;
+      req.session.isModerator = user.isModerator;
+      console.log("Session data:", req.session);
+
+      console.log("User authenticated successfully:", email);
+      const { id, firstName, lastName, dateofbirth, isModerator } = user;
+      return res.status(200).json({
+        id,
+        firstName,
+        lastName,
+        email,
+        dateofbirth,
+        isModerator,
+        message: "Login successful",
+      });
+    });
+  });
+});
+
 app.post("/api/addpost2", upload.single("image"), (req, res) => {
   const { title, content } = req.body;
   const image = req.file ? req.file.filename : null;

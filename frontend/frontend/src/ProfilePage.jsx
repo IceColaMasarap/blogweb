@@ -10,7 +10,7 @@ import GI from "./assets/Iicon.png";
 import EI from "./assets/Edit.png";
 import CS from "./assets/CLASS SCHEDULE BSIT PHONE 1.png";
 import POSTSAMPLE from "./assets/GENSHIN 4TH ANNIVERSARY.jpg";
-import NavigationBar from "./NavigationBar.jsx";
+import NavigationBar from './NavigationBar.jsx';
 import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
 import "./UserProfile.css";

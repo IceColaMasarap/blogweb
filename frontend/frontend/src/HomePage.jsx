@@ -58,7 +58,8 @@ const Homepage = () => {
 
         const initialLikes = {};
         visiblePosts.forEach((post) => {
-          initialLikes[post.id] = post.liked; // Initialize liked state for each post
+          // Initialize liked state for each post
+          initialLikes[post.id] = post.liked; 
         });
         setLikedPosts(initialLikes);
       })
@@ -325,19 +326,7 @@ const Homepage = () => {
     }
   };
 
-  useEffect(() => {
-    if (selectedPost) {
-      axios
-        .get(`http://localhost:5005/api/get-comments?postId=${selectedPost.id}`)
-        .then((response) => {
-          const sortedComments = response.data.sort(
-            (a, b) => new Date(b.created_at) - new Date(a.created_at) // Sort comments by created_at (newest first)
-          );
-          setComments(sortedComments); // Update state with sorted comments
-        })
-        .catch((error) => console.error("Error fetching comments:", error));
-    }
-  }, [selectedPost]);
+
 
   const fetchComments = async (postId) => {
     try {
