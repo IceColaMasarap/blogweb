@@ -8,7 +8,7 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
 const session = require("express-session");
-
+const crypto = require('crypto');
 const { v4: uuidv4 } = require("uuid"); // Import uuidv4
 const multer = require("multer");
 
@@ -58,9 +58,12 @@ app.post("/api/register", async (req, res) => {
   const { firstName, lastName, email, dateofbirth, password } = req.body;
   const userId = uuidv4();
   const isMod = "User";
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
 
+  try {
+    // Hash the password using SHA-256 to ensure the same password generates the same hash
+    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+
+    
     const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
 
     db.query(
