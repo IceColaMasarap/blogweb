@@ -68,7 +68,7 @@ function Sidebar() {
             <button
               className="logoutbtn"
               onClick={() => {
-                navigate("/");
+                navigate("/adminlogin");
               }}
             >
               Logout
