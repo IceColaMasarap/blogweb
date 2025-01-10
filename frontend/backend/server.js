@@ -62,6 +62,7 @@ app.post("/api/register", async (req, res) => {
 
     // Function to encrypt data
     const encrypt = (text) => {
+      const iv = crypto.randomBytes(16); // Ensure 16 bytes IV
       const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(encryptionKey), iv);
       let encrypted = cipher.update(text, 'utf8', 'hex');
       encrypted += cipher.final('hex');
@@ -434,21 +435,27 @@ app.delete("/api/deleteaccount/:id", (req, res) => {
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
-    // Decrypt function for encrypted fields
-    const decrypt = (encryptedText) => {
+  // Decrypt function for encrypted fields
+  const decrypt = (encryptedText) => {
+    try {
       const [ivHex, encryptedData] = encryptedText.split(':');
+      if (!ivHex || !encryptedData) throw new Error("Invalid encrypted text format");
       const iv = Buffer.from(ivHex, 'hex');
+      if (iv.length !== 16) throw new Error("Invalid IV length");
       const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(encryptionKey), iv);
       let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
       return decrypted;
-    };
+    } catch (error) {
+      console.error("Decryption error:", error.message);
+      throw error;
+    }
+  };
 
-    // Hash the input password
+  // Hash the input password
   const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
-
- db.query("SELECT * FROM users WHERE password = ?", [hashedPassword], (err, results) => {
+  db.query("SELECT * FROM users WHERE password = ?", [hashedPassword], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       return res.status(500).json({ error: "Server error" });
@@ -459,59 +466,54 @@ app.post("/api/login", (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-      // Iterate through results to find a match for the decrypted email
-      let matchingUser = null;
-      for (const user of results) {
-        const decryptedEmail = decrypt(user.email);
-  
+    // Iterate through results to find a match for the decrypted email
+    let matchingUser = null;
+    for (const user of results) {
+      try {
+        const decryptedEmail = decrypt(user.email); // Decrypt email here
+
         if (decryptedEmail === email) {
           matchingUser = user;
           break;
         }
+      } catch (decryptionError) {
+        console.error("Decryption error:", decryptionError);
+        continue; // Skip this user if decryption fails
       }
-  
-      if (!matchingUser) {
-        console.log("Invalid credentials: email not matched");
-        return res.status(401).json({ error: "Invalid credentials" });
-      }
+    }
 
-         // Decrypt other user fields
+    if (!matchingUser) {
+      console.log("Invalid credentials: email not matched");
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Decrypt other user fields
     const decryptedFirstName = decrypt(matchingUser.firstname);
     const decryptedLastName = decrypt(matchingUser.lastname);
     const decryptedDateOfBirth = decrypt(matchingUser.dateofbirth);
-    
-    const user = results[0];
 
-    res.status(200).json({
+    // Store user information in the session
+    req.session.userId = matchingUser.id;
+    req.session.isModerator = matchingUser.isModerator;
+    console.log("Session data:", req.session);
+
+    console.log("User authenticated successfully:", email);
+
+    // Send response once and stop execution
+    return res.status(200).json({
       message: "Login successful",
       user: {
         id: matchingUser.id,
         firstName: decryptedFirstName,
         lastName: decryptedLastName,
-        email: decryptedEmail,
+        email: decrypt(matchingUser.email), // Ensure decrypted email is passed here
         dateofbirth: decryptedDateOfBirth,
+        isModerator: matchingUser.isModerator,
       },
     });
-
-
-      // Store user information in the session
-      req.session.userId = user.id;
-      req.session.isModerator = user.isModerator;
-      console.log("Session data:", req.session);
-
-      console.log("User authenticated successfully:", email);
-      const { id, firstName, lastName, dateofbirth, isModerator } = user;
-      return res.status(200).json({
-        id,
-        firstName,
-        lastName,
-        email,
-        dateofbirth,
-        isModerator,
-        message: "Login successful",
-      });
-    });
   });
+});
+
 
 app.post("/api/adminlogin", (req, res) => {
   const { email, password } = req.body;

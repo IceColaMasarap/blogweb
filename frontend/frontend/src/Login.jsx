@@ -45,7 +45,15 @@ function Login() {
           dateofbirth: data.dateofbirth,
           isModerator: data.isModerator,
         });
-        localStorage.setItem("isModerator", data.isModerator.toString()); // Save as string
+        try {
+          localStorage.setItem("userId", data.id);
+          if (data.isModerator !== undefined) {
+            localStorage.setItem("isModerator", data.isModerator.toString());
+          }
+        } catch (err) {
+          console.error("Error saving to localStorage:", err);
+        }
+        
 
         // Redirect based on user role
         if (data.email === "admin@gmail.com") {
