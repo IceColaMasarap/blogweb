@@ -11,7 +11,8 @@ const session = require("express-session");
 const crypto = require('crypto');
 const { v4: uuidv4 } = require("uuid"); // Import uuidv4
 const multer = require("multer");
-
+const encryptionKey = '786d4041ef07b66a844f25303d911ed3'; 
+const iv = crypto.randomBytes(16); // Generate a random initialization vector (IV)
 const app = express();
 
 app.use(
@@ -59,16 +60,37 @@ app.post("/api/register", async (req, res) => {
   const userId = uuidv4();
   const isMod = "User";
 
+    // Function to encrypt data
+    const encrypt = (text) => {
+      const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(encryptionKey), iv);
+      let encrypted = cipher.update(text, 'utf8', 'hex');
+      encrypted += cipher.final('hex');
+      return iv.toString('hex') + ':' + encrypted; // Combine IV and encrypted data
+    };
+
   try {
     // Hash the password using SHA-256 to ensure the same password generates the same hash
     const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
-    
+    const encryptedFirstName = encrypt(firstName);
+    const encryptedLastName = encrypt(lastName);
+    const encryptedEmail = encrypt(email);
+    const encryptedDateOfBirth = encrypt(dateofbirth);
+
+
     const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
 
     db.query(
       sql,
-      [userId, firstName, lastName, dateofbirth, email, hashedPassword, isMod],
+       [
+        userId,
+        encryptedFirstName,
+        encryptedLastName,
+        encryptedDateOfBirth,
+        encryptedEmail,
+        hashedPassword,
+        isMod,
+      ],
       (error, results) => {
         if (error) {
           console.error("Error inserting user:", error);
@@ -412,29 +434,65 @@ app.delete("/api/deleteaccount/:id", (req, res) => {
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
-  db.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
+    // Decrypt function for encrypted fields
+    const decrypt = (encryptedText) => {
+      const [ivHex, encryptedData] = encryptedText.split(':');
+      const iv = Buffer.from(ivHex, 'hex');
+      const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(encryptionKey), iv);
+      let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      return decrypted;
+    };
+
+    // Hash the input password
+  const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+
+
+ db.query("SELECT * FROM users WHERE password = ?", [hashedPassword], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       return res.status(500).json({ error: "Server error" });
     }
 
     if (results.length === 0) {
-      console.log("User not found:", email);
-      return res.status(404).json({ error: "User not found" });
+      console.log("Invalid credentials: password not found");
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const user = results[0];
-
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) {
-        console.error("Error comparing passwords:", err);
-        return res.status(500).json({ error: "Server error" });
+      // Iterate through results to find a match for the decrypted email
+      let matchingUser = null;
+      for (const user of results) {
+        const decryptedEmail = decrypt(user.email);
+  
+        if (decryptedEmail === email) {
+          matchingUser = user;
+          break;
+        }
       }
-
-      if (!isMatch) {
-        console.log("Invalid password for user:", email);
+  
+      if (!matchingUser) {
+        console.log("Invalid credentials: email not matched");
         return res.status(401).json({ error: "Invalid credentials" });
       }
+
+         // Decrypt other user fields
+    const decryptedFirstName = decrypt(matchingUser.firstname);
+    const decryptedLastName = decrypt(matchingUser.lastname);
+    const decryptedDateOfBirth = decrypt(matchingUser.dateofbirth);
+    
+    const user = results[0];
+
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: matchingUser.id,
+        firstName: decryptedFirstName,
+        lastName: decryptedLastName,
+        email: decryptedEmail,
+        dateofbirth: decryptedDateOfBirth,
+      },
+    });
+
 
       // Store user information in the session
       req.session.userId = user.id;
@@ -454,7 +512,6 @@ app.post("/api/login", (req, res) => {
       });
     });
   });
-});
 
 app.post("/api/adminlogin", (req, res) => {
   const { email, password } = req.body;
