@@ -209,6 +209,7 @@ app.get("/api/user/:id", (req, res) => {
 });
 
 // Fetch all posts endpoint
+// Fetch all posts endpoint with decryption
 app.get("/api/posts", (req, res) => {
   const sql = `SELECT 
       posts.id AS post_id, 
@@ -245,6 +246,7 @@ app.get("/api/posts", (req, res) => {
     }
   });
 });
+
 
 app.get("/api/posts2", (req, res) => {
   const sql = `
