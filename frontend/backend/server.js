@@ -8,20 +8,18 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
 const session = require("express-session");
+
 const crypto = require('crypto');
+const { encrypt, decrypt } = require("./crypto");
+
+
 const { v4: uuidv4 } = require("uuid"); // Import uuidv4
 const multer = require("multer");
-const encryptionKey = '786d4041ef07b66a844f25303d911ed3'; 
-const iv = crypto.randomBytes(16); // Generate a random initialization vector (IV)
+
+
 const app = express();
 
-app.use(
-  session({
-    secret: "1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c", // Replace with a strong secret
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+
 const path = require("path");
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -55,42 +53,41 @@ db.connect((err) => {
   }
 });
 
+
+
 app.post("/api/register", async (req, res) => {
   const { firstName, lastName, email, dateofbirth, password } = req.body;
   const userId = uuidv4();
-  const isMod = "User";
-
-    // Function to encrypt data
-    const encrypt = (text) => {
-      const iv = crypto.randomBytes(16); // Ensure 16 bytes IV
-      const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(encryptionKey), iv);
-      let encrypted = cipher.update(text, 'utf8', 'hex');
-      encrypted += cipher.final('hex');
-      return iv.toString('hex') + ':' + encrypted; // Combine IV and encrypted data
-    };
+  const isMod = "User"; // Default role for new users
 
   try {
-    // Hash the password using SHA-256 to ensure the same password generates the same hash
-    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
-
+    // Encrypt sensitive fields
     const encryptedFirstName = encrypt(firstName);
     const encryptedLastName = encrypt(lastName);
     const encryptedEmail = encrypt(email);
     const encryptedDateOfBirth = encrypt(dateofbirth);
+    const encryptedIsModerator = encrypt(isMod);
+    const encryptedCreatedAt = encrypt(new Date().toISOString()); // Generate current timestamp and encrypt it
 
+    // Hash the password
+    const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
 
-    const sql = `INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
+    const sql = `
+      INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
     db.query(
       sql,
-       [
+      [
         userId,
         encryptedFirstName,
         encryptedLastName,
         encryptedDateOfBirth,
         encryptedEmail,
         hashedPassword,
-        isMod,
+        encryptedIsModerator,
+        encryptedCreatedAt,
       ],
       (error, results) => {
         if (error) {
@@ -106,6 +103,9 @@ app.post("/api/register", async (req, res) => {
     res.status(500).json({ message: "Error processing registration" });
   }
 });
+
+
+
 
 // Create Post API with File Upload Support
 app.post("/api/create-post", upload.single("file"), (req, res) => {
@@ -432,28 +432,13 @@ app.delete("/api/deleteaccount/:id", (req, res) => {
   });
 });
 
+
+
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
-  // Decrypt function for encrypted fields
-  const decrypt = (encryptedText) => {
-    try {
-      const [ivHex, encryptedData] = encryptedText.split(':');
-      if (!ivHex || !encryptedData) throw new Error("Invalid encrypted text format");
-      const iv = Buffer.from(ivHex, 'hex');
-      if (iv.length !== 16) throw new Error("Invalid IV length");
-      const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(encryptionKey), iv);
-      let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-      decrypted += decipher.final('utf8');
-      return decrypted;
-    } catch (error) {
-      console.error("Decryption error:", error.message);
-      throw error;
-    }
-  };
-
   // Hash the input password
-  const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+  const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
 
   db.query("SELECT * FROM users WHERE password = ?", [hashedPassword], (err, results) => {
     if (err) {
@@ -462,57 +447,59 @@ app.post("/api/login", (req, res) => {
     }
 
     if (results.length === 0) {
-      console.log("Invalid credentials: password not found");
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Iterate through results to find a match for the decrypted email
     let matchingUser = null;
+
     for (const user of results) {
       try {
-        const decryptedEmail = decrypt(user.email); // Decrypt email here
-
+        const decryptedEmail = decrypt(user.email);
         if (decryptedEmail === email) {
           matchingUser = user;
           break;
         }
-      } catch (decryptionError) {
-        console.error("Decryption error:", decryptionError);
-        continue; // Skip this user if decryption fails
+      } catch (error) {
+        console.error("Decryption failed for:", user.email, error.message);
+        continue; // Skip problematic entry
       }
     }
 
     if (!matchingUser) {
-      console.log("Invalid credentials: email not matched");
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Decrypt other user fields
-    const decryptedFirstName = decrypt(matchingUser.firstname);
-    const decryptedLastName = decrypt(matchingUser.lastname);
-    const decryptedDateOfBirth = decrypt(matchingUser.dateofbirth);
+    // Decrypt sensitive fields
+    try {
+      const decryptedFirstName = decrypt(matchingUser.firstname);
+      const decryptedLastName = decrypt(matchingUser.lastname);
+      const decryptedEmail = decrypt(matchingUser.email);
+      const decryptedDateOfBirth = decrypt(matchingUser.dateofbirth);
+      const decryptedIsModerator = decrypt(matchingUser.isModerator);
+      const decryptedCreatedAt = decrypt(matchingUser.created_at);
 
-    // Store user information in the session
-    req.session.userId = matchingUser.id;
-    req.session.isModerator = matchingUser.isModerator;
-    console.log("Session data:", req.session);
-
-    console.log("User authenticated successfully:", email);
-
-    // Send response once and stop execution
-    return res.status(200).json({
-      message: "Login successful",
-      user: {
-        id: matchingUser.id,
-        firstName: decryptedFirstName,
-        lastName: decryptedLastName,
-        email: decrypt(matchingUser.email), // Ensure decrypted email is passed here
-        dateofbirth: decryptedDateOfBirth,
-        isModerator: matchingUser.isModerator,
-      },
-    });
+      return res.status(200).json({
+        message: "Login successful",
+        user: {
+          id: matchingUser.id,
+          firstName: decryptedFirstName,
+          lastName: decryptedLastName,
+          email: decryptedEmail,
+          dateofbirth: decryptedDateOfBirth,
+          isModerator: decryptedIsModerator,
+          created_at: decryptedCreatedAt,
+        },
+      });
+    } catch (error) {
+      console.error("Error decrypting user details:", error.message);
+      return res.status(500).json({ error: "Error decrypting user details" });
+    }
   });
 });
+
+
+
+
 
 
 app.post("/api/adminlogin", (req, res) => {

@@ -13,50 +13,35 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Reset error message
-
+  
     if (!email || !password) {
       setError("Please fill in both fields");
       return;
     }
-
+  
     try {
       // Send a POST request to the login endpoint
       const response = await axios.post("http://localhost:5005/api/login", {
         email,
         password,
       });
-
+  
       const data = response.data;
-
+  
       console.log("Logged in user data:", data); // Log user data here
-
+  
       // Check if login is successful
       if (data.error) {
         setError("Invalid credentials, please try again.");
       } else {
-        localStorage.setItem("userId", data.id); // Save the user ID
-
-        // Log the user info on successful login
-        console.log("User Info:", {
-          id: data.id,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          dateofbirth: data.dateofbirth,
-          isModerator: data.isModerator,
-        });
-        try {
-          localStorage.setItem("userId", data.id);
-          if (data.isModerator !== undefined) {
-            localStorage.setItem("isModerator", data.isModerator.toString());
-          }
-        } catch (err) {
-          console.error("Error saving to localStorage:", err);
+        // Save only the necessary user details to localStorage
+        localStorage.setItem("userId", data.user.id); // Save user ID
+        if (data.user.isModerator !== undefined) {
+          localStorage.setItem("isModerator", data.user.isModerator.toString());
         }
-        
-
+  
         // Redirect based on user role
-        if (data.email === "admin@gmail.com") {
+        if (data.user.email === "admin@gmail.com") {
           navigate("/adminpage/"); // Redirect to admin page
         } else {
           navigate("/home"); // Redirect to homepage for regular users
@@ -67,6 +52,7 @@ function Login() {
       console.log("Error logging in:", err);
     }
   };
+  
 
   return (
     <div className="container">
