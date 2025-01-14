@@ -61,7 +61,7 @@ const Homepage = () => {
         const initialLikes = {};
         visiblePosts.forEach((post) => {
           // Initialize liked state for each post
-          initialLikes[post.id] = post.liked; 
+          initialLikes[post.id] = post.liked;
         });
         setLikedPosts(initialLikes);
       })
@@ -316,7 +316,9 @@ const Homepage = () => {
 
       if (response.status === 201) {
         alert("Comment added successfully.");
-        setComment("");
+        setComment(""); // Clear the comment input
+
+        // Optimistically update comment count
         setPosts((prevPosts) =>
           prevPosts.map((post) =>
             post.id === selectedPost.id
@@ -324,13 +326,14 @@ const Homepage = () => {
               : post
           )
         );
+
+        // Fetch updated comments after adding a new one
+        fetchComments(selectedPost.id); // Fetch comments again for the updated post
       }
     } catch (error) {
       console.error("Error adding comment:", error);
     }
   };
-
-
 
   const fetchComments = async (postId) => {
     try {
