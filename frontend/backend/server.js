@@ -209,11 +209,13 @@ app.get("/api/user/:id", (req, res) => {
 });
 
 // Fetch all posts endpoint
+// Fetch all posts endpoint with decryption
 app.get("/api/posts", (req, res) => {
   const sql = `
     SELECT 
       posts.id AS post_id, 
-      CONCAT(users.firstname, ' ', users.lastname) AS author_name, 
+      users.firstname, 
+      users.lastname, 
       posts.postdate AS date_posted, 
       posts.content AS content, 
       posts.isFlagged AS flagged
@@ -225,12 +227,27 @@ app.get("/api/posts", (req, res) => {
   db.query(sql, (error, results) => {
     if (error) {
       console.error("Error fetching posts:", error);
-      res.status(500).json({ message: "Error retrieving posts" });
-    } else {
-      res.status(200).json(results);
+      return res.status(500).json({ message: "Error retrieving posts" });
+    }
+
+    try {
+      // Decrypt the data
+      const decryptedResults = results.map((row) => ({
+        post_id: row.post_id,
+        author_name: decrypt(row.firstname) + " " + decrypt(row.lastname),
+        date_posted: row.date_posted,
+        content: decrypt(row.content),
+        flagged: row.flagged,
+      }));
+
+      res.status(200).json(decryptedResults);
+    } catch (decryptionError) {
+      console.error("Error decrypting post data:", decryptionError);
+      res.status(500).json({ message: "Error processing posts" });
     }
   });
 });
+
 
 app.get("/api/posts2", (req, res) => {
   const sql = `
