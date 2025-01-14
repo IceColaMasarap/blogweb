@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Use axios for making HTTP requests
 
-function Login() {
+function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ function Login() {
 
     try {
       // Send a POST request to the login endpoint
-      const response = await axios.post("http://localhost:5005/api/login", {
+      const response = await axios.post("http://localhost:5005/api/adminlogin", {
         email,
         password,
       });
@@ -45,18 +45,10 @@ function Login() {
           dateofbirth: data.dateofbirth,
           isModerator: data.isModerator,
         });
-        try {
-          localStorage.setItem("userId", data.id);
-          if (data.isModerator !== undefined) {
-            localStorage.setItem("isModerator", data.isModerator.toString());
-          }
-        } catch (err) {
-          console.error("Error saving to localStorage:", err);
-        }
-        
+        localStorage.setItem("isModerator", data.isModerator.toString()); // Save as string
 
         // Redirect based on user role
-        if (data.email === "admin@gmail.com") {
+        if (data.isModerator === "Admin") {
           navigate("/adminpage/"); // Redirect to admin page
         } else {
           navigate("/home"); // Redirect to homepage for regular users
@@ -85,10 +77,9 @@ function Login() {
       </div>
 
       {/* Right Section */}
-      <div className="right-sectionl">
-        <h1 className="main-headingr">Everyone’s cup</h1>
-        <h1 className="main-headingr">of tea 🍃</h1>
-        <p className="sub-headingr">Welcome back!</p>
+      <div className="right-sectionl0">
+        <h1 className="main-headingr">Admin Login</h1>
+        <p className="sub-headingr">Welcome back, Admin!</p>
         <form className="form" onSubmit={handleSubmit}>
           <input
             type="email"
@@ -114,20 +105,22 @@ function Login() {
               {error}
             </p>
           )}{" "}
-          <div className="linkers">
-            <label className="linklabel1">No account yet? </label>
+          
+        </form>
+        <div className="linkerss">
+            <label className="linklabel1">Not an admin? </label>
             <label
               className="linklabel2"
               style={{ cursor: "pointer" }}
               onClick={() => navigate("/")}
             >
-              Signup here.
+              Sign in here.
             </label>
           </div>
-        </form>
       </div>
+      
     </div>
   );
 }
 
-export default Login;
+export default AdminLogin;
