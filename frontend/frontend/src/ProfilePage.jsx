@@ -42,7 +42,7 @@ function ProfilePage() {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [isModalOpen2, setIsModalOpen2] = useState(false); // State to control modal visibility
-
+  const [maxDate, setMaxDate] = useState("");
   const [selectedPost, setSelectedPost] = useState(null); // State to track the selected post
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -236,25 +236,13 @@ function ProfilePage() {
     }
   };
 
-  useEffect(() => {
-    const userId = localStorage.getItem("userId"); // Get the logged-in user's ID
-    if (!userId) {
-      console.error("No user ID found in localStorage");
-      return;
-    }
 
-    axios
-      .get(`http://localhost:5005/api/userposts/${userId}`)
-      .then((response) => {
-        const sortedPosts = response.data.sort(
-          (a, b) => new Date(b.postdate) - new Date(a.postdate)
-        );
-        setPosts(sortedPosts);
-      })
-      .catch((error) => {
-        console.error("Error fetching user posts:", error);
-      });
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split("T")[0]; // Format date as YYYY-MM-DD
+    setMaxDate(formattedDate);
   }, []);
+
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -488,6 +476,7 @@ function ProfilePage() {
                               name="dateofbirth"
                               value={formData.dateofbirth}
                               onChange={handleChange}
+                              max={maxDate} // Set the max date to today's date
                             />
                           </div>
                           {/* Email */}
