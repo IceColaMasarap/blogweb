@@ -172,9 +172,32 @@ app.get("/api/user/:id", (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json(results[0]); // Send user data back to the client
+    // Assuming you have a decrypt function
+    try {
+      const user = results[0];
+
+      // Decrypt each field
+      const decryptedFirstName = decrypt(user.firstname);
+      const decryptedLastName = decrypt(user.lastname);
+      const decryptedEmail = decrypt(user.email);
+      const decryptedDateOfBirth = decrypt(user.dateofbirth);
+      const decryptedCreatedAt = decrypt(user.created_at);
+
+      // Send decrypted user data back to the client
+      res.json({
+        firstname: decryptedFirstName,
+        lastname: decryptedLastName,
+        email: decryptedEmail,
+        dateofbirth: decryptedDateOfBirth,
+        created_at: decryptedCreatedAt,
+      });
+    } catch (decryptionError) {
+      console.error("Error decrypting user data:", decryptionError.message);
+      return res.status(500).json({ message: "Error decrypting user data" });
+    }
   });
 });
+
 
 // Fetch all posts endpoint
 app.get("/api/posts", (req, res) => {
@@ -351,61 +374,68 @@ app.put("/api/user/:id", async (req, res) => {
   const updates = [];
   const values = [];
 
-  if (firstname) {
-    updates.push("firstname = ?");
-    values.push(firstname);
-  }
+  try {
+    // Encrypt sensitive fields
+    if (firstname) {
+      const encryptedFirstName = encrypt(firstname);  // Encrypt firstname
+      updates.push("firstname = ?");
+      values.push(encryptedFirstName);
+    }
 
-  if (lastname) {
-    updates.push("lastname = ?");
-    values.push(lastname);
-  }
+    if (lastname) {
+      const encryptedLastName = encrypt(lastname);  // Encrypt lastname
+      updates.push("lastname = ?");
+      values.push(encryptedLastName);
+    }
 
-  if (dateofbirth) {
-    updates.push("dateofbirth = ?");
-    values.push(dateofbirth);
-  }
+    if (dateofbirth) {
+      const encryptedDateOfBirth = encrypt(dateofbirth);  // Encrypt dateofbirth
+      updates.push("dateofbirth = ?");
+      values.push(encryptedDateOfBirth);
+    }
 
-  if (email) {
-    updates.push("email = ?");
-    values.push(email);
-  }
+    if (email) {
+      const encryptedEmail = encrypt(email);  // Encrypt email
+      updates.push("email = ?");
+      values.push(encryptedEmail);
+    }
 
-  if (password) {
-    try {
-      const hashedPassword = await bcrypt.hash(password, 10);
+    if (password) {
+      // Hash the password using SHA-256
+      const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
       updates.push("password = ?");
       values.push(hashedPassword);
-    } catch (err) {
-      console.error("Error hashing password:", err);
-      return res.status(500).json({ error: "Failed to hash password" });
     }
+
+    // If no fields were provided, send an error response
+    if (updates.length === 0) {
+      return res.status(400).json({ message: "No fields to update" });
+    }
+
+    // Add userId to the values for the WHERE clause
+    values.push(userId);
+
+    // Build and execute the update query
+    const sql = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
+
+    db.query(sql, values, (err, results) => {
+      if (err) {
+        console.error("Error updating user:", err);
+        return res.status(500).json({ error: "Database query failed" });
+      }
+
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json({ message: "User updated successfully" });
+    });
+  } catch (err) {
+    console.error("Error processing update:", err);
+    return res.status(500).json({ error: "Error processing update" });
   }
-
-  // If no fields were provided, send an error response
-  if (updates.length === 0) {
-    return res.status(400).json({ message: "No fields to update" });
-  }
-
-  // Add userId to the values for the WHERE clause
-  values.push(userId);
-
-  // Build and execute the update query
-  const sql = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
-
-  db.query(sql, values, (err, results) => {
-    if (err) {
-      console.error("Error updating user:", err);
-      return res.status(500).json({ error: "Database query failed" });
-    }
-
-    if (results.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json({ message: "User updated successfully" });
-  });
 });
+
 
 // Endpoint: Delete Post
 app.delete("/api/deletepost2/:post_id", (req, res) => {
