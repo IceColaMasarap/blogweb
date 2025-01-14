@@ -308,8 +308,6 @@ app.get("/api/posts2", (req, res) => {
 });
 
 
-
-
 app.get("/api/usershow", (req, res) => {
   const sql = `
     SELECT 
@@ -425,19 +423,32 @@ app.get("/api/users", (req, res) => {
 app.put("/api/updatepost2", (req, res) => {
   const { post_id, title, content } = req.body;
 
-  // Encrypt title and content before updating
-  const encTitle = encrypt(title);
-  const encContent = encrypt(content);
+  if (!post_id || !title || !content) {
+    return res.status(400).json({ error: "Post ID, title, and content are required" });
+  }
 
-  const query = "UPDATE posts SET title = ?, content = ? WHERE id = ?";
-  db.query(query, [encTitle, encContent, post_id], (err, result) => {
-    if (err) {
-      console.error("Error updating post:", err);
-      return res.status(500).json({ error: "Database query failed" });
-    }
-    res.status(200).json({ message: "Post updated successfully" });
-  });
+  try {
+    // Encrypt title and content before updating
+    const encTitle = encrypt(title);
+    const encContent = encrypt(content);
+
+    const query = "UPDATE posts SET title = ?, content = ? WHERE id = ?";
+    db.query(query, [encTitle, encContent, post_id], (err, result) => {
+      if (err) {
+        console.error("Error updating post:", err);
+        return res.status(500).json({ error: "Failed to update post" });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      res.status(200).json({ message: "Post updated successfully" });
+    });
+  } catch (error) {
+    console.error("Encryption error:", error.message);
+    res.status(500).json({ error: "Failed to encrypt data" });
+  }
 });
+
 
 
 
@@ -776,20 +787,41 @@ app.post("/api/addpost2", upload.single("image"), (req, res) => {
   const id = uuidv4();
   const aid = "2800b395-3f24-4f2d-b710-b9d69fbb1918"; // Ensure this exists in users table
 
-  db.query(
-    `INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl) VALUES (?, ?, ?, ?, NOW(), 0, 0, ?)`,
-    [id, aid, title, content, image],
-    (error, result) => {
-      if (error) {
-        console.error("Error adding post:", error);
-        return res.status(500).json({ message: "Error adding post" });
+  if (!title || !content) {
+    return res.status(400).json({ error: "Title and content are required" });
+  }
+
+  try {
+    // Encrypt the title and content before inserting into the database
+    const encTitle = encrypt(title);
+    const encContent = encrypt(content);
+
+    const query = `
+      INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl) 
+      VALUES (?, ?, ?, ?, NOW(), 0, 0, ?)
+    `;
+
+    db.query(
+      query,
+      [id, aid, encTitle, encContent, image],
+      (error, result) => {
+        if (error) {
+          console.error("Error adding post:", error);
+          return res.status(500).json({ message: "Error adding post" });
+        }
+
+        res.status(201).json({
+          message: "Post added successfully",
+          postId: id, // Return the UUID of the created post
+        });
       }
-      res
-        .status(201)
-        .json({ message: "Post added successfully", postId: result.insertId });
-    }
-  );
+    );
+  } catch (error) {
+    console.error("Encryption error:", error.message);
+    res.status(500).json({ error: "Failed to encrypt data" });
+  }
 });
+
 
 app.post("/api/addpost", (req, res) => {
   const { title, content, imageUrl } = req.body;
