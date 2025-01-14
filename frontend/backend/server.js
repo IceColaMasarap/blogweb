@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 console.log("Encryption Key:", process.env.ENCRYPTION_KEY);
 
@@ -211,8 +212,7 @@ app.get("/api/user/:id", (req, res) => {
 // Fetch all posts endpoint
 // Fetch all posts endpoint with decryption
 app.get("/api/posts", (req, res) => {
-  const sql = `
-    SELECT 
+  const sql = `SELECT 
       posts.id AS post_id, 
       users.firstname, 
       users.lastname, 
@@ -222,7 +222,7 @@ app.get("/api/posts", (req, res) => {
     FROM posts
     INNER JOIN users ON posts.author_id = users.id
     ORDER BY posts.postdate DESC
-  `;
+  ;`;
 
   db.query(sql, (error, results) => {
     if (error) {
@@ -281,7 +281,9 @@ app.get("/api/posts2", (req, res) => {
           post_id: post.post_id,
           author_id: post.author_id,
           title: post.encrypted_title ? decrypt(post.encrypted_title) : null,
-          content: post.encrypted_content ? decrypt(post.encrypted_content) : null,
+          content: post.encrypted_content
+            ? decrypt(post.encrypted_content)
+            : null,
           postdate: post.postdate,
           isFlagged: post.isFlagged,
           like_count: post.like_count,
@@ -323,9 +325,6 @@ app.get("/api/posts2", (req, res) => {
     res.status(200).json(decryptedResults);
   });
 });
-
-
-
 
 app.get("/api/usershow", (req, res) => {
   const sql = `
@@ -455,8 +454,6 @@ app.put("/api/updatepost2", (req, res) => {
     res.status(200).json({ message: "Post updated successfully" });
   });
 });
-
-
 
 // Endpoint: Update Post
 app.put("/api/updateaccount", async (req, res) => {
@@ -665,7 +662,38 @@ app.post("/api/login", (req, res) => {
     }
   );
 });
+app.get("/api/adminshow", (req, res) => {
+  const sql = `
+    SELECT 
+        *
+    FROM admin
+  `;
 
+  db.query(sql, (error, results) => {
+    if (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Error retrieving users" });
+    } else {
+      try {
+        // Decrypt fields for each user
+        const decryptedResults = results.map((user) => ({
+          id: user.id,
+          firstname: decrypt(user.firstname),
+          lastname: decrypt(user.lastname),
+          email: decrypt(user.email),
+          dateofbirth: decrypt(user.dateofbirth),
+          isModerator: decrypt(user.isModerator),
+          created_at: decrypt(user.created_at),
+        }));
+
+        res.status(200).json(decryptedResults);
+      } catch (decryptError) {
+        console.error("Error decrypting user data:", decryptError);
+        res.status(500).json({ message: "Error decrypting user data" });
+      }
+    }
+  });
+});
 app.post("/api/adminlogin", (req, res) => {
   const { email, password } = req.body;
 
@@ -738,7 +766,8 @@ app.post("/api/adminlogin", (req, res) => {
 
 app.post("/api/adminregister", async (req, res) => {
   const { firstName, lastName, email, dateofbirth, password } = req.body;
-  const adminId = uuidv4();
+  const userId = uuidv4();
+  const isMod = "Admin"; // Default role for new users
 
   try {
     // Encrypt sensitive fields
@@ -746,6 +775,8 @@ app.post("/api/adminregister", async (req, res) => {
     const encryptedLastName = encrypt(lastName);
     const encryptedEmail = encrypt(email);
     const encryptedDateOfBirth = encrypt(dateofbirth);
+    const encryptedIsModerator = encrypt(isMod);
+    const encryptedCreatedAt = encrypt(new Date().toISOString()); // Generate current timestamp and encrypt it
 
     // Hash the password
     const hashedPassword = crypto
@@ -761,28 +792,26 @@ app.post("/api/adminregister", async (req, res) => {
     db.query(
       sql,
       [
-        adminId,
+        userId,
         encryptedFirstName,
         encryptedLastName,
         encryptedDateOfBirth,
         encryptedEmail,
         hashedPassword,
-        "Admin", // Set as "Admin" by default
-        new Date().toISOString(), // Timestamp for created_at
+        encryptedIsModerator,
+        encryptedCreatedAt,
       ],
       (error, results) => {
         if (error) {
-          console.error("Error inserting admin:", error);
-          res.status(500).json({ message: "Error registering admin" });
+          console.error("Error inserting user:", error);
+          res.status(500).json({ message: "Error registering user" });
         } else {
-          res
-            .status(201)
-            .json({ message: "Admin account created successfully!" });
+          res.status(201).json({ message: "Account created successfully!" });
         }
       }
     );
   } catch (error) {
-    console.error("Error processing admin registration:", error);
+    console.error("Error processing registration:", error);
     res.status(500).json({ message: "Error processing registration" });
   }
 });
