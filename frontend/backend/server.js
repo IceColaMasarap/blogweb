@@ -499,56 +499,118 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-
-
-
-
-
 app.post("/api/adminlogin", (req, res) => {
   const { email, password } = req.body;
 
-  db.query("SELECT * FROM admin WHERE email = ?", [email], (err, results) => {
+  // Hash the input password
+  const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+
+  // Query all admin records
+  db.query("SELECT * FROM admin", (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       return res.status(500).json({ error: "Server error" });
     }
 
     if (results.length === 0) {
-      console.log("User not found:", email);
-      return res.status(404).json({ error: "User not found" });
+      console.log("No admin records found.");
+      return res.status(404).json({ error: "Admin not found" });
     }
 
-    const user = results[0];
+    let matchingAdmin = null;
 
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) {
-        console.error("Error comparing passwords:", err);
-        return res.status(500).json({ error: "Server error" });
+    // Iterate through all records and compare the decrypted email
+    for (const admin of results) {
+      try {
+        const decryptedEmail = decrypt(admin.email);
+        console.log("Decrypted email:", decryptedEmail);
+
+        if (decryptedEmail === email) {
+          matchingAdmin = admin;
+          break;
+        }
+      } catch (error) {
+        console.error("Error decrypting email:", admin.email, error.message);
+        continue; // Skip problematic entries
       }
+    }
 
-      if (!isMatch) {
-        console.log("Invalid password for user:", email);
-        return res.status(401).json({ error: "Invalid credentials" });
-      }
+    if (!matchingAdmin) {
+      console.log("Admin not found for email:", email);
+      return res.status(404).json({ error: "Admin not found" });
+    }
 
-      // Store user information in the session
-      req.session.userId = user.id;
-      req.session.isModerator = user.isModerator;
-      console.log("Session data:", req.session);
+    // Compare hashed passwords
+    if (matchingAdmin.password !== hashedPassword) {
+      console.log("Invalid password for admin:", email);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-      console.log("User authenticated successfully:", email);
-      const { id, firstName, lastName, dateofbirth, isModerator } = user;
-      return res.status(200).json({
-        id,
-        firstName,
-        lastName,
-        email,
-        dateofbirth,
-        isModerator,
+    // Respond with the admin's decrypted details if authentication succeeds
+    try {
+      const response = {
+        id: matchingAdmin.id,
+        firstName: decrypt(matchingAdmin.firstname),
+        lastName: decrypt(matchingAdmin.lastname),
+        email: decrypt(matchingAdmin.email),
+        dateofbirth: decrypt(matchingAdmin.dateofbirth),
+        isModerator: matchingAdmin.isModerator, // This is not encrypted
         message: "Login successful",
-      });
-    });
+      };
+
+      return res.status(200).json(response);
+    } catch (error) {
+      console.error("Error decrypting admin details:", error.message);
+      return res.status(500).json({ error: "Error decrypting admin details" });
+    }
   });
+});
+
+
+app.post("/api/adminregister", async (req, res) => {
+  const { firstName, lastName, email, dateofbirth, password } = req.body;
+  const adminId = uuidv4();
+
+  try {
+    // Encrypt sensitive fields
+    const encryptedFirstName = encrypt(firstName);
+    const encryptedLastName = encrypt(lastName);
+    const encryptedEmail = encrypt(email);
+    const encryptedDateOfBirth = encrypt(dateofbirth);
+
+    // Hash the password
+    const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+
+    const sql = `
+      INSERT INTO admin (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+      sql,
+      [
+        adminId,
+        encryptedFirstName,
+        encryptedLastName,
+        encryptedDateOfBirth,
+        encryptedEmail,
+        hashedPassword,
+        "Admin", // Set as "Admin" by default
+        new Date().toISOString(), // Timestamp for created_at
+      ],
+      (error, results) => {
+        if (error) {
+          console.error("Error inserting admin:", error);
+          res.status(500).json({ message: "Error registering admin" });
+        } else {
+          res.status(201).json({ message: "Admin account created successfully!" });
+        }
+      }
+    );
+  } catch (error) {
+    console.error("Error processing admin registration:", error);
+    res.status(500).json({ message: "Error processing registration" });
+  }
 });
 
 app.post("/api/addpost2", upload.single("image"), (req, res) => {
