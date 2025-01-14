@@ -231,18 +231,21 @@ app.get("/api/posts", (req, res) => {
     }
   });
 });
+
 app.get("/api/posts2", (req, res) => {
   const sql = `
     SELECT 
         posts.id AS post_id, 
-        users.firstname AS author_firstname, 
-        users.lastname AS author_lastname, 
-        posts.title, 
-        posts.content, 
+        posts.author_id,
+        posts.title AS encrypted_title, 
+        posts.content AS encrypted_content, 
         posts.postdate, 
         posts.isFlagged, 
         posts.like_count, 
-        users.email AS author_email
+        posts.imageurl AS encrypted_imageurl,
+        users.email AS encrypted_author_email,
+        users.firstname AS encrypted_author_firstname, 
+        users.lastname AS encrypted_author_lastname
     FROM posts
     JOIN users ON posts.author_id = users.id
   `;
@@ -250,12 +253,63 @@ app.get("/api/posts2", (req, res) => {
   db.query(sql, (error, results) => {
     if (error) {
       console.error("Error fetching posts:", error);
-      res.status(500).json({ message: "Error retrieving posts" });
-    } else {
-      res.status(200).json(results);
+      return res.status(500).json({ message: "Error retrieving posts" });
     }
+
+    const decryptedResults = results.map((post) => {
+      let decryptedPost;
+
+      try {
+        decryptedPost = {
+          post_id: post.post_id,
+          author_id: post.author_id,
+          title: post.encrypted_title ? decrypt(post.encrypted_title) : null,
+          content: post.encrypted_content ? decrypt(post.encrypted_content) : null,
+          postdate: post.postdate,
+          isFlagged: post.isFlagged,
+          like_count: post.like_count,
+          imageurl: post.encrypted_imageurl
+            ? decrypt(post.encrypted_imageurl)
+            : null,
+          author_email: decrypt(post.encrypted_author_email), // No fallback for email
+          author_firstname: post.encrypted_author_firstname
+            ? decrypt(post.encrypted_author_firstname)
+            : null,
+          author_lastname: post.encrypted_author_lastname
+            ? decrypt(post.encrypted_author_lastname)
+            : null,
+        };
+      } catch (decryptionError) {
+        console.error(
+          `Decryption failed for post: ${post.post_id}`,
+          decryptionError.message
+        );
+        // Return partially decrypted post with email untouched
+        decryptedPost = {
+          post_id: post.post_id,
+          author_id: post.author_id,
+          title: null,
+          content: null,
+          postdate: post.postdate,
+          isFlagged: post.isFlagged,
+          like_count: post.like_count,
+          imageurl: null,
+          author_email: post.encrypted_author_email, // Return as-is if decryption fails
+          author_firstname: null,
+          author_lastname: null,
+        };
+      }
+
+      return decryptedPost;
+    });
+
+    res.status(200).json(decryptedResults);
   });
 });
+
+
+
+
 app.get("/api/usershow", (req, res) => {
   const sql = `
     SELECT 
