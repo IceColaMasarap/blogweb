@@ -59,6 +59,7 @@ function ProfilePage() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    window.location.reload(); // Refreshes the page
   };
   useEffect(() => {
     const userId = localStorage.getItem("userId"); // Get the current user's ID from local storage
