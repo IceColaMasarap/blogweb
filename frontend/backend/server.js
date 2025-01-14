@@ -246,20 +246,22 @@ app.get("/api/showposts", (req, res) => {
 
   const sql = `
     SELECT 
-      p.id, 
-      p.title, 
-      p.content, 
-      p.postdate, 
-      p.isFlagged,       
-      p.isHidden, 
-      p.author_id,
-      p.like_count, 
-      p.imageurl, 
-      a.firstname, 
-      a.lastname, 
-      EXISTS (SELECT 1 FROM likes WHERE likes.post_id = p.id AND likes.user_id = ?) AS liked
-    FROM posts p 
-    INNER JOIN users a ON p.author_id = a.id;
+  p.id, 
+  p.title, 
+  p.content, 
+  p.postdate, 
+  p.isFlagged, 
+  p.isHidden, 
+  p.author_id, 
+  p.like_count, 
+  p.imageurl, 
+  a.firstname, 
+  a.lastname, 
+  EXISTS (SELECT 1 FROM likes WHERE likes.post_id = p.id AND likes.user_id = ?) AS liked,
+  (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
+FROM posts p
+INNER JOIN users a ON p.author_id = a.id;
+
   `;
 
   db.query(sql, [userId], (error, results) => {
@@ -811,4 +813,30 @@ app.post("/api/unhide-post", (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
   });
+});
+
+app.get("/api/get-comment-count", async (req, res) => {
+  const { postId } = req.query;
+
+  if (!postId) {
+    return res
+      .status(400)
+      .json({ error: "Missing required parameter: postId" });
+  }
+
+  try {
+    const query = "SELECT COUNT(*) AS count FROM comments WHERE post_id = ?";
+    const result = await db.query(query, [postId]);
+
+    // Handle empty result set
+    if (!result.rows[0]) {
+      return res.status(200).json({ count: 0 });
+    }
+
+    const commentCount = result.rows[0].count;
+    res.status(200).json({ count: commentCount });
+  } catch (err) {
+    console.error("Error fetching comment count:", err);
+    res.status(500).json({ error: "Failed to retrieve comment count." });
+  }
 });
