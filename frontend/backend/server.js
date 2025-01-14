@@ -9,16 +9,13 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
 const session = require("express-session");
 
-const crypto = require('crypto');
+const crypto = require("crypto");
 const { encrypt, decrypt } = require("./crypto");
-
 
 const { v4: uuidv4 } = require("uuid"); // Import uuidv4
 const multer = require("multer");
 
-
 const app = express();
-
 
 const path = require("path");
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -53,8 +50,6 @@ db.connect((err) => {
   }
 });
 
-
-
 app.post("/api/register", async (req, res) => {
   const { firstName, lastName, email, dateofbirth, password } = req.body;
   const userId = uuidv4();
@@ -70,7 +65,10 @@ app.post("/api/register", async (req, res) => {
     const encryptedCreatedAt = encrypt(new Date().toISOString()); // Generate current timestamp and encrypt it
 
     // Hash the password
-    const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+    const hashedPassword = crypto
+      .createHash("sha256")
+      .update(password)
+      .digest("hex");
 
     const sql = `
       INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at)
@@ -104,22 +102,20 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-
-
-
-// Create Post API with File Upload Support
 app.post("/api/create-post", upload.single("file"), (req, res) => {
+  console.log("Request Body:", req.body);
+  console.log("Uploaded File:", req.file);
+
   const { userId, content, title } = req.body;
   const file = req.file ? req.file.filename : null;
 
-  // Check if all required fields are provided
   if (!userId || !content || !title) {
+    console.error("Missing required fields");
     return res
       .status(400)
       .json({ message: "User ID, Title, and Content are required." });
   }
 
-  // Validate userId exists in the users table
   const sqlValidateUser = `SELECT id FROM users WHERE id = ?`;
   db.query(sqlValidateUser, [userId], (err, results) => {
     if (err) {
@@ -128,29 +124,41 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
     }
 
     if (results.length === 0) {
+      console.error("Invalid User ID");
       return res
         .status(400)
         .json({ message: "Invalid User ID. User does not exist." });
     }
 
-    // Proceed to create the post if userId is valid
+    const encTitle = encrypt(title);
+    const encContent = encrypt(content);
+    const encFile = encrypt(file);
+
     const postId = uuidv4();
     const postDate = new Date();
     const isFlagged = 0;
     const likeCount = 0;
 
-    const sqlInsertPost = `
-      INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+    const sqlInsertPost = `INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     db.query(
       sqlInsertPost,
-      [postId, userId, title, content, postDate, isFlagged, likeCount, file],
-      (error, results) => {
+      [
+        postId,
+        userId,
+        encTitle,
+        encContent,
+        postDate,
+        isFlagged,
+        likeCount,
+        encFile,
+      ],
+      (error) => {
         if (error) {
           console.error("Error inserting post:", error);
           return res.status(500).json({ message: "Error creating post." });
         }
+        console.log("Post created successfully!");
         res.status(201).json({ message: "Post created successfully!", postId });
       }
     );
@@ -240,36 +248,62 @@ app.get("/api/usershow", (req, res) => {
     }
   });
 });
-
 app.get("/api/showposts", (req, res) => {
   const userId = req.query.userId; // Pass the logged-in user's ID as a query parameter
 
   const sql = `
     SELECT 
-  p.id, 
-  p.title, 
-  p.content, 
-  p.postdate, 
-  p.isFlagged, 
-  p.isHidden, 
-  p.author_id, 
-  p.like_count, 
-  p.imageurl, 
-  a.firstname, 
-  a.lastname, 
-  EXISTS (SELECT 1 FROM likes WHERE likes.post_id = p.id AND likes.user_id = ?) AS liked,
-  (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-FROM posts p
-INNER JOIN users a ON p.author_id = a.id;
-
+      p.id, 
+      p.title, 
+      p.content, 
+      p.postdate, 
+      p.isFlagged, 
+      p.isHidden, 
+      p.author_id, 
+      p.like_count, 
+      p.imageurl,  -- Ensure field name matches exactly
+      a.firstname, 
+      a.lastname, 
+      EXISTS (SELECT 1 FROM likes WHERE likes.post_id = p.id AND likes.user_id = ?) AS liked,
+      (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
+    FROM posts p
+    INNER JOIN users a ON p.author_id = a.id;
   `;
 
   db.query(sql, [userId], (error, results) => {
     if (error) {
       console.error("Error fetching posts:", error);
-      res.status(500).json({ message: "Error retrieving posts." });
-    } else {
-      res.status(200).json(results);
+      return res.status(500).json({ message: "Error retrieving posts." });
+    }
+
+    // Decrypt sensitive fields in the results
+    try {
+      const decryptedResults = results.map((post) => {
+        // Ensure consistent naming for decryption
+        const decryptedFirstName = decrypt(post.firstname);
+        const decryptedLastName = decrypt(post.lastname);
+        const decTitle = decrypt(post.title);
+        const decContent = decrypt(post.content);
+        const decImage = post.imageurl ? decrypt(post.imageurl) : null; // Check for null or undefined imageurl
+
+        console.log("Decrypted Title:", decTitle); // Debugging decrypted title
+        console.log("Decrypted Content:", decContent); // Debugging decrypted content
+        console.log("Decrypted Image URL:", decImage); // Debugging decrypted image URL
+
+        return {
+          ...post,
+          firstname: decryptedFirstName,
+          lastname: decryptedLastName,
+          title: decTitle, // Assign decrypted title to post
+          content: decContent, // Assign decrypted content to post
+          imageurl: decImage, // Use the correct field name 'imageurl'
+        };
+      });
+
+      res.status(200).json(decryptedResults);
+    } catch (error) {
+      console.error("Error decrypting post data:", error.message);
+      res.status(500).json({ message: "Error decrypting post data." });
     }
   });
 });
@@ -434,75 +468,75 @@ app.delete("/api/deleteaccount/:id", (req, res) => {
   });
 });
 
-
-
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
   // Hash the input password
-  const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+  const hashedPassword = crypto
+    .createHash("sha256")
+    .update(password)
+    .digest("hex");
 
-  db.query("SELECT * FROM users WHERE password = ?", [hashedPassword], (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ error: "Server error" });
-    }
+  db.query(
+    "SELECT * FROM users WHERE password = ?",
+    [hashedPassword],
+    (err, results) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ error: "Server error" });
+      }
 
-    if (results.length === 0) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+      if (results.length === 0) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
 
-    let matchingUser = null;
+      let matchingUser = null;
 
-    for (const user of results) {
-      try {
-        const decryptedEmail = decrypt(user.email);
-        if (decryptedEmail === email) {
-          matchingUser = user;
-          break;
+      for (const user of results) {
+        try {
+          const decryptedEmail = decrypt(user.email);
+          if (decryptedEmail === email) {
+            matchingUser = user;
+            break;
+          }
+        } catch (error) {
+          console.error("Decryption failed for:", user.email, error.message);
+          continue; // Skip problematic entry
         }
+      }
+
+      if (!matchingUser) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Decrypt sensitive fields
+      try {
+        const decryptedFirstName = decrypt(matchingUser.firstname);
+        const decryptedLastName = decrypt(matchingUser.lastname);
+        const decryptedEmail = decrypt(matchingUser.email);
+        const decryptedDateOfBirth = decrypt(matchingUser.dateofbirth);
+        const decryptedIsModerator = decrypt(matchingUser.isModerator);
+        const decryptedCreatedAt = decrypt(matchingUser.created_at);
+
+        return res.status(200).json({
+          message: "Login successful",
+          user: {
+            id: matchingUser.id,
+            firstName: decryptedFirstName,
+            lastName: decryptedLastName,
+            email: decryptedEmail,
+            dateofbirth: decryptedDateOfBirth,
+            isModerator: decryptedIsModerator,
+            created_at: decryptedCreatedAt,
+          },
+        });
       } catch (error) {
-        console.error("Decryption failed for:", user.email, error.message);
-        continue; // Skip problematic entry
+        console.error("Error decrypting user details:", error.message);
+        return res.status(500).json({ error: "Error decrypting user details" });
       }
     }
-
-    if (!matchingUser) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    // Decrypt sensitive fields
-    try {
-      const decryptedFirstName = decrypt(matchingUser.firstname);
-      const decryptedLastName = decrypt(matchingUser.lastname);
-      const decryptedEmail = decrypt(matchingUser.email);
-      const decryptedDateOfBirth = decrypt(matchingUser.dateofbirth);
-      const decryptedIsModerator = decrypt(matchingUser.isModerator);
-      const decryptedCreatedAt = decrypt(matchingUser.created_at);
-
-      return res.status(200).json({
-        message: "Login successful",
-        user: {
-          id: matchingUser.id,
-          firstName: decryptedFirstName,
-          lastName: decryptedLastName,
-          email: decryptedEmail,
-          dateofbirth: decryptedDateOfBirth,
-          isModerator: decryptedIsModerator,
-          created_at: decryptedCreatedAt,
-        },
-      });
-    } catch (error) {
-      console.error("Error decrypting user details:", error.message);
-      return res.status(500).json({ error: "Error decrypting user details" });
-    }
-  });
+  );
 });
-
-
-
-
-
 
 app.post("/api/adminlogin", (req, res) => {
   const { email, password } = req.body;
