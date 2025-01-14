@@ -107,6 +107,7 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
   console.log("Uploaded File:", req.file);
 
   const { userId, content, title } = req.body;
+  // If no file is uploaded, `file` will be null
   const file = req.file ? req.file.filename : null;
 
   if (!userId || !content || !title) {
@@ -132,7 +133,8 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
 
     const encTitle = encrypt(title);
     const encContent = encrypt(content);
-    const encFile = encrypt(file);
+    // Encrypt the file only if it exists; otherwise, use `null`
+    const encFile = file ? encrypt(file) : null;
 
     const postId = uuidv4();
     const postDate = new Date();
@@ -151,7 +153,7 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
         postDate,
         isFlagged,
         likeCount,
-        encFile,
+        encFile, // If no file is uploaded, this will be `null`
       ],
       (error) => {
         if (error) {
@@ -205,7 +207,6 @@ app.get("/api/user/:id", (req, res) => {
     }
   });
 });
-
 
 // Fetch all posts endpoint
 app.get("/api/posts", (req, res) => {
@@ -428,32 +429,35 @@ app.put("/api/user/:id", async (req, res) => {
   try {
     // Encrypt sensitive fields
     if (firstname) {
-      const encryptedFirstName = encrypt(firstname);  // Encrypt firstname
+      const encryptedFirstName = encrypt(firstname); // Encrypt firstname
       updates.push("firstname = ?");
       values.push(encryptedFirstName);
     }
 
     if (lastname) {
-      const encryptedLastName = encrypt(lastname);  // Encrypt lastname
+      const encryptedLastName = encrypt(lastname); // Encrypt lastname
       updates.push("lastname = ?");
       values.push(encryptedLastName);
     }
 
     if (dateofbirth) {
-      const encryptedDateOfBirth = encrypt(dateofbirth);  // Encrypt dateofbirth
+      const encryptedDateOfBirth = encrypt(dateofbirth); // Encrypt dateofbirth
       updates.push("dateofbirth = ?");
       values.push(encryptedDateOfBirth);
     }
 
     if (email) {
-      const encryptedEmail = encrypt(email);  // Encrypt email
+      const encryptedEmail = encrypt(email); // Encrypt email
       updates.push("email = ?");
       values.push(encryptedEmail);
     }
 
     if (password) {
       // Hash the password using SHA-256
-      const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+      const hashedPassword = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
       updates.push("password = ?");
       values.push(hashedPassword);
     }
@@ -486,7 +490,6 @@ app.put("/api/user/:id", async (req, res) => {
     return res.status(500).json({ error: "Error processing update" });
   }
 });
-
 
 // Endpoint: Delete Post
 app.delete("/api/deletepost2/:post_id", (req, res) => {
@@ -589,7 +592,10 @@ app.post("/api/adminlogin", (req, res) => {
   const { email, password } = req.body;
 
   // Hash the input password
-  const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+  const hashedPassword = crypto
+    .createHash("sha256")
+    .update(password)
+    .digest("hex");
 
   // Query all admin records
   db.query("SELECT * FROM admin", (err, results) => {
@@ -652,7 +658,6 @@ app.post("/api/adminlogin", (req, res) => {
   });
 });
 
-
 app.post("/api/adminregister", async (req, res) => {
   const { firstName, lastName, email, dateofbirth, password } = req.body;
   const adminId = uuidv4();
@@ -665,7 +670,10 @@ app.post("/api/adminregister", async (req, res) => {
     const encryptedDateOfBirth = encrypt(dateofbirth);
 
     // Hash the password
-    const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+    const hashedPassword = crypto
+      .createHash("sha256")
+      .update(password)
+      .digest("hex");
 
     const sql = `
       INSERT INTO admin (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at)
@@ -689,7 +697,9 @@ app.post("/api/adminregister", async (req, res) => {
           console.error("Error inserting admin:", error);
           res.status(500).json({ message: "Error registering admin" });
         } else {
-          res.status(201).json({ message: "Admin account created successfully!" });
+          res
+            .status(201)
+            .json({ message: "Admin account created successfully!" });
         }
       }
     );
@@ -832,7 +842,6 @@ app.post("/api/like-post", (req, res) => {
     }
   });
 });
-
 app.post("/api/add-comment", async (req, res) => {
   const { post_id, user_id, content } = req.body;
 
@@ -842,9 +851,11 @@ app.post("/api/add-comment", async (req, res) => {
 
   try {
     const commentId = uuidv4(); // Generate a unique ID for the comment
+    const encContent = encrypt(content); // Encrypt the comment content
+
     const query =
       "INSERT INTO comments (id, post_id, user_id, content, created_at) VALUES (?, ?, ?, ?, NOW())";
-    await db.query(query, [commentId, post_id, user_id, content]);
+    await db.query(query, [commentId, post_id, user_id, encContent]); // Insert encrypted content
     res.status(201).json({ message: "Comment added successfully." });
   } catch (err) {
     console.error("Failed to add comment:", err);
@@ -852,6 +863,7 @@ app.post("/api/add-comment", async (req, res) => {
   }
 });
 
+// Decrypt the commenter's name and content when fetching comments
 app.get("/api/get-comments", (req, res) => {
   const { postId } = req.query;
 
@@ -877,7 +889,21 @@ app.get("/api/get-comments", (req, res) => {
       return res.status(500).json({ message: "Error retrieving comments." });
     }
 
-    res.status(200).json(results);
+    // Decrypt comment content and commenter's name
+    const decryptedResults = results.map((comment) => {
+      const decryptedContent = decrypt(comment.content); // Decrypt content
+      const decryptedFirstName = decrypt(comment.firstname); // Decrypt first name
+      const decryptedLastName = decrypt(comment.lastname); // Decrypt last name
+
+      return {
+        ...comment,
+        content: decryptedContent,
+        firstname: decryptedFirstName,
+        lastname: decryptedLastName,
+      };
+    });
+
+    res.status(200).json(decryptedResults);
   });
 });
 
