@@ -30,7 +30,7 @@ function AdminAccounts() {
   const [successMessage, setSuccessMessage] = useState("");
   useEffect(() => {
     axios
-      .get("http://localhost:5005/api/usershow")
+      .get("http://localhost:5005/api/adminshow")
       .then((response) => {
         // Sort users by created_at in descending order
         const sortedUsers = response.data.sort(

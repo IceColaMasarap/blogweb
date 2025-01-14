@@ -64,14 +64,6 @@ function Signup() {
     setMaxDate(formattedDate);
   }, []);
 
-
-
-
-
-
-
-
-
   return (
     <div className="containerr">
       {/* Left Section */}

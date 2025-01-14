@@ -21,10 +21,13 @@ function AdminLogin() {
 
     try {
       // Send a POST request to the login endpoint
-      const response = await axios.post("http://localhost:5005/api/adminlogin", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:5005/api/adminlogin",
+        {
+          email,
+          password,
+        }
+      );
 
       const data = response.data;
 
@@ -47,12 +50,7 @@ function AdminLogin() {
         });
         localStorage.setItem("isModerator", data.isModerator.toString()); // Save as string
 
-        // Redirect based on user role
-        if (data.isModerator === "Admin") {
-          navigate("/adminpage/"); // Redirect to admin page
-        } else {
-          navigate("/home"); // Redirect to homepage for regular users
-        }
+        navigate("/adminpage/"); // Redirect to admin page
       }
     } catch (err) {
       setError("An error occurred during login");
@@ -105,20 +103,18 @@ function AdminLogin() {
               {error}
             </p>
           )}{" "}
-          
         </form>
         <div className="linkerss">
-            <label className="linklabel1">Not an admin? </label>
-            <label
-              className="linklabel2"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/")}
-            >
-              Sign in here.
-            </label>
-          </div>
+          <label className="linklabel1">Not an admin? </label>
+          <label
+            className="linklabel2"
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate("/")}
+          >
+            Sign in here.
+          </label>
+        </div>
       </div>
-      
     </div>
   );
 }
