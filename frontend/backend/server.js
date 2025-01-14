@@ -264,13 +264,30 @@ app.get("/api/usershow", (req, res) => {
 
   db.query(sql, (error, results) => {
     if (error) {
-      console.error("Error fetching posts:", error);
-      res.status(500).json({ message: "Error retrieving posts" });
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Error retrieving users" });
     } else {
-      res.status(200).json(results);
+      try {
+        // Decrypt fields for each user
+        const decryptedResults = results.map((user) => ({
+          id: user.id,
+          firstname: decrypt(user.firstname),
+          lastname: decrypt(user.lastname),
+          email: decrypt(user.email),
+          dateofbirth: decrypt(user.dateofbirth),
+          isModerator: decrypt(user.isModerator),
+          created_at: decrypt(user.created_at),
+        }));
+
+        res.status(200).json(decryptedResults);
+      } catch (decryptError) {
+        console.error("Error decrypting user data:", decryptError);
+        res.status(500).json({ message: "Error decrypting user data" });
+      }
     }
   });
 });
+
 app.get("/api/showposts", (req, res) => {
   const userId = req.query.userId; // Pass the logged-in user's ID as a query parameter
 
