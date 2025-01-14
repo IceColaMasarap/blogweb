@@ -370,8 +370,12 @@ app.get("/api/users", (req, res) => {
 app.put("/api/updatepost2", (req, res) => {
   const { post_id, title, content } = req.body;
 
+  // Encrypt title and content before updating
+  const encTitle = encrypt(title);
+  const encContent = encrypt(content);
+
   const query = "UPDATE posts SET title = ?, content = ? WHERE id = ?";
-  db.query(query, [title, content, post_id], (err, result) => {
+  db.query(query, [encTitle, encContent, post_id], (err, result) => {
     if (err) {
       console.error("Error updating post:", err);
       return res.status(500).json({ error: "Database query failed" });
@@ -379,6 +383,9 @@ app.put("/api/updatepost2", (req, res) => {
     res.status(200).json({ message: "Post updated successfully" });
   });
 });
+
+
+
 // Endpoint: Update Post
 app.put("/api/updateaccount", async (req, res) => {
   const { id, firstname, lastname, dateofbirth, email, password, isModerator } =
