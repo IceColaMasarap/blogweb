@@ -10,7 +10,7 @@ import GI from "./assets/Iicon.png";
 import EI from "./assets/Edit.png";
 import CS from "./assets/CLASS SCHEDULE BSIT PHONE 1.png";
 import POSTSAMPLE from "./assets/GENSHIN 4TH ANNIVERSARY.jpg";
-import NavigationBar from './NavigationBar.jsx';
+import NavigationBar from "./NavigationBar.jsx";
 import "./NavigationBar.css";
 import { useNavigate } from "react-router-dom";
 import "./UserProfile.css";
@@ -75,6 +75,7 @@ function ProfilePage() {
         console.error("Error fetching posts:", error);
       });
   }, []);
+
   const handleUpdatePost = async () => {
     try {
       console.log("Update data:", {
@@ -236,13 +237,11 @@ function ProfilePage() {
     }
   };
 
-
   useEffect(() => {
     const today = new Date();
     const formattedDate = today.toISOString().split("T")[0]; // Format date as YYYY-MM-DD
     setMaxDate(formattedDate);
   }, []);
-
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
