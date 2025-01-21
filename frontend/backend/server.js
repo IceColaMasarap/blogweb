@@ -251,10 +251,11 @@ app.get("/api/posts2", (req, res) => {
         posts.author_id,
         posts.title AS encrypted_title, 
         posts.content AS encrypted_content, 
-        posts.postdate, 
-        posts.isFlagged, 
-        posts.like_count, 
+        posts.postdate AS encrypted_postdate,
+        posts.isFlagged AS encrypted_isFlagged, 
+        posts.like_count AS encrypted_like_count, 
         posts.imageurl AS encrypted_imageurl,
+        posts.isHidden AS encrypted_isHidden,
         users.email AS encrypted_author_email,
         users.firstname AS encrypted_author_firstname, 
         users.lastname AS encrypted_author_lastname
@@ -279,13 +280,22 @@ app.get("/api/posts2", (req, res) => {
           content: post.encrypted_content
             ? decrypt(post.encrypted_content)
             : null,
-          postdate: post.postdate,
-          isFlagged: post.isFlagged,
-          like_count: post.like_count,
+          postdate: post.encrypted_postdate
+            ? decrypt(post.encrypted_postdate)
+            : null,
+          isFlagged:
+            post.encrypted_isFlagged &&
+            decrypt(post.encrypted_isFlagged) === "true", // Convert to boolean
+          isHidden:
+            post.encrypted_isHidden &&
+            decrypt(post.encrypted_isHidden) === "true", // Convert to boolean
+          like_count: post.encrypted_like_count
+            ? parseInt(decrypt(post.encrypted_like_count), 10)
+            : 0,
           imageurl: post.encrypted_imageurl
             ? decrypt(post.encrypted_imageurl)
             : null,
-          author_email: decrypt(post.encrypted_author_email), // No fallback for email
+          author_email: decrypt(post.encrypted_author_email),
           author_firstname: post.encrypted_author_firstname
             ? decrypt(post.encrypted_author_firstname)
             : null,
@@ -293,22 +303,27 @@ app.get("/api/posts2", (req, res) => {
             ? decrypt(post.encrypted_author_lastname)
             : null,
         };
+
+        // Convert decrypted postdate to ISO string
+        if (decryptedPost.postdate) {
+          decryptedPost.postdate = new Date(decryptedPost.postdate).toISOString();
+        }
       } catch (decryptionError) {
         console.error(
           `Decryption failed for post: ${post.post_id}`,
           decryptionError.message
         );
-        // Return partially decrypted post with email untouched
         decryptedPost = {
           post_id: post.post_id,
           author_id: post.author_id,
           title: null,
           content: null,
-          postdate: post.postdate,
-          isFlagged: post.isFlagged,
-          like_count: post.like_count,
+          postdate: null,
+          isFlagged: false, // Default to false if decryption fails
+          isHidden: false, // Default to false if decryption fails
+          like_count: 0,
           imageurl: null,
-          author_email: post.encrypted_author_email, // Return as-is if decryption fails
+          author_email: post.encrypted_author_email,
           author_firstname: null,
           author_lastname: null,
         };
@@ -320,6 +335,8 @@ app.get("/api/posts2", (req, res) => {
     res.status(200).json(decryptedResults);
   });
 });
+
+
 
 app.get("/api/usershow", (req, res) => {
   const sql = `
@@ -392,7 +409,9 @@ app.get("/api/showposts", (req, res) => {
         const decLikeCount = decrypt(post.like_count); // Decrypt like_count
         const decPostDate = new Date(decrypt(post.postdate)).toISOString();
 
-        const decryptedIsHidden = decrypt(post.isHidden) === "1"; 
+        // Decrypt `isHidden` and `isFlagged`, and convert to boolean
+        const decryptedIsHidden = decrypt(post.isHidden) === "true";
+        const decryptedIsFlagged = decrypt(post.isFlagged) === "true";
 
         return {
           ...post,
@@ -403,8 +422,8 @@ app.get("/api/showposts", (req, res) => {
           imageurl: decImage,
           like_count: parseInt(decLikeCount, 10), // Convert decrypted like_count to a number
           postdate: decPostDate,
-
-          isHidden: decryptedIsHidden,
+          isHidden: decryptedIsHidden, // Add decrypted and converted isHidden
+          isFlagged: decryptedIsFlagged, // Add decrypted and converted isFlagged
         };
       });
 
@@ -415,6 +434,7 @@ app.get("/api/showposts", (req, res) => {
     }
   });
 });
+
 
 
 app.get("/api/users", (req, res) => {
@@ -1154,12 +1174,15 @@ app.post("/api/report-post", (req, res) => {
 
 app.post("/api/unflag-post", (req, res) => {
   const { postId } = req.body;
+
   if (!postId) {
     return res.status(400).json({ message: "Post ID is required" });
   }
 
-  const query = `UPDATE posts SET isFlagged = false WHERE id = ?`;
-  db.query(query, [postId], (err, result) => {
+  const encryptedFlagged = encrypt("false"); // Encrypt the value for isFlagged
+
+  const query = `UPDATE posts SET isFlagged = ? WHERE id = ?`;
+  db.query(query, [encryptedFlagged, postId], (err, result) => {
     if (err) {
       console.error("Error unflagging post:", err);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -1171,6 +1194,7 @@ app.post("/api/unflag-post", (req, res) => {
     }
   });
 });
+
 
 app.post("/api/hide-post", (req, res) => {
   const { postId } = req.body;

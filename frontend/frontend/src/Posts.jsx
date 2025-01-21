@@ -204,7 +204,7 @@ function Posts() {
               {filteredPosts.map((item) => (
                 <tr
                   key={item.post_id}
-                  onClick={() => handleRowClick(item)} // Properly call the function with the clicked row data
+                  onClick={() => handleRowClick(item)}
                 >
                   <td>{item.author_email}</td>
                   <td>
@@ -214,10 +214,12 @@ function Posts() {
                   <td>{item.content}</td>
                   <td>{new Date(item.postdate).toLocaleString()}</td>
                   <td>{item.isFlagged ? "Yes" : "No"}</td>
+                  <td>{item.isHidden ? "Yes" : "No"}</td> {/* Display Hidden Status */}
                   <td>{item.like_count}</td>
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
 
