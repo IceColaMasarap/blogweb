@@ -148,7 +148,17 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
     `;
     db.query(
       sqlInsertPost,
-      [postId, userId, encTitle, encContent, postDate, isFlagged, likeCount, encFile, isHidden],
+      [
+        postId,
+        userId,
+        encTitle,
+        encContent,
+        postDate,
+        isFlagged,
+        likeCount,
+        encFile,
+        isHidden,
+      ],
       (error) => {
         if (error) {
           console.error("Error inserting post:", error);
@@ -158,11 +168,8 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
         res.status(201).json({ message: "Post created successfully!", postId });
       }
     );
-    
   });
 });
-
-
 
 app.get("/api/user/:id", (req, res) => {
   const userId = req.params.id;
@@ -436,7 +443,6 @@ app.get("/api/showposts", (req, res) => {
 });
 
 
-
 app.get("/api/users", (req, res) => {
   const sql = `
     SELECT 
@@ -533,9 +539,15 @@ app.put("/api/updateaccount2", async (req, res) => {
   const encemail = encrypt(email);
 
   try {
-    let query =
+    // Update admin query
+    let adminQuery =
       "UPDATE admin SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?";
-    const queryParams = [encfirstname, enclastname, encdateofbirth, encemail];
+    const adminQueryParams = [
+      encfirstname,
+      enclastname,
+      encdateofbirth,
+      encemail,
+    ];
 
     if (password) {
       // Hash the password
@@ -544,20 +556,56 @@ app.put("/api/updateaccount2", async (req, res) => {
         .update(password)
         .digest("hex");
 
-      query += ", password = ?";
-      queryParams.push(hashedPassword);
+      adminQuery += ", password = ?";
+      adminQueryParams.push(hashedPassword);
     }
 
-    query += " WHERE id = ?";
-    queryParams.push(id);
+    adminQuery += " WHERE id = ?";
+    adminQueryParams.push(id);
 
-    db.query(query, queryParams, (err, result) => {
+    // Update users query
+    let usersQuery =
+      "UPDATE users SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?";
+    const usersQueryParams = [
+      encfirstname,
+      enclastname,
+      encdateofbirth,
+      encemail,
+    ];
+
+    if (password) {
+      // Hash the password
+      const hashedPassword = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
+
+      usersQuery += ", password = ?";
+      usersQueryParams.push(hashedPassword);
+    }
+
+    usersQuery += " WHERE id = ?";
+    usersQueryParams.push(id);
+
+    // Execute both queries
+    db.query(adminQuery, adminQueryParams, (err, adminResult) => {
       if (err) {
-        console.error("Error updating account:", err);
-        return res.status(500).json({ error: "Database query failed" });
+        console.error("Error updating admin account:", err);
+        return res
+          .status(500)
+          .json({ error: "Failed to update admin account" });
       }
 
-      res.status(200).json({ message: "Account updated successfully" });
+      db.query(usersQuery, usersQueryParams, (err, usersResult) => {
+        if (err) {
+          console.error("Error updating users account:", err);
+          return res
+            .status(500)
+            .json({ error: "Failed to update users account" });
+        }
+
+        res.status(200).json({ message: "Accounts updated successfully" });
+      });
     });
   } catch (error) {
     console.error("Error processing update:", error);
@@ -655,15 +703,32 @@ app.delete("/api/deletepost2/:post_id", (req, res) => {
 app.delete("/api/deleteaccount/:id", (req, res) => {
   const { id } = req.params;
 
-  const query = "DELETE FROM users WHERE id = ?";
-  db.query(query, [id], (err, result) => {
+  // Delete from the 'users' table
+  const deleteUserQuery = "DELETE FROM users WHERE id = ?";
+  
+  // Delete from the 'admin' table
+  const deleteAdminQuery = "DELETE FROM admin WHERE id = ?";
+
+  // Start by deleting from the users table
+  db.query(deleteUserQuery, [id], (err, result) => {
     if (err) {
-      console.error("Error deleting post:", err);
-      return res.status(500).json({ error: "Database query failed" });
+      console.error("Error deleting from users:", err);
+      return res.status(500).json({ error: "Database query failed for users" });
     }
-    res.status(200).json({ message: "Post deleted successfully" });
+
+    // After successfully deleting from users, delete from the admin table
+    db.query(deleteAdminQuery, [id], (err) => {
+      if (err) {
+        console.error("Error deleting from admin:", err);
+        return res.status(500).json({ error: "Database query failed for admin" });
+      }
+
+      // Respond with success if both deletions are successful
+      res.status(200).json({ message: "Account deleted successfully" });
+    });
   });
 });
+
 
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
@@ -998,7 +1063,9 @@ app.post("/api/like-post", (req, res) => {
       db.query(getLikeCountSql, [postId], (fetchErr, fetchResults) => {
         if (fetchErr) {
           console.error("Error fetching like count:", fetchErr);
-          return res.status(500).json({ message: "Error fetching like count." });
+          return res
+            .status(500)
+            .json({ message: "Error fetching like count." });
         }
 
         const encryptedLikeCount = fetchResults[0].like_count;
@@ -1013,19 +1080,23 @@ app.post("/api/like-post", (req, res) => {
             return res.status(500).json({ message: "Error adding like." });
           }
 
-          db.query(updatePostSql, [updatedEncryptedLikeCount, postId], (updateErr) => {
-            if (updateErr) {
-              console.error("Error updating like count:", updateErr);
-              return res
-                .status(500)
-                .json({ message: "Error updating like count." });
-            }
+          db.query(
+            updatePostSql,
+            [updatedEncryptedLikeCount, postId],
+            (updateErr) => {
+              if (updateErr) {
+                console.error("Error updating like count:", updateErr);
+                return res
+                  .status(500)
+                  .json({ message: "Error updating like count." });
+              }
 
-            res.status(200).json({
-              message: "Post liked.",
-              newLikeCount: newLikeCount, // Send back the decrypted like count
-            });
-          });
+              res.status(200).json({
+                message: "Post liked.",
+                newLikeCount: newLikeCount, // Send back the decrypted like count
+              });
+            }
+          );
         });
       });
     } else if (action === "unlike" && isLiked) {
@@ -1039,7 +1110,9 @@ app.post("/api/like-post", (req, res) => {
       db.query(getLikeCountSql, [postId], (fetchErr, fetchResults) => {
         if (fetchErr) {
           console.error("Error fetching like count:", fetchErr);
-          return res.status(500).json({ message: "Error fetching like count." });
+          return res
+            .status(500)
+            .json({ message: "Error fetching like count." });
         }
 
         const encryptedLikeCount = fetchResults[0].like_count;
@@ -1051,24 +1124,26 @@ app.post("/api/like-post", (req, res) => {
         db.query(removeLikeSql, [postId, userId], (removeErr) => {
           if (removeErr) {
             console.error("Error removing like:", removeErr);
-            return res
-              .status(500)
-              .json({ message: "Error removing like." });
+            return res.status(500).json({ message: "Error removing like." });
           }
 
-          db.query(updatePostSql, [updatedEncryptedLikeCount, postId], (updateErr) => {
-            if (updateErr) {
-              console.error("Error updating like count:", updateErr);
-              return res
-                .status(500)
-                .json({ message: "Error updating like count." });
-            }
+          db.query(
+            updatePostSql,
+            [updatedEncryptedLikeCount, postId],
+            (updateErr) => {
+              if (updateErr) {
+                console.error("Error updating like count:", updateErr);
+                return res
+                  .status(500)
+                  .json({ message: "Error updating like count." });
+              }
 
-            res.status(200).json({
-              message: "Post unliked.",
-              newLikeCount: newLikeCount, // Send back the decrypted like count
-            });
-          });
+              res.status(200).json({
+                message: "Post unliked.",
+                newLikeCount: newLikeCount, // Send back the decrypted like count
+              });
+            }
+          );
         });
       });
     } else {
@@ -1078,8 +1153,6 @@ app.post("/api/like-post", (req, res) => {
     }
   });
 });
-
-
 
 app.post("/api/add-comment", async (req, res) => {
   const { post_id, user_id, content } = req.body;
@@ -1239,7 +1312,6 @@ app.post("/api/unhide-post", (req, res) => {
     }
   });
 });
-
 
 app.get("/api/get-comment-count", async (req, res) => {
   const { postId } = req.query;

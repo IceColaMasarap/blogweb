@@ -9,27 +9,26 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Reset error message
-  
+
     if (!email || !password) {
       setError("Please fill in both fields");
       return;
     }
-  
+
     try {
       // Send a POST request to the login endpoint
       const response = await axios.post("http://localhost:5005/api/login", {
         email,
         password,
       });
-  
+
       const data = response.data;
-  
+
       console.log("Logged in user data:", data); // Log user data here
-  
+
       // Check if login is successful
       if (data.error) {
         setError("Invalid credentials, please try again.");
@@ -39,12 +38,17 @@ function Login() {
         if (data.user.isModerator !== undefined) {
           localStorage.setItem("isModerator", data.user.isModerator.toString());
         }
-  
-        // Redirect based on user role
-        if (data.user.email === "admin@gmail.com") {
-          navigate("/adminpage/"); // Redirect to admin page
+
+        // Check if isModerator is "Admin", count it as wrong regardless of the credentials
+        if (data.user.isModerator === "Admin") {
+          setError("An error occurred during login.");
         } else {
-          navigate("/home"); // Redirect to homepage for regular users
+          // Redirect based on user role
+          if (data.user.email === "admin@gmail.com") {
+            navigate("/adminpage/"); // Redirect to admin page
+          } else {
+            navigate("/home"); // Redirect to homepage for regular users
+          }
         }
       }
     } catch (err) {
@@ -52,7 +56,6 @@ function Login() {
       console.log("Error logging in:", err);
     }
   };
-  
 
   return (
     <div className="container">
