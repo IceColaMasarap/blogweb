@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 console.log("Encryption Key:", process.env.ENCRYPTION_KEY);
 
@@ -248,7 +247,6 @@ app.get("/api/posts", (req, res) => {
   });
 });
 
-
 app.get("/api/posts2", (req, res) => {
   const sql = `
     SELECT 
@@ -455,41 +453,86 @@ app.put("/api/updatepost2", (req, res) => {
   });
 });
 
-// Endpoint: Update Post
+// Endpoint: Update Account
 app.put("/api/updateaccount", async (req, res) => {
   const { id, firstname, lastname, dateofbirth, email, password, isModerator } =
     req.body;
 
+  const encfirstname = encrypt(firstname);
+  const enclastname = encrypt(lastname);
+  const encdateofbirth = encrypt(dateofbirth);
+  const encemail = encrypt(email);
+  const encisMod = encrypt(isModerator);
+
   try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    let query =
+      "UPDATE users SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?, isModerator = ?";
+    const queryParams = [
+      encfirstname,
+      enclastname,
+      encdateofbirth,
+      encemail,
+      encisMod,
+    ];
 
-    const query =
-      "UPDATE users SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?, password = ?, isModerator = ? WHERE id = ?";
+    // Add password to the query only if it's provided
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      query += ", password = ?";
+      queryParams.push(hashedPassword);
+    }
 
-    db.query(
-      query,
-      [
-        firstname,
-        lastname,
-        dateofbirth,
-        email,
-        hashedPassword,
-        isModerator,
-        id,
-      ],
-      (err, result) => {
-        if (err) {
-          console.error("Error updating account:", err);
-          return res.status(500).json({ error: "Database query failed" });
-        }
+    query += " WHERE id = ?";
+    queryParams.push(id);
 
-        res.status(200).json({ message: "Account updated successfully" });
+    db.query(query, queryParams, (err, result) => {
+      if (err) {
+        console.error("Error updating account:", err);
+        return res.status(500).json({ error: "Database query failed" });
       }
-    );
+
+      res.status(200).json({ message: "Account updated successfully" });
+    });
   } catch (error) {
-    console.error("Error hashing password:", error);
-    res.status(500).json({ error: "Failed to hash password" });
+    console.error("Error processing update:", error);
+    res.status(500).json({ error: "Failed to process update" });
+  }
+});
+// Endpoint: Update Account
+app.put("/api/updateaccount2", async (req, res) => {
+  const { id, firstname, lastname, dateofbirth, email, password } = req.body;
+
+  const encfirstname = encrypt(firstname);
+  const enclastname = encrypt(lastname);
+  const encdateofbirth = encrypt(dateofbirth);
+  const encemail = encrypt(email);
+
+  try {
+    let query =
+      "UPDATE admin SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?";
+    const queryParams = [encfirstname, enclastname, encdateofbirth, encemail];
+
+    // Add password to the query only if it's provided
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      query += ", password = ?";
+      queryParams.push(hashedPassword);
+    }
+
+    query += " WHERE id = ?";
+    queryParams.push(id);
+
+    db.query(query, queryParams, (err, result) => {
+      if (err) {
+        console.error("Error updating account:", err);
+        return res.status(500).json({ error: "Database query failed" });
+      }
+
+      res.status(200).json({ message: "Account updated successfully" });
+    });
+  } catch (error) {
+    console.error("Error processing update:", error);
+    res.status(500).json({ error: "Failed to process update" });
   }
 });
 
