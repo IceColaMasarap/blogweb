@@ -626,15 +626,32 @@ app.delete("/api/deletepost2/:post_id", (req, res) => {
 app.delete("/api/deleteaccount/:id", (req, res) => {
   const { id } = req.params;
 
-  const query = "DELETE FROM users WHERE id = ?";
-  db.query(query, [id], (err, result) => {
+  // Delete from the 'users' table
+  const deleteUserQuery = "DELETE FROM users WHERE id = ?";
+  
+  // Delete from the 'admin' table
+  const deleteAdminQuery = "DELETE FROM admin WHERE id = ?";
+
+  // Start by deleting from the users table
+  db.query(deleteUserQuery, [id], (err, result) => {
     if (err) {
-      console.error("Error deleting post:", err);
-      return res.status(500).json({ error: "Database query failed" });
+      console.error("Error deleting from users:", err);
+      return res.status(500).json({ error: "Database query failed for users" });
     }
-    res.status(200).json({ message: "Post deleted successfully" });
+
+    // After successfully deleting from users, delete from the admin table
+    db.query(deleteAdminQuery, [id], (err) => {
+      if (err) {
+        console.error("Error deleting from admin:", err);
+        return res.status(500).json({ error: "Database query failed for admin" });
+      }
+
+      // Respond with success if both deletions are successful
+      res.status(200).json({ message: "Account deleted successfully" });
+    });
   });
 });
+
 
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
