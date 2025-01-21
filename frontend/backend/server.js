@@ -477,7 +477,12 @@ app.put("/api/updateaccount", async (req, res) => {
 
     // Add password to the query only if it's provided
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // Hash the password
+      const hashedPassword = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
+
       query += ", password = ?";
       queryParams.push(hashedPassword);
     }
@@ -512,9 +517,13 @@ app.put("/api/updateaccount2", async (req, res) => {
       "UPDATE admin SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?";
     const queryParams = [encfirstname, enclastname, encdateofbirth, encemail];
 
-    // Add password to the query only if it's provided
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // Hash the password
+      const hashedPassword = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
+
       query += ", password = ?";
       queryParams.push(hashedPassword);
     }
@@ -866,7 +875,9 @@ app.post("/api/adminregister", async (req, res) => {
           (error) => {
             if (error) {
               console.error("Error inserting into users:", error);
-              return res.status(500).json({ message: "Error registering user" });
+              return res
+                .status(500)
+                .json({ message: "Error registering user" });
             }
 
             res.status(201).json({ message: "Account created successfully!" });
@@ -879,7 +890,6 @@ app.post("/api/adminregister", async (req, res) => {
     res.status(500).json({ message: "Error processing registration" });
   }
 });
-
 
 app.post("/api/addpost2", upload.single("image"), (req, res) => {
   const { title, content } = req.body;
