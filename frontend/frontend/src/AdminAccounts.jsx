@@ -58,67 +58,83 @@ function AdminAccounts() {
     setIsModalOpen2(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccessMessage("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setSuccessMessage("");
 
-    if (
-      !firstName ||
-      !lastName ||
-      !dateofbirth ||
-      !email1 ||
-      !password ||
-      !confirmPassword
-    ) {
-      setError("Please fill in all fields");
-      alert("Please fill in all fields");
+  if (
+    !firstName ||
+    !lastName ||
+    !dateofbirth ||
+    !email1 ||
+    !password ||
+    !confirmPassword
+  ) {
+    setError("Please fill in all fields");
+    alert("Please fill in all fields");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    setError("Passwords do not match");
+    alert("Passwords do not match");
+    return;
+  }
+
+  try {
+    // Check if the email already exists
+    const emailCheckResponse = await axios.post(
+      "http://localhost:5005/api/check-email-admin",
+      { email: email1 }
+    );
+
+    if (emailCheckResponse.data.exists) {
+      setError("Email is already registered");
+      alert("Email is already registered");
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      alert("Passwords do not match");
-      return;
-    }
+    // Proceed with registration
+    const response = await axios.post(
+      "http://localhost:5005/api/adminregister",
+      {
+        firstName,
+        lastName,
+        email: email1,
+        dateofbirth,
+        password,
+      }
+    );
 
-    try {
-      const response = await axios.post(
-        "http://localhost:5005/api/adminregister",
-        {
-          firstName,
-          lastName,
-          email: email1,
-          dateofbirth,
-          password,
-        }
-      );
+    // Set success message and alert
+    setSuccessMessage(response.data.message);
+    alert(response.data.message);
 
-      // Set success message and alert
-      setSuccessMessage(response.data.message);
-      alert(response.data.message);
-      const updatedUsers = await axios.get(
-        "http://localhost:5005/api/adminshow"
-      );
-      setUsers(updatedUsers.data);
-      // Clear input fields and modal state after registration
-      setFirstName("");
-      setLastName("");
-      setEmail1("");
-      setDateOfBirth("");
-      setPassword("");
-      setConfirmPassword("");
+    // Refresh the user list
+    const updatedUsers = await axios.get(
+      "http://localhost:5005/api/adminshow"
+    );
+    setUsers(updatedUsers.data);
 
-      toggleModal();
-    } catch (err) {
-      const errorMsg = err.response
-        ? err.response.data.message
-        : "Error occurred during registration";
-      setError(errorMsg);
-      alert(errorMsg);
-      console.error(err);
-    }
-  };
+    // Clear input fields and modal state after registration
+    setFirstName("");
+    setLastName("");
+    setEmail1("");
+    setDateOfBirth("");
+    setPassword("");
+    setConfirmPassword("");
+    toggleModal();
+  } catch (err) {
+    const errorMsg = err.response
+      ? err.response.data.message
+      : "Error occurred during registration";
+    setError(errorMsg);
+    alert(errorMsg);
+    console.error(err);
+  }
+};
+
 
   const handleModeratorFilter = (e) => {
     const value = e.target.value;
