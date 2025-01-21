@@ -1121,3 +1121,32 @@ app.get("/api/get-comment-count", async (req, res) => {
     res.status(500).json({ error: "Failed to retrieve comment count." });
   }
 });
+
+app.post("/api/check-email", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const sql = `SELECT email FROM users`;
+    db.query(sql, [], (err, results) => {
+      if (err) {
+        console.error("Error fetching emails:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      // Decrypt all emails and compare
+      const emailTaken = results.some((row) => {
+        const decryptedEmail = decrypt(row.email); // Decrypt each email from the database
+        return decryptedEmail === email; // Compare with the user's email
+      });
+
+      if (emailTaken) {
+        return res.status(200).json({ exists: true });
+      }
+
+      res.status(200).json({ exists: false });
+    });
+  } catch (error) {
+    console.error("Error checking email:", error);
+    res.status(500).json({ message: "Error processing email check" });
+  }
+});
