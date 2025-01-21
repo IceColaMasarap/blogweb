@@ -810,18 +810,15 @@ app.post("/api/adminlogin", (req, res) => {
 app.post("/api/adminregister", async (req, res) => {
   const { firstName, lastName, email, dateofbirth, password } = req.body;
   const userId = uuidv4();
-  const isMod = "Admin"; // Default role for new users
+  const isMod = "Admin";
 
   try {
-    // Encrypt sensitive fields
     const encryptedFirstName = encrypt(firstName);
     const encryptedLastName = encrypt(lastName);
     const encryptedEmail = encrypt(email);
     const encryptedDateOfBirth = encrypt(dateofbirth);
     const encryptedIsModerator = encrypt(isMod);
-    const encryptedCreatedAt = encrypt(new Date().toISOString()); // Generate current timestamp and encrypt it
-
-    // Hash the password
+    const encryptedCreatedAt = encrypt(new Date().toISOString());
     const hashedPassword = crypto
       .createHash("sha256")
       .update(password)
@@ -829,6 +826,10 @@ app.post("/api/adminregister", async (req, res) => {
 
     const sql = `
       INSERT INTO admin (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const sql2 = `
+      INSERT INTO users (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
@@ -844,13 +845,33 @@ app.post("/api/adminregister", async (req, res) => {
         encryptedIsModerator,
         encryptedCreatedAt,
       ],
-      (error, results) => {
+      (error) => {
         if (error) {
-          console.error("Error inserting user:", error);
-          res.status(500).json({ message: "Error registering user" });
-        } else {
-          res.status(201).json({ message: "Account created successfully!" });
+          console.error("Error inserting into admin:", error);
+          return res.status(500).json({ message: "Error registering admin" });
         }
+
+        db.query(
+          sql2,
+          [
+            userId,
+            encryptedFirstName,
+            encryptedLastName,
+            encryptedDateOfBirth,
+            encryptedEmail,
+            hashedPassword,
+            encryptedIsModerator,
+            encryptedCreatedAt,
+          ],
+          (error) => {
+            if (error) {
+              console.error("Error inserting into users:", error);
+              return res.status(500).json({ message: "Error registering user" });
+            }
+
+            res.status(201).json({ message: "Account created successfully!" });
+          }
+        );
       }
     );
   } catch (error) {
@@ -858,6 +879,7 @@ app.post("/api/adminregister", async (req, res) => {
     res.status(500).json({ message: "Error processing registration" });
   }
 });
+
 
 app.post("/api/addpost2", upload.single("image"), (req, res) => {
   const { title, content } = req.body;
