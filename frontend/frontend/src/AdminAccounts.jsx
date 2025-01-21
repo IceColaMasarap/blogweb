@@ -97,7 +97,10 @@ function AdminAccounts() {
       // Set success message and alert
       setSuccessMessage(response.data.message);
       alert(response.data.message);
-
+      const updatedUsers = await axios.get(
+        "http://localhost:5005/api/adminshow"
+      );
+      setUsers(updatedUsers.data);
       // Clear input fields and modal state after registration
       setFirstName("");
       setLastName("");
@@ -161,8 +164,6 @@ function AdminAccounts() {
       lastname: editLastName,
       dateofbirth: editDateOfBirth,
       email: editEmail,
-      isModerator:
-        editIsModerator === "" ? selectedAccount?.isModerator : editIsModerator, // Use existing value if not explicitly changed
     };
 
     // Include password only if provided
@@ -177,7 +178,7 @@ function AdminAccounts() {
     try {
       console.log("Update data:", payload);
       const response = await axios.put(
-        "http://localhost:5005/api/updateaccount",
+        "http://localhost:5005/api/updateaccount2",
         payload
       );
 
@@ -187,7 +188,7 @@ function AdminAccounts() {
 
       // Refresh user list
       const updatedUsers = await axios.get(
-        "http://localhost:5005/api/usershow"
+        "http://localhost:5005/api/adminshow"
       );
       setUsers(updatedUsers.data);
     } catch (error) {
@@ -409,11 +410,14 @@ function AdminAccounts() {
                 placeholder="Re-enter new password"
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
-              <label className="overlaylabel">User Type</label>
+              <label className="overlaylabel" hidden>
+                User Type
+              </label>
               <select
                 className="addpostforminput"
                 value={editIsModerator}
                 onChange={(e) => setEditIsModerator(e.target.value)}
+                hidden
               >
                 <option value="User">User</option>
                 <option value="Moderator">Moderator</option>
