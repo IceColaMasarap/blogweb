@@ -94,7 +94,10 @@ function Accounts() {
       // Set success message and alert
       setSuccessMessage(response.data.message);
       alert(response.data.message);
-
+      const updatedUsers = await axios.get(
+        "http://localhost:5005/api/usershow"
+      );
+      setUsers(updatedUsers.data);
       // Clear input fields and modal state after registration
       setFirstName("");
       setLastName("");
