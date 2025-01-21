@@ -214,7 +214,7 @@ function Posts() {
                   <td>{item.content}</td>
                   <td>{new Date(item.postdate).toLocaleString()}</td>
                   <td>{item.isFlagged ? "Yes" : "No"}</td>
-                  <td>{item.isHidden ? "Yes" : "No"}</td> {/* Display Hidden Status */}
+                 
                   <td>{item.like_count}</td>
                 </tr>
               ))}
