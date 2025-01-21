@@ -83,13 +83,16 @@ function AdminAccounts() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5005/api/register", {
-        firstName,
-        lastName,
-        email: email1,
-        dateofbirth,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:5005/api/adminregister",
+        {
+          firstName,
+          lastName,
+          email: email1,
+          dateofbirth,
+          password,
+        }
+      );
 
       // Set success message and alert
       setSuccessMessage(response.data.message);
@@ -291,7 +294,7 @@ function AdminAccounts() {
             <form className="overlayform" onSubmit={handleSubmit}>
               <div className="headeroverlay">
                 {" "}
-                <h2 className="overlaylabel2">Add a new Account</h2>
+                <h2 className="overlaylabel2">Add a new Admin Account</h2>
               </div>
 
               <label className="overlaylabel">Email</label>
