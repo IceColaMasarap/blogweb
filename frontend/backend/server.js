@@ -107,7 +107,6 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
   console.log("Uploaded File:", req.file);
 
   const { userId, content, title } = req.body;
-  // If no file is uploaded, `file` will be null
   const file = req.file ? req.file.filename : null;
 
   if (!userId || !content || !title) {
@@ -131,18 +130,22 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
         .json({ message: "Invalid User ID. User does not exist." });
     }
 
+    // Encrypt fields
     const encTitle = encrypt(title);
     const encContent = encrypt(content);
-    // Encrypt the file only if it exists; otherwise, use `null`
     const encFile = file ? encrypt(file) : null;
 
     const postId = uuidv4();
-    const postDate = new Date();
-    const isFlagged = 0;
-    const likeCount = 0;
+    const postDate = encrypt(new Date().toISOString()); // Encrypt post date
+    const isFlagged = encrypt(String(0)); // Convert to string before encryption
+    const likeCount = encrypt(String(0)); // Convert to string before encryption
 
-    const sqlInsertPost = `INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const isHidden = encrypt(String(0));
+
+    const sqlInsertPost = `
+      INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl, isHidden)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
     db.query(
       sqlInsertPost,
       [
@@ -153,7 +156,8 @@ app.post("/api/create-post", upload.single("file"), (req, res) => {
         postDate,
         isFlagged,
         likeCount,
-        encFile, // If no file is uploaded, this will be `null`
+        encFile,
+        isHidden,
       ],
       (error) => {
         if (error) {
@@ -370,7 +374,7 @@ app.get("/api/showposts", (req, res) => {
       p.isHidden, 
       p.author_id, 
       p.like_count, 
-      p.imageurl,  -- Ensure field name matches exactly
+      p.imageurl, 
       a.firstname, 
       a.lastname, 
       EXISTS (SELECT 1 FROM likes WHERE likes.post_id = p.id AND likes.user_id = ?) AS liked,
@@ -385,27 +389,29 @@ app.get("/api/showposts", (req, res) => {
       return res.status(500).json({ message: "Error retrieving posts." });
     }
 
-    // Decrypt sensitive fields in the results
     try {
       const decryptedResults = results.map((post) => {
-        // Ensure consistent naming for decryption
         const decryptedFirstName = decrypt(post.firstname);
         const decryptedLastName = decrypt(post.lastname);
         const decTitle = decrypt(post.title);
         const decContent = decrypt(post.content);
-        const decImage = post.imageurl ? decrypt(post.imageurl) : null; // Check for null or undefined imageurl
+        const decImage = post.imageurl ? decrypt(post.imageurl) : null;
+        const decLikeCount = decrypt(post.like_count); // Decrypt like_count
+        const decPostDate = new Date(decrypt(post.postdate)).toISOString();
 
-        console.log("Decrypted Title:", decTitle); // Debugging decrypted title
-        console.log("Decrypted Content:", decContent); // Debugging decrypted content
-        console.log("Decrypted Image URL:", decImage); // Debugging decrypted image URL
+        const decryptedIsHidden = decrypt(post.isHidden) === "1";
 
         return {
           ...post,
           firstname: decryptedFirstName,
           lastname: decryptedLastName,
-          title: decTitle, // Assign decrypted title to post
-          content: decContent, // Assign decrypted content to post
-          imageurl: decImage, // Use the correct field name 'imageurl'
+          title: decTitle,
+          content: decContent,
+          imageurl: decImage,
+          like_count: parseInt(decLikeCount, 10), // Convert decrypted like_count to a number
+          postdate: decPostDate,
+
+          isHidden: decryptedIsHidden,
         };
       });
 
@@ -477,7 +483,12 @@ app.put("/api/updateaccount", async (req, res) => {
 
     // Add password to the query only if it's provided
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // Hash the password
+      const hashedPassword = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
+
       query += ", password = ?";
       queryParams.push(hashedPassword);
     }
@@ -508,27 +519,73 @@ app.put("/api/updateaccount2", async (req, res) => {
   const encemail = encrypt(email);
 
   try {
-    let query =
+    // Update admin query
+    let adminQuery =
       "UPDATE admin SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?";
-    const queryParams = [encfirstname, enclastname, encdateofbirth, encemail];
+    const adminQueryParams = [
+      encfirstname,
+      enclastname,
+      encdateofbirth,
+      encemail,
+    ];
 
-    // Add password to the query only if it's provided
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      query += ", password = ?";
-      queryParams.push(hashedPassword);
+      // Hash the password
+      const hashedPassword = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
+
+      adminQuery += ", password = ?";
+      adminQueryParams.push(hashedPassword);
     }
 
-    query += " WHERE id = ?";
-    queryParams.push(id);
+    adminQuery += " WHERE id = ?";
+    adminQueryParams.push(id);
 
-    db.query(query, queryParams, (err, result) => {
+    // Update users query
+    let usersQuery =
+      "UPDATE users SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?";
+    const usersQueryParams = [
+      encfirstname,
+      enclastname,
+      encdateofbirth,
+      encemail,
+    ];
+
+    if (password) {
+      // Hash the password
+      const hashedPassword = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
+
+      usersQuery += ", password = ?";
+      usersQueryParams.push(hashedPassword);
+    }
+
+    usersQuery += " WHERE id = ?";
+    usersQueryParams.push(id);
+
+    // Execute both queries
+    db.query(adminQuery, adminQueryParams, (err, adminResult) => {
       if (err) {
-        console.error("Error updating account:", err);
-        return res.status(500).json({ error: "Database query failed" });
+        console.error("Error updating admin account:", err);
+        return res
+          .status(500)
+          .json({ error: "Failed to update admin account" });
       }
 
-      res.status(200).json({ message: "Account updated successfully" });
+      db.query(usersQuery, usersQueryParams, (err, usersResult) => {
+        if (err) {
+          console.error("Error updating users account:", err);
+          return res
+            .status(500)
+            .json({ error: "Failed to update users account" });
+        }
+
+        res.status(200).json({ message: "Accounts updated successfully" });
+      });
     });
   } catch (error) {
     console.error("Error processing update:", error);
@@ -883,7 +940,9 @@ app.post("/api/adminregister", async (req, res) => {
           (error) => {
             if (error) {
               console.error("Error inserting into users:", error);
-              return res.status(500).json({ message: "Error registering user" });
+              return res
+                .status(500)
+                .json({ message: "Error registering user" });
             }
 
             res.status(201).json({ message: "Account created successfully!" });
@@ -896,7 +955,6 @@ app.post("/api/adminregister", async (req, res) => {
     res.status(500).json({ message: "Error processing registration" });
   }
 });
-
 
 app.post("/api/addpost2", upload.single("image"), (req, res) => {
   const { title, content } = req.body;
@@ -978,50 +1036,94 @@ app.post("/api/like-post", (req, res) => {
       // Add a like
       const addLikeSql =
         "INSERT INTO likes (id, user_id, post_id, created_at) VALUES (UUID(), ?, ?, NOW())";
-      const updatePostSql =
-        "UPDATE posts SET like_count = like_count + 1 WHERE id = ?";
-      db.query(addLikeSql, [userId, postId], (addErr) => {
-        if (addErr) {
-          console.error("Error adding like:", addErr);
-          return res.status(500).json({ message: "Error adding like." });
+      const getLikeCountSql = "SELECT like_count FROM posts WHERE id = ?";
+      const updatePostSql = "UPDATE posts SET like_count = ? WHERE id = ?";
+
+      // Fetch the current encrypted like count
+      db.query(getLikeCountSql, [postId], (fetchErr, fetchResults) => {
+        if (fetchErr) {
+          console.error("Error fetching like count:", fetchErr);
+          return res
+            .status(500)
+            .json({ message: "Error fetching like count." });
         }
 
-        db.query(updatePostSql, [postId], (updateErr) => {
-          if (updateErr) {
-            console.error("Error updating like count:", updateErr);
-            return res
-              .status(500)
-              .json({ message: "Error updating like count." });
+        const encryptedLikeCount = fetchResults[0].like_count;
+        const decryptedLikeCount = parseInt(decrypt(encryptedLikeCount), 10);
+        const newLikeCount = decryptedLikeCount + 1;
+        const updatedEncryptedLikeCount = encrypt(String(newLikeCount));
+
+        // Update the like count
+        db.query(addLikeSql, [userId, postId], (addErr) => {
+          if (addErr) {
+            console.error("Error adding like:", addErr);
+            return res.status(500).json({ message: "Error adding like." });
           }
 
-          res
-            .status(200)
-            .json({ message: "Post liked.", newLikeCount: isLiked + 1 });
+          db.query(
+            updatePostSql,
+            [updatedEncryptedLikeCount, postId],
+            (updateErr) => {
+              if (updateErr) {
+                console.error("Error updating like count:", updateErr);
+                return res
+                  .status(500)
+                  .json({ message: "Error updating like count." });
+              }
+
+              res.status(200).json({
+                message: "Post liked.",
+                newLikeCount: newLikeCount, // Send back the decrypted like count
+              });
+            }
+          );
         });
       });
     } else if (action === "unlike" && isLiked) {
       // Remove a like
       const removeLikeSql =
         "DELETE FROM likes WHERE post_id = ? AND user_id = ?";
-      const updatePostSql =
-        "UPDATE posts SET like_count = like_count - 1 WHERE id = ?";
-      db.query(removeLikeSql, [postId, userId], (removeErr) => {
-        if (removeErr) {
-          console.error("Error removing like:", removeErr);
-          return res.status(500).json({ message: "Error removing like." });
+      const getLikeCountSql = "SELECT like_count FROM posts WHERE id = ?";
+      const updatePostSql = "UPDATE posts SET like_count = ? WHERE id = ?";
+
+      // Fetch the current encrypted like count
+      db.query(getLikeCountSql, [postId], (fetchErr, fetchResults) => {
+        if (fetchErr) {
+          console.error("Error fetching like count:", fetchErr);
+          return res
+            .status(500)
+            .json({ message: "Error fetching like count." });
         }
 
-        db.query(updatePostSql, [postId], (updateErr) => {
-          if (updateErr) {
-            console.error("Error updating like count:", updateErr);
-            return res
-              .status(500)
-              .json({ message: "Error updating like count." });
+        const encryptedLikeCount = fetchResults[0].like_count;
+        const decryptedLikeCount = parseInt(decrypt(encryptedLikeCount), 10);
+        const newLikeCount = decryptedLikeCount - 1;
+        const updatedEncryptedLikeCount = encrypt(String(newLikeCount));
+
+        // Update the like count
+        db.query(removeLikeSql, [postId, userId], (removeErr) => {
+          if (removeErr) {
+            console.error("Error removing like:", removeErr);
+            return res.status(500).json({ message: "Error removing like." });
           }
 
-          res
-            .status(200)
-            .json({ message: "Post unliked.", newLikeCount: isLiked - 1 });
+          db.query(
+            updatePostSql,
+            [updatedEncryptedLikeCount, postId],
+            (updateErr) => {
+              if (updateErr) {
+                console.error("Error updating like count:", updateErr);
+                return res
+                  .status(500)
+                  .json({ message: "Error updating like count." });
+              }
+
+              res.status(200).json({
+                message: "Post unliked.",
+                newLikeCount: newLikeCount, // Send back the decrypted like count
+              });
+            }
+          );
         });
       });
     } else {
@@ -1031,6 +1133,7 @@ app.post("/api/like-post", (req, res) => {
     }
   });
 });
+
 app.post("/api/add-comment", async (req, res) => {
   const { post_id, user_id, content } = req.body;
 
@@ -1105,9 +1208,11 @@ app.post("/api/report-post", (req, res) => {
   if (!postId) {
     return res.status(400).json({ message: "Post ID is required" });
   }
-  const query = `UPDATE posts SET isFlagged = true WHERE id = ?`;
-  db.query(query, [postId], (err, result) => {
-    // Changed 'connection' to 'db'
+
+  const encryptedFlagged = encrypt("true"); // Encrypt the value for isFlagged
+
+  const query = `UPDATE posts SET isFlagged = ? WHERE id = ?`;
+  db.query(query, [encryptedFlagged, postId], (err, result) => {
     if (err) {
       console.error("Error updating post:", err);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -1145,8 +1250,11 @@ app.post("/api/hide-post", (req, res) => {
   if (!postId) {
     return res.status(400).json({ message: "Post ID is required" });
   }
-  const query = `UPDATE posts SET isHidden = true WHERE id = ?`;
-  db.query(query, [postId], (err, result) => {
+
+  const encryptedHidden = encrypt("true"); // Encrypt the value for isHidden
+
+  const query = `UPDATE posts SET isHidden = ? WHERE id = ?`;
+  db.query(query, [encryptedHidden, postId], (err, result) => {
     if (err) {
       console.error("Error hiding post:", err);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -1158,14 +1266,17 @@ app.post("/api/hide-post", (req, res) => {
     }
   });
 });
+
 app.post("/api/unhide-post", (req, res) => {
   const { postId } = req.body;
   if (!postId) {
     return res.status(400).json({ message: "Post ID is required" });
   }
 
-  const query = `UPDATE posts SET isHidden = false WHERE id = ?`;
-  db.query(query, [postId], (err, result) => {
+  const encryptedHidden = encrypt("false"); // Encrypt the value for isHidden
+
+  const query = `UPDATE posts SET isHidden = ? WHERE id = ?`;
+  db.query(query, [encryptedHidden, postId], (err, result) => {
     if (err) {
       console.error("Error unhiding post:", err);
       return res.status(500).json({ message: "Internal Server Error" });
