@@ -126,11 +126,13 @@ function Accounts() {
       setIsModerator(value);
     }
   };
-
   const filteredUsers = users.filter((user) => {
     const matchesEmail = email
       ? user.email.toLowerCase().includes(email.toLowerCase())
       : true;
+
+    // Exclude users where isModerator is "Admin"
+    const isNotAdmin = user.isModerator !== "Admin";
 
     // Handle the moderator filter logic
     const userTypeMatch =
@@ -141,8 +143,9 @@ function Accounts() {
       (!startDate || postDate >= new Date(startDate)) &&
       (!endDate || postDate <= new Date(endDate));
 
-    return matchesEmail && userTypeMatch && matchesDateRange;
+    return matchesEmail && isNotAdmin && userTypeMatch && matchesDateRange;
   });
+
   const handleUpdateAccount = async () => {
     setError("");
 
