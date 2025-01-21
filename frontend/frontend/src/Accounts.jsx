@@ -132,7 +132,7 @@ function Accounts() {
       : true;
 
     // Exclude users where isModerator is "Admin"
-    const isNotAdmin = user.isModerator !== "Admin";
+    const isNotAdmin = user.isModerator !== "Admsin";
 
     // Handle the moderator filter logic
     const userTypeMatch =
