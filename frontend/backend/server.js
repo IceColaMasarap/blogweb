@@ -1000,7 +1000,7 @@ app.post("/api/addpost2", upload.single("image"), (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
-        aid,
+        adminId,
         encryptedTitle,
         encryptedContent,
         encryptedPostDate,
@@ -1015,12 +1015,10 @@ app.post("/api/addpost2", upload.single("image"), (req, res) => {
           return res.status(500).json({ message: "Error adding post" });
         }
 
-        res
-          .status(201)
-          .json({
-            message: "Post added successfully",
-            postId: result.insertId,
-          });
+        res.status(201).json({
+          message: "Post added successfully",
+          postId: result.insertId,
+        });
       }
     );
   } catch (error) {
