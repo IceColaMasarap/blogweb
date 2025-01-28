@@ -48,6 +48,7 @@ function AdminLogin() {
           dateofbirth: data.dateofbirth,
           isModerator: data.isModerator,
         });
+        localStorage.setItem("adminId", data.id.toString()); // Save as string
         localStorage.setItem("isModerator", data.isModerator.toString()); // Save as string
 
         navigate("/adminpage/"); // Redirect to admin page

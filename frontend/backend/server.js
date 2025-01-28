@@ -313,7 +313,9 @@ app.get("/api/posts2", (req, res) => {
 
         // Convert decrypted postdate to ISO string
         if (decryptedPost.postdate) {
-          decryptedPost.postdate = new Date(decryptedPost.postdate).toISOString();
+          decryptedPost.postdate = new Date(
+            decryptedPost.postdate
+          ).toISOString();
         }
       } catch (decryptionError) {
         console.error(
@@ -342,8 +344,6 @@ app.get("/api/posts2", (req, res) => {
     res.status(200).json(decryptedResults);
   });
 });
-
-
 
 app.get("/api/usershow", (req, res) => {
   const sql = `
@@ -441,7 +441,6 @@ app.get("/api/showposts", (req, res) => {
     }
   });
 });
-
 
 app.get("/api/users", (req, res) => {
   const sql = `
@@ -705,7 +704,7 @@ app.delete("/api/deleteaccount/:id", (req, res) => {
 
   // Delete from the 'users' table
   const deleteUserQuery = "DELETE FROM users WHERE id = ?";
-  
+
   // Delete from the 'admin' table
   const deleteAdminQuery = "DELETE FROM admin WHERE id = ?";
 
@@ -720,7 +719,9 @@ app.delete("/api/deleteaccount/:id", (req, res) => {
     db.query(deleteAdminQuery, [id], (err) => {
       if (err) {
         console.error("Error deleting from admin:", err);
-        return res.status(500).json({ error: "Database query failed for admin" });
+        return res
+          .status(500)
+          .json({ error: "Database query failed for admin" });
       }
 
       // Respond with success if both deletions are successful
@@ -728,7 +729,6 @@ app.delete("/api/deleteaccount/:id", (req, res) => {
     });
   });
 });
-
 
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
@@ -977,14 +977,14 @@ app.post("/api/adminregister", async (req, res) => {
 });
 
 app.post("/api/addpost2", upload.single("image"), (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, adminId } = req.body;
   const image = req.file ? req.file.filename : null;
   const id = uuidv4();
   const aid = "2800b395-3f24-4f2d-b710-b9d69fbb1918"; // Ensure this exists in users table
 
   db.query(
     `INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl) VALUES (?, ?, ?, ?, NOW(), 0, 0, ?)`,
-    [id, aid, title, content, image],
+    [id, adminId, title, content, image],
     (error, result) => {
       if (error) {
         console.error("Error adding post:", error);
@@ -1268,7 +1268,6 @@ app.post("/api/unflag-post", (req, res) => {
   });
 });
 
-
 app.post("/api/hide-post", (req, res) => {
   const { postId } = req.body;
   if (!postId) {
@@ -1396,4 +1395,3 @@ app.post("/api/check-email-admin", async (req, res) => {
     res.status(500).json({ message: "Error processing email check" });
   }
 });
-
