@@ -238,7 +238,7 @@ app.get("/api/posts", (req, res) => {
       const decryptedResults = results.map((row) => ({
         post_id: row.post_id,
         author_name: decrypt(row.firstname) + " " + decrypt(row.lastname),
-        date_posted: row.date_posted,
+        date_posted: decrypt(row.date_posted),
         content: decrypt(row.content),
         flagged: row.flagged,
       }));
