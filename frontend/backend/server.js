@@ -980,22 +980,54 @@ app.post("/api/addpost2", upload.single("image"), (req, res) => {
   const { title, content } = req.body;
   const image = req.file ? req.file.filename : null;
   const id = uuidv4();
-  const aid = "2800b395-3f24-4f2d-b710-b9d69fbb1918"; // Ensure this exists in users table
+  const aid = "8f701e57-7f28-41e4-813e-fe9b2f18d355"; // Ensure this exists in the users table
 
-  db.query(
-    `INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl) VALUES (?, ?, ?, ?, NOW(), 0, 0, ?)`,
-    [id, aid, title, content, image],
-    (error, result) => {
-      if (error) {
-        console.error("Error adding post:", error);
-        return res.status(500).json({ message: "Error adding post" });
+  try {
+    // Encrypt the post details
+    const encryptedTitle = encrypt(title);
+    const encryptedContent = encrypt(content);
+    const encryptedImage = image ? encrypt(image) : null;
+    const encryptedLikeCount = encrypt("0"); // Initial like count as "0"
+    const postdate = new Date().toISOString(); // Current date in ISO format
+    const encryptedPostDate = encrypt(postdate);
+
+    const isFlagged = encrypt("0"); // Assuming "isFlagged" is initially 0
+    const isHidden = encrypt("0"); // Adding the "isHidden" field with initial value of 0
+
+    // Insert the encrypted data into the posts table
+    db.query(
+      `INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl, isHidden) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        aid,
+        encryptedTitle,
+        encryptedContent,
+        encryptedPostDate,
+        isFlagged,
+        encryptedLikeCount,
+        encryptedImage,
+        isHidden, // Include the encrypted "isHidden"
+      ],
+      (error, result) => {
+        if (error) {
+          console.error("Error adding post:", error);
+          return res.status(500).json({ message: "Error adding post" });
+        }
+
+        res
+          .status(201)
+          .json({ message: "Post added successfully", postId: result.insertId });
       }
-      res
-        .status(201)
-        .json({ message: "Post added successfully", postId: result.insertId });
-    }
-  );
+    );
+  } catch (error) {
+    console.error("Error processing post:", error);
+    res.status(500).json({ message: "Error processing post" });
+  }
 });
+
+
+
 
 app.post("/api/addpost", (req, res) => {
   const { title, content, imageUrl } = req.body;
