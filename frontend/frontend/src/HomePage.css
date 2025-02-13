@@ -381,16 +381,19 @@ body {
 
 .modal-comment-container {
   margin: 0 12px;
-  max-height: 400px;
-  overflow-y: auto;
+  max-height: 400px; /* Set a max height */
+  overflow-y: auto; /* Enable vertical scrolling */
   padding: 10px;
-  scrollbar-width: none;
+  scrollbar-width: thin; /* For Firefox */
   border-bottom: 1px solid #444;
 }
 
+/* Ensure scroll for Chrome, Safari, Opera */
 .modal-comment-container::-webkit-scrollbar {
-  width: 0; /* For Chrome, Safari, and Opera */
+  width: 6px; /* Thin scrollbar */
 }
+
+
 
 /* Optional: Show scrollbar only on hover */
 .modal-comment-container:hover {
@@ -412,6 +415,14 @@ body {
   padding: 10px;
   background-color: #333;
   border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Expand modal-comment-author when dropdown is open */
+.modal-comment-author.expanded {
+  min-height: 120px; /* Increase height */
+  padding-bottom: 15px;
 }
 
 .modal-author-details {
@@ -420,13 +431,23 @@ body {
   padding: 5px 12px;
   padding-bottom: 0px;
   width: auto;
-  max-width: 90%;
+  max-width: 80%;
+  min-height: 63px; /* Set minimum height */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   display: inline-block;
   word-wrap: break-word;
   line-height: 1.4;
   font-size: 16px;
+  transition: all 0.3s ease-in-out;
+}
+
+
+/* Expand the container when editing */
+.modal-author-details.editing {
+  min-width: 90%;
+  padding: 10px 15px;
+  min-height: 100px;
 }
 
 .modal-author-details p {
@@ -753,4 +774,172 @@ body {
 .commentbtn svg {
   margin-right: 5px;
   font-family: "Poppins";
+}
+
+/* Container for the comment menu button */
+.comment-menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The button that triggers the dropdown */
+.comment-menu-button {
+  all: unset; /* Resets all styles */
+  cursor: pointer; /* Ensure it's still clickable */
+  white-space: nowrap;
+  border-radius: 50%; /* Makes it circular */
+  background-color: #3a3a3a; /* Default background */
+  width: 32px; /* Ensures proper circular shape */
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  position: relative; /* This ensures it stays in place */
+  transition: background-color 0.2s ease-in-out;
+
+}
+
+.comment-menu-button:hover {
+  background-color: rgba(58, 58, 58, 0.8); /* Background appears on hover */
+}
+
+/* Show dropdown when 'show' class is added */
+.comment-dropdown-menu.show {
+  display: flex;
+}
+
+/* Ensure the container is positioned correctly */
+.comment-menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Three-dot menu button */
+.comment-menu-button {
+  all: unset;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  position: relative;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.comment-menu-button:hover {
+  background-color: rgba(58, 58, 58, 0.8);
+}
+
+/* Dropdown menu styling */
+.comment-dropdown-menu {
+  font-size: 12px;
+  position: absolute;
+  top: 40px; /* Adjust to position below the button */
+  right: 0;
+  background: #242526;
+  min-width: 150px; /* Width of the dropdown */
+  height: 50px; /* Set fixed height */
+  border-radius: 6px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  padding: 10px 0;
+  display: none; /* Initially hidden */
+  flex-direction: column;
+  overflow: hidden; /* Enable scrolling if content exceeds the height */
+}
+
+/* Dropdown button styling */
+.comment-dropdown-menu button {
+  padding: 6px 20px;
+  color: #4e9af1;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.comment-dropdown-menu button:hover {
+  background-color: #333;
+}
+
+.edit-comment-textarea {
+  width: 100%; /* Extend width */
+  background: transparent; /* Hide background */
+  border: none; /* Remove stroke/border */
+  outline: none; /* Remove focus outline */
+  padding: 8px;
+  font-size: 14px;
+  resize: none;
+}
+
+/* Hide modal-post-user and modal-comment-content when editing */
+.modal-author-details.editing .modal-post-user,
+.modal-author-details.editing .modal-comment-content {
+  display: none;
+}
+
+/* Ensure dropdown menu hides after clicking */
+
+/* Hide three dots menu when not hovered */
+.comment-menu-button {
+  visibility: hidden;
+}
+
+/* Show three dots when hovering */
+.modal-comment-author:hover .comment-menu-button {
+  visibility: visible;
+}
+
+.mod-delete-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.25); /* Dark transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px); /* Adds a subtle blur effect */
+}
+
+.mod-delete-content {
+  background: #222;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+}
+
+.mod-delete-buttons {
+  margin-top: 15px;
+}
+
+.mod-delete-buttons button {
+  padding: 8px 12px;
+  margin: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.mod-confirm-delete {
+  background-color: red;
+  color: white;
+}
+
+.mod-cancel-delete {
+  background-color: gray;
+  color: white;
 }
