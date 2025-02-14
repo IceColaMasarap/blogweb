@@ -421,8 +421,8 @@ body {
 
 /* Expand modal-comment-author when dropdown is open */
 .modal-comment-author.expanded {
-  min-height: 120px; /* Increase height */
-  padding-bottom: 15px;
+  min-height: 100px; /* Increase height */
+  padding-bottom: 10px;
 }
 
 .modal-author-details {
@@ -435,20 +435,23 @@ body {
   min-height: 63px; /* Set minimum height */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
-  display: inline-block;
+  display: inline;
   word-wrap: break-word;
   line-height: 1.4;
   font-size: 16px;
   transition: all 0.3s ease-in-out;
+  overflow: hidden;
 }
 
 
 /* Expand the container when editing */
 .modal-author-details.editing {
   min-width: 90%;
-  padding: 10px 15px;
+  padding: 10px 15px ;
   min-height: 100px;
 }
+
+
 
 .modal-author-details p {
   margin-bottom: 8px;
@@ -815,7 +818,6 @@ body {
 /* Ensure the container is positioned correctly */
 .comment-menu-container {
   position: relative;
-  display: flex;
   align-items: center;
   justify-content: center;
 }
@@ -851,8 +853,8 @@ body {
   height: 50px; /* Set fixed height */
   border-radius: 6px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 100;
-  padding: 10px 0;
+
+  padding: 5px 0px 11px; 
   display: none; /* Initially hidden */
   flex-direction: column;
   overflow: hidden; /* Enable scrolling if content exceeds the height */
@@ -871,6 +873,7 @@ body {
 
 .comment-dropdown-menu button:hover {
   background-color: #333;
+  border-radius: 0;
 }
 
 .edit-comment-textarea {
@@ -883,13 +886,44 @@ body {
   resize: none;
 }
 
+/* Thin scrollbar for WebKit browsers */
+.edit-comment-textarea::-webkit-scrollbar {
+  width: 5px; /* Make the scrollbar very thin */
+}
+
+.edit-comment-textarea::-webkit-scrollbar-thumb {
+  background: #555; /* Scrollbar color */
+  border-radius: 3px; /* Slightly rounded scrollbar */
+}
+
+.edit-comment-textarea::-webkit-scrollbar-track {
+  background: transparent; /* Make track transparent */
+}
+
 /* Hide modal-post-user and modal-comment-content when editing */
 .modal-author-details.editing .modal-post-user,
 .modal-author-details.editing .modal-comment-content {
   display: none;
 }
 
-/* Ensure dropdown menu hides after clicking */
+
+.edit-comment-buttons {
+  height: 30px; /* Reduce height */
+
+  font-size: 12px; 
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.edit-comment-buttons button {
+  background-color:rgb(58, 58, 58);
+  height: 30px; 
+  width: 80px;
+  padding: 5px 6px; 
+  font-size: 12px;
+}
+
 
 /* Hide three dots menu when not hovered */
 .comment-menu-button {
