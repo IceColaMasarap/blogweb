@@ -15,6 +15,7 @@ function Posts() {
   const [image, setImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [isModalOpen2, setIsModalOpen2] = useState(false); // State to control modal visibility
+  const adminId = localStorage.getItem("adminId"); // Get the current user's ID from local storage
 
   const [selectedPost, setSelectedPost] = useState(null); // State to track the selected post
 
@@ -70,6 +71,7 @@ function Posts() {
     e.preventDefault();
 
     const formData = new FormData();
+    formData.append("adminId", adminId);
     formData.append("title", title);
     formData.append("content", content);
     formData.append("image", image); // Attach image to formData
@@ -202,10 +204,7 @@ function Posts() {
             </thead>
             <tbody>
               {filteredPosts.map((item) => (
-                <tr
-                  key={item.post_id}
-                  onClick={() => handleRowClick(item)} // Properly call the function with the clicked row data
-                >
+                <tr key={item.post_id} onClick={() => handleRowClick(item)}>
                   <td>{item.author_email}</td>
                   <td>
                     {item.author_firstname} {item.author_lastname}
@@ -214,6 +213,7 @@ function Posts() {
                   <td>{item.content}</td>
                   <td>{new Date(item.postdate).toLocaleString()}</td>
                   <td>{item.isFlagged ? "Yes" : "No"}</td>
+
                   <td>{item.like_count}</td>
                 </tr>
               ))}
@@ -260,7 +260,7 @@ function Posts() {
                   />
                 </div>
                 <div className="overlaybutton">
-                  <button className="close-button" onClick={toggleModal}>
+                  <button className="close-buttons" onClick={toggleModal}>
                     Close
                   </button>
                   <button className="submit-button" type="submit">
@@ -301,7 +301,7 @@ function Posts() {
                 />
                 <div className="overlaybutton">
                   <button
-                    className="close-button"
+                    className="close-buttons"
                     onClick={() => setIsModalOpen2(false)}
                   >
                     Close

@@ -7,6 +7,7 @@ import {
   faHome,
   faAddressCard,
   faComment,
+  faUserTie,
 } from "@fortawesome/free-solid-svg-icons";
 
 import "./App.css";
@@ -23,6 +24,8 @@ function Sidebar() {
       setActiveButton("posts");
     } else if (currentPath.includes("/adminpage/accounts")) {
       setActiveButton("accounts");
+    } else if (currentPath === "/adminpage/adminaccounts") {
+      setActiveButton("adminaccount");
     } else if (currentPath === "/adminpage/") {
       setActiveButton("dashboard");
     }
@@ -63,12 +66,21 @@ function Sidebar() {
               <FontAwesomeIcon icon={faComment} />
               Accounts
             </button>
+            <button
+              className={`button ${
+                activeButton === "adminaccount" ? "active" : ""
+              }`}
+              onClick={() => navigate("/adminpage/adminaccounts")}
+            >
+              <FontAwesomeIcon icon={faUserTie} />
+              Admin Accounts
+            </button>
           </div>
           <div className="logout-container">
             <button
               className="logoutbtn"
               onClick={() => {
-                navigate("/");
+                navigate("/adminlogin");
               }}
             >
               Logout

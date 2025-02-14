@@ -3,6 +3,8 @@ import Sidebar from "./Sidebar";
 import Dashboard from "./Dashboard";
 import Posts from "./Posts";
 import Accounts from "./Accounts";
+import AdminAccount from "./AdminAccounts";
+
 import "./App.css";
 
 function AdminEnd() {
@@ -13,6 +15,7 @@ function AdminEnd() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/posts" element={<Posts />} />
         <Route path="/accounts" element={<Accounts />} />
+        <Route path="/adminaccounts" element={<AdminAccount />} />
       </Routes>
     </div>
   );

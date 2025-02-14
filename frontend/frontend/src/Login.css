@@ -8,6 +8,18 @@
   z-index: 1; /* Ensures content is above the background */
   overflow: hidden; /* Ensures no content overflows */
 }
+.container10 {
+  display: flex;
+  position: relative; /* Ensures proper positioning for the pseudo-element */
+  height: 100vh;
+  
+  width: 100vw;
+  background-color: #000; /* Fallback background color */
+  color: #fff;
+  z-index: 1; /* Ensures content is above the background */
+  overflow: hidden; /* Ensures no content overflows */
+}
+
 
 .container::before {
   content: "";
@@ -25,13 +37,13 @@
   pointer-events: none; /* Ensures background doesn't interfere with content interaction */
 }
 /* Left Section */
-.left-section {
+.left-sectionl {
   flex: 1;
   display: flex;
-  margin-left: -13.3px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding-left: 8px;
 }
 
 .logo-image {
@@ -46,12 +58,27 @@
   color: #fff;
 }
 
+.linkerss{
+  width: 100%;
+  margin-top: 10px;
+}
 /* Right Section */
-.right-section {
+.right-sectionl {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: baseline;
+  margin-top: 100px;
+  padding: 0 0 0 15px;
+}
+.right-sectionl0 {
+  flex: 1;
+  display: flex;
+
+  flex-direction: column;
+  justify-content: baseline;
+  margin-top: 250px;
+  padding: 0 0 0 15px;
 }
 
 .main-heading {
@@ -71,6 +98,20 @@
   padding-right: 250px;
 }
 
+.form10 {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-left: 10%;
+  padding-right: 10%;
+
+}
+
+.buttonlol{
+  display:flex;
+  justify-content: center;
+}
+
 .input {
   flex: 1;
   padding: 10px;
@@ -79,6 +120,15 @@
   border-radius: 10px;
 }
 
+.buttonr10 {
+  padding: 10px;
+  background-color: #5e5e5e;
+  border: none;
+  color: #ffffff;
+  border-radius: 100px;
+  width: 80%;
+  cursor: pointer;
+}
 .lbutton {
   padding: 10px;
   background-color: #007bff;

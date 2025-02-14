@@ -1,59 +1,60 @@
 body {
-    overflow-x: hidden;
-  }
-  
-  
-  .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 1000; /* Ensures it stays above other content */
-      background-color: #333; /* Background color of navbar */
-      color: white; /* Text color */
-      width: 100%; /* Full-width navbar */
-    }
-    
-  
-  .navbar-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-  }
-  
-  .tsaaritsa img{
-      height: 40px;
-      width: 40px;
-  }
-  
-  .tsaaritsa {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-  }
-  
-  .nav-link-search-input {
-      width: 45%;
-      padding: 10px;
-      margin-right: 5rem;
-      border-radius: 100px;
-      border: none;
-      background-color: #222;
-      color: #fff;
-      font-size: 14px;
-  }
-  
-  .nav-link {
-      color: #2196f3;
-  }
+  overflow-x: hidden;
+}
 
-  .logout-btn {
-    width: 24px; /* Adjust width as needed */
-    height: 24px; /* Adjust height as needed */
-    cursor: pointer; /* Indicate it's clickable */
-    transition: transform 0.2s ease;
-  }
-  
-  .logout-btn:hover {
-    transform: scale(1.1); /* Slightly enlarge on hover for feedback */
-  }
-  
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1; /* Ensures it stays above other content */
+  background-color: #222; /* Background color of navbar */
+  color: white; /* Text color */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+  width: 100%; /* Full-width navbar */
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.tsaaritsa img {
+  height: 40px;
+  width: 40px;
+}
+
+.tsaaritsa {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 300;
+  font-family: "Poppins";
+}
+
+.nav-link-search-input {
+  width: 45%;
+  padding: 10px;
+  margin-right: 5rem;
+  border-radius: 100px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  font-size: 14px;
+}
+
+.nav-link {
+  color: #2196f3;
+}
+
+.logout-btn {
+  width: 24px; /* Adjust width as needed */
+  height: 24px; /* Adjust height as needed */
+  cursor: pointer; /* Indicate it's clickable */
+  transition: transform 0.2s ease;
+}
+
+.logout-btn:hover {
+  transform: scale(1.1); /* Slightly enlarge on hover for feedback */
+}

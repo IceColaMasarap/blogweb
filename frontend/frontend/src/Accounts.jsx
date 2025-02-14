@@ -54,6 +54,7 @@ function Accounts() {
     setEditLastName(account?.lastname || "");
     setEditEmail(account?.email || "");
     setEditDateOfBirth(account?.dateofbirth || "");
+    setEditIsModerator(account?.isModerator || "");
     setIsModalOpen2(true);
   };
 
@@ -93,7 +94,10 @@ function Accounts() {
       // Set success message and alert
       setSuccessMessage(response.data.message);
       alert(response.data.message);
-
+      const updatedUsers = await axios.get(
+        "http://localhost:5005/api/usershow"
+      );
+      setUsers(updatedUsers.data);
       // Clear input fields and modal state after registration
       setFirstName("");
       setLastName("");
@@ -122,11 +126,13 @@ function Accounts() {
       setIsModerator(value);
     }
   };
-
   const filteredUsers = users.filter((user) => {
     const matchesEmail = email
       ? user.email.toLowerCase().includes(email.toLowerCase())
       : true;
+
+    // Exclude users where isModerator is "Admin"
+    const isNotAdmin = user.isModerator !== "Admin";
 
     // Handle the moderator filter logic
     const userTypeMatch =
@@ -137,8 +143,9 @@ function Accounts() {
       (!startDate || postDate >= new Date(startDate)) &&
       (!endDate || postDate <= new Date(endDate));
 
-    return matchesEmail && userTypeMatch && matchesDateRange;
+    return matchesEmail && isNotAdmin && userTypeMatch && matchesDateRange;
   });
+
   const handleUpdateAccount = async () => {
     setError("");
 
@@ -150,7 +157,7 @@ function Accounts() {
       return;
     }
 
-    // Handle password check only if fields are filled
+    // Prepare the payload
     const payload = {
       id: selectedAccount?.id,
       firstname: editFirstName,
@@ -161,14 +168,13 @@ function Accounts() {
         editIsModerator === "" ? selectedAccount?.isModerator : editIsModerator, // Use existing value if not explicitly changed
     };
 
-    // Include password only if fields aren't empty
-    if (password || confirmPassword) {
+    // Include password only if provided
+    if (password) {
       if (password !== confirmPassword) {
         alert("Passwords do not match");
         return;
       }
-
-      payload.password = password; // Only send the password if user intends to update
+      payload.password = password; // Add password to payload only if entered
     }
 
     try {
@@ -209,6 +215,7 @@ function Accounts() {
       alert("Failed to delete post.");
     }
   };
+
   return (
     <div className="dashboardbg">
       <div className="navBar">
@@ -347,7 +354,7 @@ function Accounts() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <div className="overlaybutton">
-                <button className="close-button" onClick={toggleModal}>
+                <button className="close-buttons" onClick={toggleModal}>
                   Close
                 </button>
                 <button className="submit-button" type="submit">
@@ -426,7 +433,7 @@ function Accounts() {
               </select>
               <div className="overlaybutton">
                 <button
-                  className="close-button"
+                  className="close-buttons"
                   type="button"
                   onClick={toggleModal2}
                 >

@@ -18,14 +18,28 @@ function encrypt(text) {
 
 // Decryption function
 function decrypt(text) {
-  const [ivHex, encryptedHex] = text.split(":");
-  const iv = Buffer.from(ivHex, "hex");
-  const encryptedText = Buffer.from(encryptedHex, "hex");
-  const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString();
+  try {
+    if (!text || !text.includes(":")) {
+      throw new Error("Invalid encrypted text format");
+    }
+    const [ivHex, encryptedHex] = text.split(":");
+    const iv = Buffer.from(ivHex, "hex");
+    const encryptedText = Buffer.from(encryptedHex, "hex");
+    const decipher = crypto.createDecipheriv(
+      "aes-256-cbc",
+      Buffer.from(ENCRYPTION_KEY),
+      iv
+    );
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch (error) {
+    console.error("Decryption failed:", error.message);
+    throw error;
+  }
 }
+
+
 
 module.exports = {
   encrypt,

@@ -9,7 +9,6 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Reset error message
@@ -34,24 +33,22 @@ function Login() {
       if (data.error) {
         setError("Invalid credentials, please try again.");
       } else {
+        // Save only the necessary user details to localStorage
+        localStorage.setItem("userId", data.user.id); // Save user ID
+        if (data.user.isModerator !== undefined) {
+          localStorage.setItem("isModerator", data.user.isModerator.toString());
+        }
 
-        localStorage.setItem("userId", data.id); // Save the user ID
-        
-        // Log the user info on successful login
-        console.log("User Info:", {
-          id: data.id,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          dateofbirth: data.dateofbirth,
-          isModerator: data.isModerator,
-        });
-
-        // Redirect based on user role
-        if (data.email === "admin@gmail.com") {
-          navigate("/adminpage/"); // Redirect to admin page
+        // Check if isModerator is "Admin", count it as wrong regardless of the credentials
+        if (data.user.isModerator === "Admin") {
+          setError("An error occurred during login.");
         } else {
-          navigate("/home"); // Redirect to homepage for regular users
+          // Redirect based on user role
+          if (data.user.email === "admin@gmail.com") {
+            navigate("/adminpage/"); // Redirect to admin page
+          } else {
+            navigate("/home"); // Redirect to homepage for regular users
+          }
         }
       }
     } catch (err) {
@@ -63,7 +60,7 @@ function Login() {
   return (
     <div className="container">
       {/* Left Section */}
-      <div className="left-section">
+      <div className="left-sectionl">
         <div className="logo-container">
           <div className="logo">
             <img
@@ -77,7 +74,7 @@ function Login() {
       </div>
 
       {/* Right Section */}
-      <div className="right-sectionr">
+      <div className="right-sectionl">
         <h1 className="main-headingr">Everyone’s cup</h1>
         <h1 className="main-headingr">of tea 🍃</h1>
         <p className="sub-headingr">Welcome back!</p>

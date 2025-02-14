@@ -108,6 +108,12 @@ body {
   scrollbar-width: none;
 }
 
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Adjust the gap to add space between elements */
+}
+
 .post-settings img {
   width: 20px;
   height: 20px;
@@ -155,6 +161,7 @@ body {
   border-radius: 10px;
   margin-bottom: 20px;
   padding-bottom: 10px;
+  padding: 0;
 }
 .p-btn {
   width: 100%;
@@ -219,6 +226,248 @@ body {
   /* Target the SVG icon directly */
   margin-right: 5px; /* Add space between the icon and the number */
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Black overlay with tint */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  position: relative; /* To position the close button relative to the modal */
+  width: 500px;
+  min-height: 300px;
+  max-height: 600px;
+  background-color: #333333; /* White square */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.modal-contentt {
+  position: relative; /* To position the close button relative to the modal */
+  width: 500px;
+  min-height: 600px;
+  background-color: #333; /* White square */
+  border-radius: 10px;
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.modal-contentxd {
+  width: auto;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+  font-family: "Poppins";
+  background-color: #333; /* White square */
+  border-radius: 10px;
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the title */
+  position: relative; /* Ensure the close button stays positioned within the header */
+  border-bottom: 1px solid #444;
+  margin: 0 12px;
+}
+.modal-header2 {
+  padding-top: 10px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+}
+.modal-close-btn {
+  position: absolute;
+  top: 1px;
+  left: -5px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.modal-title {
+  margin: 0 auto; /* Automatically adjust margins to center the title */
+  font-size: 14px;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  text-align: center; /* Ensure text alignment is centered */
+}
+
+.modal-input-container {
+  background-color: #222;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+  margin-top: 20px;
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 40px);
+  padding: 0px 20px;
+  gap: 20px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.textarea-container {
+  resize: none;
+  border: none;
+  outline: none;
+  width: 100%;
+  border-radius: 200;
+  font-family: "Poppins", sans-serif;
+}
+
+.textarea-container textarea {
+  background-color: inherit;
+  color: #fff;
+  border: none;
+  outline: none;
+  width: 100%;
+  resize: none;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  padding-top: 10px;
+  padding-bottom: 2px;
+}
+
+.textarea-container textarea:focus {
+  outline: none;
+}
+
+.button-container {
+  width: 100%;
+  height: 12px;
+  background-color: inherit;
+  position: relative;
+}
+
+.modal-reply-btn {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  position: absolute;
+  right: -15px;
+  bottom: 5px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #444 transparent;
+}
+
+.modal-reply-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-reply-input::-webkit-scrollbar-thumb {
+  background-color: #444; /* Scrollbar color */
+  border-radius: 5px; /* Rounded edges */
+}
+
+.modal-comment-container {
+  margin: 0 12px;
+  max-height: 400px; /* Set a max height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 10px;
+  scrollbar-width: thin; /* For Firefox */
+  border-bottom: 1px solid #444;
+}
+
+/* Ensure scroll for Chrome, Safari, Opera */
+.modal-comment-container::-webkit-scrollbar {
+  width: 6px; /* Thin scrollbar */
+}
+
+/* Optional: Show scrollbar only on hover */
+.modal-comment-container:hover {
+  scrollbar-width: thin; /* For Firefox */
+}
+
+.modal-comment-container:hover::-webkit-scrollbar {
+  width: 6px; /* Show a thin scrollbar */
+}
+
+.modal-comment-container:hover::-webkit-scrollbar-thumb {
+  background-color: #444; /* Subtle scrollbar thumb */
+  border-radius: 5px;
+}
+
+.modal-comment-author {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background-color: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Expand modal-comment-author when dropdown is open */
+.modal-comment-author.expanded {
+  min-height: 100px; /* Increase height */
+  padding-bottom: 10px;
+}
+
+.modal-author-details {
+  background-color: #1f1f1f;
+  border-radius: 8px;
+  padding: 5px 12px;
+  padding-bottom: 0px;
+  width: auto;
+  max-width: 80%;
+  min-height: 63px; /* Set minimum height */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  display: inline;
+  word-wrap: break-word;
+  line-height: 1.4;
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+/* Expand the container when editing */
+.modal-author-details.editing {
+  min-width: 90%;
+  padding: 10px 15px;
+  min-height: 100px;
+}
+
+.modal-author-details p {
+  margin-bottom: 8px;
+  margin-top: 1px;
+  color: #cccccc;
+}
+
+.modal-post-user {
+  font-weight: bold;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.modal-profile-image {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #444;
+}
+
 .pv {
   display: flex;
   align-items: center;
@@ -273,7 +522,7 @@ body {
 .post-header {
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: 10px 0 10px 0;
   justify-content: space-between;
 }
 
@@ -285,6 +534,7 @@ body {
 
 .post-time {
   color: #aaa;
+  width: 100px;
   font-size: 13px;
 }
 
@@ -437,7 +687,7 @@ body {
   background-color: #333333;
   border-radius: 6px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 1;
   min-width: 100px;
   overflow: hidden;
 }
@@ -474,10 +724,248 @@ body {
   z-index: 1000;
 }
 
-.modal-content {
-  background: white;
+.flagged-label svg {
+  margin-right: 5px; /* Space between the SVG and the text */
+  padding: 0;
+  margin-top: 10px;
+}
+.flagged-label label {
+  margin-top: 10px;
+}
+.flagged-label {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  color: rgb(168, 168, 168);
+  font-family: "Poppins";
+}
+.flagged-label2 {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  color: rgb(168, 168, 168);
+  font-family: "Poppins";
+}
+.postxx {
+  background-color: #222;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+.labelxxzz {
+  margin-top: 10px;
+  font-size: 10px;
+}
+.poststats {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.posttime {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+  padding-right: 10px;
+}
+
+.commentbtn svg {
+  margin-right: 5px;
+  font-family: "Poppins";
+}
+
+/* Container for the comment menu button */
+.comment-menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The button that triggers the dropdown */
+.comment-menu-button {
+  all: unset; /* Resets all styles */
+  cursor: pointer; /* Ensure it's still clickable */
+  white-space: nowrap;
+  border-radius: 50%; /* Makes it circular */
+  background-color: #3a3a3a; /* Default background */
+  width: 32px; /* Ensures proper circular shape */
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  position: relative; /* This ensures it stays in place */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.comment-menu-button:hover {
+  background-color: rgba(58, 58, 58, 0.8); /* Background appears on hover */
+}
+
+/* Show dropdown when 'show' class is added */
+.comment-dropdown-menu.show {
+  display: flex;
+}
+
+/* Ensure the container is positioned correctly */
+.comment-menu-container {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Three-dot menu button */
+.comment-menu-button {
+  all: unset;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  position: relative;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.comment-menu-button:hover {
+  background-color: rgba(58, 58, 58, 0.8);
+}
+
+/* Dropdown menu styling */
+.comment-dropdown-menu {
+  font-size: 12px;
+  position: absolute;
+  top: 40px; /* Adjust to position below the button */
+  right: 0;
+  background: #242526;
+  min-width: 150px; /* Width of the dropdown */
+  height: 50px; /* Set fixed height */
+  border-radius: 6px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+
+  padding: 5px 0px 11px;
+  display: none; /* Initially hidden */
+  flex-direction: column;
+  overflow: hidden; /* Enable scrolling if content exceeds the height */
+}
+
+/* Dropdown button styling */
+.comment-dropdown-menu button {
+  padding: 6px 20px;
+  color: #4e9af1;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.comment-dropdown-menu button:hover {
+  background-color: #333;
+  border-radius: 0;
+}
+
+.edit-comment-textarea {
+  width: 100%; /* Extend width */
+  background: transparent; /* Hide background */
+  border: none; /* Remove stroke/border */
+  outline: none; /* Remove focus outline */
+  padding: 8px;
+  font-size: 14px;
+  resize: none;
+}
+
+/* Thin scrollbar for WebKit browsers */
+.edit-comment-textarea::-webkit-scrollbar {
+  width: 5px; /* Make the scrollbar very thin */
+}
+
+.edit-comment-textarea::-webkit-scrollbar-thumb {
+  background: #555; /* Scrollbar color */
+  border-radius: 3px; /* Slightly rounded scrollbar */
+}
+
+.edit-comment-textarea::-webkit-scrollbar-track {
+  background: transparent; /* Make track transparent */
+}
+
+/* Hide modal-post-user and modal-comment-content when editing */
+.modal-author-details.editing .modal-post-user,
+.modal-author-details.editing .modal-comment-content {
+  display: none;
+}
+
+.edit-comment-buttons {
+  height: 30px; /* Reduce height */
+
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.edit-comment-buttons button {
+  background-color: rgb(58, 58, 58);
+  height: 30px;
+  width: 80px;
+  padding: 5px 6px;
+  font-size: 12px;
+}
+
+/* Hide three dots menu when not hovered */
+.comment-menu-button {
+  visibility: hidden;
+}
+
+/* Show three dots when hovering */
+.modal-comment-author:hover .comment-menu-button {
+  visibility: visible;
+}
+
+.mod-delete-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.25); /* Dark transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px); /* Adds a subtle blur effect */
+}
+
+.mod-delete-content {
+  background: #222;
   padding: 20px;
   border-radius: 8px;
   text-align: center;
-  width: 300px;
+  color: white;
+}
+
+.mod-delete-buttons {
+  margin-top: 15px;
+}
+
+.mod-delete-buttons button {
+  padding: 8px 12px;
+  margin: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.mod-confirm-delete {
+  background-color: red;
+  color: white;
+}
+
+.mod-cancel-delete {
+  background-color: gray;
+  color: white;
 }

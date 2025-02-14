@@ -2,8 +2,7 @@ import { useNavigate } from "react-router-dom";
 import "./Signup.css";
 import TS from "./assets/tsaaritsa.png";
 import axios from "axios";
-import React, { useState } from "react";
-import img1 from "../src/assets/logobg.png";
+import { useState, useEffect } from "react";
 
 function Signup() {
   const [firstName, setFirstName] = useState("");
@@ -12,23 +11,42 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [maxDate, setMaxDate] = useState("");
+  const [emailError, setEmailError] = useState(""); // For email availability feedback
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
+
+  const handleEmailChange = async (e) => {
+    const inputEmail = e.target.value;
+    setEmail(inputEmail);
+    setEmailError(""); // Clear any previous error message
+
+    if (inputEmail) {
+      try {
+        const response = await axios.post("http://localhost:5005/api/check-email", { email: inputEmail });
+        if (response.data.exists) {
+          setEmailError("This email is already registered.");
+        }
+      } catch (err) {
+        console.error("Error checking email:", err);
+        setEmailError("Error checking email availability.");
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
-    if (
-      !firstName ||
-      !lastName ||
-      !dateofbirth ||
-      !email ||
-      !password ||
-      !confirmPassword
-    ) {
+
+    if (!firstName || !lastName || !dateofbirth || !email || !password || !confirmPassword) {
       setError("Please fill in all fields");
+      return;
+    }
+
+    if (emailError) {
+      setError("Please use a different email.");
       return;
     }
 
@@ -46,18 +64,19 @@ function Signup() {
         password,
       });
       setSuccessMessage(response.data.message);
-      setTimeout(() => navigate("/login", 2000));
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      setError(
-        err.response
-          ? err.response.data.message
-          : "Error occured during registration"
-      );
+      setError(err.response ? err.response.data.message : "Error occurred during registration");
       console.log(err);
     }
   };
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split("T")[0];
+    setMaxDate(formattedDate);
+  }, []);
+
   return (
     <div className="containerr">
       {/* Left Section */}
@@ -65,12 +84,12 @@ function Signup() {
         <div className="logo-containerr">
           <div className="logor">
             <img
-              src={TS} // Placeholder for the tea cup logo
+              src={TS}
               alt="Tsaaritsa"
               className="logo-imager"
             />
           </div>
-          <h1 className="brand-titler">Tsaaritsa. </h1>
+          <h1 className="brand-titler">Tsaaritsa.</h1>
         </div>
       </div>
 
@@ -99,6 +118,7 @@ function Signup() {
               <input
                 type="date"
                 className="inputDate"
+                max={maxDate}
                 onChange={(e) => setDateOfBirth(e.target.value)}
               />
             </div>
@@ -107,7 +127,7 @@ function Signup() {
             type="email"
             placeholder="Email Address"
             className="input"
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
           />
           <div className="form-rowr">
             <input
@@ -123,20 +143,12 @@ function Signup() {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
-          <button type="submit" className="buttonr">
+          <button type="submit" className="buttonr" disabled={!!emailError}>
             Register
           </button>
-
-          {error && (
-            <p className="errormsg" style={{ color: "red" }}>
-              {error}
-            </p>
-          )}
-          {successMessage && (
-            <p className="errormsg" style={{ color: "#15bc11" }}>
-              {successMessage}
-            </p>
-          )}
+          {emailError && <p className="errormsg" style={{ color: "red" }}>{emailError}</p>}
+          {error && <p className="errormsg" style={{ color: "red" }}>{error}</p>}
+          {successMessage && <p className="errormsg" style={{ color: "#15bc11" }}>{successMessage}</p>}
           <div className="linkers">
             <label className="linklabel1">Already have an account? </label>
             <label
@@ -152,4 +164,5 @@ function Signup() {
     </div>
   );
 }
+
 export default Signup;
