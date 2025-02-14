@@ -49,7 +49,7 @@ function UserEnd() {
           <Route
             path="/adminpage/*"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={true}>
                 <AdminEnd />
               </ProtectedRoute>
             }
