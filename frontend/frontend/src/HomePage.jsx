@@ -22,6 +22,8 @@ const Homepage = () => {
   const [isToggled, setIsToggled] = useState(false); // State to track button toggle
   const [postContentTitle, setPostContentTitle] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
+  const [showReportModal, setShowReportModal] = useState(false); // State to manage the modal
+  const [reportedPostId, setReportedPostId] = useState(null); // To track the reported post ID
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -32,7 +34,7 @@ const Homepage = () => {
           (a, b) => new Date(b.postdate) - new Date(a.postdate) // Sort by postdate, newest first
         );
         setPosts(sortedPosts);
-  
+
         const initialLikes = {};
         sortedPosts.forEach((post) => {
           initialLikes[post.id] = post.liked; // Initialize liked state for each post
@@ -43,8 +45,6 @@ const Homepage = () => {
         console.error("Error fetching posts:", error);
       });
   }, []);
-  
-  
 
   const autoResize = (e) => {
     const textarea = e.target;
@@ -54,10 +54,10 @@ const Homepage = () => {
 
   const handleToggle = async (postId) => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
-  
+
     try {
       const isLiked = likedPosts[postId] || false; // Check if the post is already liked
-  
+
       // Optimistically update the UI before the server response
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
@@ -66,19 +66,19 @@ const Homepage = () => {
             : post
         )
       );
-  
+
       setLikedPosts((prevState) => ({
         ...prevState,
         [postId]: !isLiked, // Toggle like state
       }));
-  
+
       // Send the request to the server
       const response = await axios.post("http://localhost:5005/api/like-post", {
         postId,
         userId,
         action: isLiked ? "unlike" : "like", // Determine action
       });
-  
+
       if (response.status !== 200) {
         // Revert the changes if the server request fails
         setPosts((prevPosts) =>
@@ -95,7 +95,7 @@ const Homepage = () => {
       }
     } catch (error) {
       console.error("Error toggling like:", error);
-  
+
       // Revert the changes if an error occurs
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
@@ -110,11 +110,43 @@ const Homepage = () => {
       }));
     }
   };
-  
-  
-  
-  
+  const handleOptionClick = (option, postId) => {
+    if (option === "report") {
+      setReportedPostId(postId); // Track the reported post ID
+      setShowReportModal(true); // Show the modal
+      reportPost(postId); // Call the function to update the server
+    } else if (option === "hide") {
+      alert(`Hide selected for post ID: ${postId}`);
+    }
+    setShowMenu((prev) => ({
+      ...prev,
+      [postId]: false, // Close the menu after selection
+    }));
+  };
+  const [showMenu, setShowMenu] = useState({}); // State for menu visibility by post ID
 
+  const toggleMenu = (postId) => {
+    setShowMenu((prev) => ({
+      ...prev,
+      [postId]: !prev[postId], // Toggle menu for specific post
+    }));
+  };
+
+  const reportPost = async (postId) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5005/api/report-post",
+        { postId }
+      );
+      if (response.status === 200) {
+        console.log("Post reported successfully");
+      } else {
+        console.error("Error reporting post:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error reporting post:", error.message);
+    }
+  };
 
   const handlePost = async () => {
     const userId = localStorage.getItem("userId"); // Retrieve the logged-in user ID
@@ -160,7 +192,6 @@ const Homepage = () => {
       alert("Failed to create post. Please try again.");
     } finally {
       setIsPosting(false);
-
     }
   };
   const handleFileInput = (event) => {
@@ -305,11 +336,9 @@ const Homepage = () => {
             </button>
           </div>
 
-          {/* Posts */}
           <div className="posts">
             {posts.map((post) => (
               <div className="post" key={post.id}>
-                {/* Post Header */}
                 <div className="post-header">
                   <div className="profile-image">
                     <img src={GI} alt="Profile" />
@@ -324,9 +353,33 @@ const Homepage = () => {
                       })}
                     </label>
                   </div>
-                  <button className="post-settings">
-                    <img src={PS} alt="Settings" />
-                  </button>
+                  <div className="post-settings-container">
+                    {/* Three dots button */}
+                    <button
+                      className="post-settings-button"
+                      onClick={() => toggleMenu(post.id)}
+                    >
+                      &#x22EE; {/* Vertical three dots */}
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showMenu[post.id] && (
+                      <div className="post-settings-menu">
+                        <button
+                          className="post-settings-option"
+                          onClick={() => handleOptionClick("report", post.id)}
+                        >
+                          Report
+                        </button>
+                        <button
+                          className="post-settings-option"
+                          onClick={() => handleOptionClick("hide", post.id)}
+                        >
+                          Hide
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="post-body">
@@ -346,20 +399,17 @@ const Homepage = () => {
 
                 <label
                   className="likebtn"
-                  onClick={() => handleToggle(post.id)} // Pass only the post ID
+                  onClick={handleToggle}
                   style={{
-                    color: likedPosts[post.id] ? "red" : "white", // Show red if the post is liked
+                    color: isToggled ? "red" : "white", // Toggle color for demonstration
                   }}
                 >
                   <FontAwesomeIcon icon={faHeart} />
-                  {post.like_count} {/* Render updated like count */}
+                  {post.like_count}
                 </label>
-
-
               </div>
             ))}
           </div>
-
         </main>
 
         {/* Right Sidebar */}
@@ -378,6 +428,14 @@ const Homepage = () => {
           </div>
         </div>
       </div>
+      {showReportModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <p>Post reported successfully!</p>
+            <button onClick={() => setShowReportModal(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
