@@ -379,81 +379,6 @@ body {
   border-radius: 5px; /* Rounded edges */
 }
 
-.modal-comment-container {
-  margin: 0 12px;
-  max-height: 400px; /* Set a max height */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding: 10px;
-  scrollbar-width: thin; /* For Firefox */
-  border-bottom: 1px solid #444;
-}
-
-/* Ensure scroll for Chrome, Safari, Opera */
-.modal-comment-container::-webkit-scrollbar {
-  width: 6px; /* Thin scrollbar */
-}
-
-/* Optional: Show scrollbar only on hover */
-.modal-comment-container:hover {
-  scrollbar-width: thin; /* For Firefox */
-}
-
-.modal-comment-container:hover::-webkit-scrollbar {
-  width: 6px; /* Show a thin scrollbar */
-}
-
-.modal-comment-container:hover::-webkit-scrollbar-thumb {
-  background-color: #444; /* Subtle scrollbar thumb */
-  border-radius: 5px;
-}
-
-.modal-comment-author {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  background-color: #333;
-  border-radius: 10px;
-  overflow: hidden;
-  transition: all 0.3s ease-in-out;
-}
-
-/* Expand modal-comment-author when dropdown is open */
-.modal-comment-author.expanded {
-  min-height: 100px; /* Increase height */
-  padding-bottom: 10px;
-}
-
-.modal-author-details {
-  background-color: #1f1f1f;
-  border-radius: 8px;
-  padding: 5px 12px;
-  padding-bottom: 0px;
-  width: auto;
-  max-width: 80%;
-  min-height: 63px; /* Set minimum height */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  display: inline;
-  word-wrap: break-word;
-  line-height: 1.4;
-  font-size: 16px;
-  transition: all 0.3s ease-in-out;
-  overflow: hidden;
-}
-
-/* Expand the container when editing */
-.modal-author-details.editing {
-  min-width: 90%;
-  padding: 10px 15px;
-  min-height: 100px;
-}
-
-.modal-author-details p {
-  margin-bottom: 8px;
-  margin-top: 1px;
-  color: #cccccc;
-}
-
 .modal-post-user {
   font-weight: bold;
   font-size: 13px;
@@ -778,6 +703,7 @@ body {
 .comment-menu-container {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
@@ -840,8 +766,8 @@ body {
 .comment-dropdown-menu {
   font-size: 12px;
   position: absolute;
-  top: 40px; /* Adjust to position below the button */
-  right: 0;
+  top: 0; /* Adjust to position below the button */
+  right: 30px;
   background: #242526;
   min-width: 150px; /* Width of the dropdown */
   height: 50px; /* Set fixed height */
@@ -926,6 +852,9 @@ body {
 .modal-comment-author:hover .comment-menu-button {
   visibility: visible;
 }
+.modal-comment-actions {
+  height: 20px;
+}
 
 .mod-delete-overlay {
   position: fixed;
@@ -968,4 +897,66 @@ body {
 .mod-cancel-delete {
   background-color: gray;
   color: white;
+}
+
+.modal-comment-author {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background-color: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Expand modal-comment-author when dropdown is open */
+.modal-comment-author.expanded {
+  padding-bottom: 10px;
+}
+
+.modal-author-details {
+  background-color: #1f1f1f;
+  border-radius: 8px;
+  padding: 5px 12px;
+  padding-bottom: 0px;
+  width: auto;
+  max-width: 80%;
+  min-height: 63px; /* Set minimum height */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  display: inline;
+  word-wrap: break-word;
+  line-height: 1.4;
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  flex-grow: 0;
+}
+
+/* Expand the container when editing */
+.modal-author-details.editing {
+  min-width: 90%;
+  padding: 10px 15px;
+  min-height: 100px;
+}
+
+.modal-author-details p {
+  margin-bottom: 8px;
+  margin-top: 1px;
+  color: #cccccc;
+}
+.comment-edit-button,
+.comment-delete-button {
+  all: unset; /* Reset styles */
+  cursor: pointer;
+  font-size: 18px; /* Icon size */
+  margin: 0 5px; /* Add space between the buttons */
+  background-color: transparent;
+  border: none;
+}
+
+.comment-edit-button:hover,
+.comment-delete-button:hover {
+  color: #4e9af1; /* Add hover effect */
+  transform: scale(1.1); /* Slightly enlarge on hover */
 }

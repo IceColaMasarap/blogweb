@@ -20,6 +20,7 @@ import {
   faHeart,
   faComment,
   faPaperPlane,
+  faPen,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -858,58 +859,50 @@ const Homepage = () => {
                           {isUserComment && (
                             <div className="modal-comment-actions">
                               <div className="comment-menu-container">
-                                {/* Three-dot menu button */}
+                                {/* Edit button */}
                                 <button
-                                  className="comment-menu-button"
+                                  className="comment-edit-button"
                                   style={{
                                     visibility:
                                       hoveredCommentId === comment.id
                                         ? "visible"
                                         : "hidden",
                                   }}
-                                  onClick={() =>
-                                    setClickedCommentId(
-                                      clickedCommentId === comment.id
-                                        ? null
-                                        : comment.id
-                                    )
-                                  }
+                                  onClick={() => {
+                                    handleEditComment(
+                                      comment.id,
+                                      comment.content
+                                    );
+                                    setClickedCommentId(null);
+                                    setHoveredCommentId(null); // Hide menu after clicking Edit
+                                  }}
                                 >
-                                  &#x22EF;
+                                  <FontAwesomeIcon
+                                    icon={faPen}
+                                    style={{ fontSize: "15px" }}
+                                  />
                                 </button>
 
-                                {/* Dropdown Menu (Only appears when clicked) */}
-                                <div
-                                  className={`comment-dropdown-menu ${
-                                    clickedCommentId === comment.id
-                                      ? "show"
-                                      : ""
-                                  }`}
+                                {/* Delete button */}
+                                <button
+                                  className="comment-delete-button"
+                                  style={{
+                                    visibility:
+                                      hoveredCommentId === comment.id
+                                        ? "visible"
+                                        : "hidden",
+                                  }}
+                                  onClick={() => {
+                                    handleDeleteComment(comment.id);
+                                    setClickedCommentId(null);
+                                    setHoveredCommentId(null); // Hide menu after clicking Delete
+                                  }}
                                 >
-                                  <button
-                                    onClick={() => {
-                                      handleEditComment(
-                                        comment.id,
-                                        comment.content
-                                      );
-                                      setClickedCommentId(null);
-                                      setHoveredCommentId(null); // Hide menu after clicking Edit
-                                    }}
-                                    className="dropdown-btn"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      handleDeleteComment(comment.id);
-                                      setClickedCommentId(null);
-                                      setHoveredCommentId(null); // Hide menu after clicking Delete
-                                    }}
-                                    className="dropdown-btn"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
+                                  <FontAwesomeIcon
+                                    icon={faTrash}
+                                    style={{ fontSize: "15px" }}
+                                  />
+                                </button>
                               </div>
                             </div>
                           )}
