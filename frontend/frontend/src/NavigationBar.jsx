@@ -9,14 +9,17 @@ const NavigationBar = () => {
 
   // Define the logout function
   const logout = () => {
-    // Perform any logout operations (e.g., clearing auth tokens, session data, etc.)
     console.log("Logging out...");
-    localStorage.removeItem("authToken"); // Example: Remove a token from localStorage
-
+  
+    // Remove all user-related data from localStorage
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("isModerator");
+  
     // Navigate to the login page
     navigate("/login");
   };
-
+  
   return (
     <nav className="navbar">
       <div className="navbar-container">

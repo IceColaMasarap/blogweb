@@ -7,6 +7,7 @@ import Homepage from "./HomePage.jsx";
 import ProfilePage from "./ProfilePage";
 import UserProfile from "./UserProfile";
 import AdminLogin from "./AdminLogin";
+import ProtectedRoute from "./ProtectedRoute.jsx"; // Import ProtectedRoute
 import "./App.css";
 
 function UserEnd() {
@@ -16,13 +17,43 @@ function UserEnd() {
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/home" element={<Homepage />} />
-          <Route path="/user" element={<UserProfile />} />
-          {/* Use AdminEnd as a parent for all admin routes */}
-          <Route path="/adminpage/*" element={<AdminEnd />} />
           <Route path="/adminlogin" element={<AdminLogin />} />
 
+          {/* Protected Routes - Users must be logged in to access */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Homepage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user"
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected Admin Routes */}
+          <Route
+            path="/adminpage/*"
+            element={
+              <ProtectedRoute>
+                <AdminEnd />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </Router>
