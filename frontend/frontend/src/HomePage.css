@@ -393,8 +393,6 @@ body {
   width: 6px; /* Thin scrollbar */
 }
 
-
-
 /* Optional: Show scrollbar only on hover */
 .modal-comment-container:hover {
   scrollbar-width: thin; /* For Firefox */
@@ -443,15 +441,12 @@ body {
   overflow: hidden;
 }
 
-
 /* Expand the container when editing */
 .modal-author-details.editing {
   min-width: 90%;
-  padding: 10px 15px ;
+  padding: 10px 15px;
   min-height: 100px;
 }
-
-
 
 .modal-author-details p {
   margin-bottom: 8px;
@@ -803,7 +798,6 @@ body {
   color: white;
   position: relative; /* This ensures it stays in place */
   transition: background-color 0.2s ease-in-out;
-
 }
 
 .comment-menu-button:hover {
@@ -854,7 +848,7 @@ body {
   border-radius: 6px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 
-  padding: 5px 0px 11px; 
+  padding: 5px 0px 11px;
   display: none; /* Initially hidden */
   flex-direction: column;
   overflow: hidden; /* Enable scrolling if content exceeds the height */
@@ -906,24 +900,22 @@ body {
   display: none;
 }
 
-
 .edit-comment-buttons {
   height: 30px; /* Reduce height */
 
-  font-size: 12px; 
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
 .edit-comment-buttons button {
-  background-color:rgb(58, 58, 58);
-  height: 30px; 
+  background-color: rgb(58, 58, 58);
+  height: 30px;
   width: 80px;
-  padding: 5px 6px; 
+  padding: 5px 6px;
   font-size: 12px;
 }
-
 
 /* Hide three dots menu when not hovered */
 .comment-menu-button {

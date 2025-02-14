@@ -52,8 +52,6 @@ const Homepage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
 
-
-
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const isMod = localStorage.getItem("isModerator");
@@ -354,10 +352,12 @@ const Homepage = () => {
 
   const fetchComments = async (postId) => {
     try {
-      const response = await axios.get(`http://localhost:5005/api/get-comments?postId=${postId}`);
+      const response = await axios.get(
+        `http://localhost:5005/api/get-comments?postId=${postId}`
+      );
       if (response.status === 200 && Array.isArray(response.data)) {
         const sortedComments = response.data
-          .filter(comment => comment.id && comment.user_id) // Ensure valid comments
+          .filter((comment) => comment.id && comment.user_id) // Ensure valid comments
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by newest first
 
         console.log("Sorted and Filtered Comments:", sortedComments); // Debugging
@@ -372,24 +372,23 @@ const Homepage = () => {
     }
   };
 
-
-
-
   const handleEditComment = (commentId, currentContent) => {
     setEditingCommentId(commentId); // Set the comment ID being edited
     setEditedCommentContent(currentContent); // Populate with current content
   };
 
-
   const handleSaveEditComment = async (commentId) => {
     const userId = localStorage.getItem("userId"); // Ensure userId is sent
 
     try {
-      const response = await axios.put("http://localhost:5005/api/edit-comment", {
-        commentId,
-        userId, // Include userId in the request
-        newContent: editedCommentContent, // Match the backend expected field
-      });
+      const response = await axios.put(
+        "http://localhost:5005/api/edit-comment",
+        {
+          commentId,
+          userId, // Include userId in the request
+          newContent: editedCommentContent, // Match the backend expected field
+        }
+      );
 
       if (response.status === 200) {
         alert("Comment updated successfully!");
@@ -413,15 +412,10 @@ const Homepage = () => {
     }
   };
 
-
-
-
-
   const handleCancelEditComment = () => {
     setEditingCommentId(null); // Exit editing mode
     setEditedCommentContent(""); // Reset content
   };
-
 
   const handleModDeleteComment = async (commentId) => {
     if (!showDeleteModal) {
@@ -429,15 +423,18 @@ const Homepage = () => {
       setShowDeleteModal(true);
       return;
     }
-  
+
     if (!commentToDelete) return;
-  
+
     try {
       const userId = localStorage.getItem("userId");
-      const response = await axios.delete("http://localhost:5005/api/delete-comment", {
-        data: { commentId: commentToDelete, userId },
-      });
-  
+      const response = await axios.delete(
+        "http://localhost:5005/api/delete-comment",
+        {
+          data: { commentId: commentToDelete, userId },
+        }
+      );
+
       if (response.status === 200) {
         alert("Comment deleted successfully!");
         setComments((prevComments) =>
@@ -461,15 +458,17 @@ const Homepage = () => {
       setCommentToDelete(null);
     }
   };
-  
 
   const handleDeleteComment = async (commentId) => {
     const userId = localStorage.getItem("userId"); // Ensure userId is retrieved
 
     try {
-      const response = await axios.delete(`http://localhost:5005/api/delete-comment`, {
-        data: { commentId, userId }, // Send commentId & userId as request body
-      });
+      const response = await axios.delete(
+        `http://localhost:5005/api/delete-comment`,
+        {
+          data: { commentId, userId }, // Send commentId & userId as request body
+        }
+      );
 
       if (response.status === 200) {
         alert("Comment deleted successfully!");
@@ -495,7 +494,6 @@ const Homepage = () => {
       alert("An error occurred while deleting the comment.");
     }
   };
-
 
   const trends = [
     {
@@ -785,143 +783,195 @@ const Homepage = () => {
 
                 {/* Comments Section */}
                 <div className="modal-comment-container">
-                  {Array.isArray(comments) && comments.map((comment) => {
-                    const userId = localStorage.getItem("userId") || ""; // Ensure it's a string
-                    const commentUserId = comment.user_id ? comment.user_id.toString() : ""; // Avoid undefined error
-                    const isUserComment = commentUserId === userId;
+                  {Array.isArray(comments) &&
+                    comments.map((comment) => {
+                      const userId = localStorage.getItem("userId") || ""; // Ensure it's a string
+                      const commentUserId = comment.user_id
+                        ? comment.user_id.toString()
+                        : ""; // Avoid undefined error
+                      const isUserComment = commentUserId === userId;
 
-                    console.log(`Comment ID: ${comment.id}, User ID: ${commentUserId}, Logged-in User: ${userId}, isUserComment: ${isUserComment}`);
+                      console.log(
+                        `Comment ID: ${comment.id}, User ID: ${commentUserId}, Logged-in User: ${userId}, isUserComment: ${isUserComment}`
+                      );
 
-                    return (
-                      <div
-                        key={comment.id}
-                        className={`modal-comment-author ${clickedCommentId === comment.id ? "expanded" : ""}`}
-                        onMouseEnter={() => setHoveredCommentId(comment.id)}
-                        onMouseLeave={() => setHoveredCommentId(null)}
-                      >
-                        <img src={GI} alt="Profile" className="modal-profile-image" />
+                      return (
+                        <div
+                          key={comment.id}
+                          className={`modal-comment-author ${
+                            clickedCommentId === comment.id ? "expanded" : ""
+                          }`}
+                          onMouseEnter={() => setHoveredCommentId(comment.id)}
+                          onMouseLeave={() => setHoveredCommentId(null)}
+                        >
+                          <img
+                            src={GI}
+                            alt="Profile"
+                            className="modal-profile-image"
+                          />
 
-                        {/* Apply 'editing' class to modal-author-details when editing */}
-                        <div className={`modal-author-details ${editingCommentId === comment.id ? "editing" : ""}`}>
-                          {editingCommentId === comment.id ? (
-                            <div className="edit-comment-container">
-                              <textarea
-                                className="edit-comment-textarea"
-                                value={editedCommentContent}
-                                onChange={(e) => setEditedCommentContent(e.target.value)}
-                                autoFocus
-                              />
-                              <div className="edit-comment-buttons">
-                                <button className="save-btn" onClick={() => handleSaveEditComment(comment.id)}>
-                                  Save
+                          {/* Apply 'editing' class to modal-author-details when editing */}
+                          <div
+                            className={`modal-author-details ${
+                              editingCommentId === comment.id ? "editing" : ""
+                            }`}
+                          >
+                            {editingCommentId === comment.id ? (
+                              <div className="edit-comment-container">
+                                <textarea
+                                  className="edit-comment-textarea"
+                                  value={editedCommentContent}
+                                  onChange={(e) =>
+                                    setEditedCommentContent(e.target.value)
+                                  }
+                                  autoFocus
+                                />
+                                <div className="edit-comment-buttons">
+                                  <button
+                                    className="save-btn"
+                                    onClick={() =>
+                                      handleSaveEditComment(comment.id)
+                                    }
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    className="cancel-btn"
+                                    onClick={handleCancelEditComment}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <label className="modal-post-user">
+                                  {comment.firstname} {comment.lastname}
+                                </label>
+                                <p className="modal-comment-content">
+                                  {comment.content}
+                                </p>
+                              </>
+                            )}
+                          </div>
+
+                          {isUserComment && (
+                            <div className="modal-comment-actions">
+                              <div className="comment-menu-container">
+                                {/* Three-dot menu button */}
+                                <button
+                                  className="comment-menu-button"
+                                  style={{
+                                    visibility:
+                                      hoveredCommentId === comment.id
+                                        ? "visible"
+                                        : "hidden",
+                                  }}
+                                  onClick={() =>
+                                    setClickedCommentId(
+                                      clickedCommentId === comment.id
+                                        ? null
+                                        : comment.id
+                                    )
+                                  }
+                                >
+                                  &#x22EF;
                                 </button>
-                                <button className="cancel-btn" onClick={handleCancelEditComment}>
-                                  Cancel
-                                </button>
+
+                                {/* Dropdown Menu (Only appears when clicked) */}
+                                <div
+                                  className={`comment-dropdown-menu ${
+                                    clickedCommentId === comment.id
+                                      ? "show"
+                                      : ""
+                                  }`}
+                                >
+                                  <button
+                                    onClick={() => {
+                                      handleEditComment(
+                                        comment.id,
+                                        comment.content
+                                      );
+                                      setClickedCommentId(null);
+                                      setHoveredCommentId(null); // Hide menu after clicking Edit
+                                    }}
+                                    className="dropdown-btn"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      handleDeleteComment(comment.id);
+                                      setClickedCommentId(null);
+                                      setHoveredCommentId(null); // Hide menu after clicking Delete
+                                    }}
+                                    className="dropdown-btn"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          ) : (
-                            <>
-                              <label className="modal-post-user">
-                                {comment.firstname} {comment.lastname}
-                              </label>
-                              <p className="modal-comment-content">{comment.content}</p>
-                            </>
+                          )}
+
+                          {isModerator &&
+                            !comment.isModerator &&
+                            comment.user_id !==
+                              localStorage.getItem("userId") && (
+                              <div className="mod-delete-container">
+                                <FontAwesomeIcon
+                                  icon={faTrash}
+                                  className="delete-icon"
+                                  onClick={() => {
+                                    setCommentToDelete(comment.id); // Store comment ID
+                                    setShowDeleteModal(true); // Show modal
+                                  }}
+                                  title="Delete Comment (Moderator)"
+                                  style={{
+                                    cursor: "pointer",
+                                    color: "white",
+                                    marginLeft: "10px",
+                                  }}
+                                />
+                              </div>
+                            )}
+
+                          {showDeleteModal && (
+                            <div
+                              className="mod-delete-overlay"
+                              onClick={() => setShowDeleteModal(false)}
+                            >
+                              <div
+                                className="mod-delete-content"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <h3>Confirm Deletion</h3>
+                                <p>
+                                  Are you sure you want to delete this comment?
+                                </p>
+                                <div className="mod-delete-buttons">
+                                  <button
+                                    className="mod-confirm-delete"
+                                    onClick={() =>
+                                      handleModDeleteComment(commentToDelete)
+                                    }
+                                  >
+                                    Delete
+                                  </button>
+                                  <button
+                                    className="mod-cancel-delete"
+                                    onClick={() => setShowDeleteModal(false)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
                           )}
                         </div>
-
-                        {isUserComment && (
-                          <div className="modal-comment-actions">
-                            <div className="comment-menu-container">
-                              {/* Three-dot menu button */}
-                              <button
-                                className="comment-menu-button"
-                                style={{
-                                  visibility: hoveredCommentId === comment.id ? "visible" : "hidden",
-                                }}
-                                onClick={() =>
-                                  setClickedCommentId(clickedCommentId === comment.id ? null : comment.id)
-                                }
-                              >
-                                &#x22EF;
-                              </button>
-
-                              {/* Dropdown Menu (Only appears when clicked) */}
-                              <div
-                                className={`comment-dropdown-menu ${clickedCommentId === comment.id ? "show" : ""}`}
-                              >
-                                <button
-                                  onClick={() => {
-                                    handleEditComment(comment.id, comment.content);
-                                    setClickedCommentId(null);
-                                    setHoveredCommentId(null); // Hide menu after clicking Edit
-                                  }}
-                                  className="dropdown-btn"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    handleDeleteComment(comment.id);
-                                    setClickedCommentId(null);
-                                    setHoveredCommentId(null); // Hide menu after clicking Delete
-                                  }}
-                                  className="dropdown-btn"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-
-
-
-
-
-
-                          </div>
-                        )}
-
-                        {isModerator && !comment.isModerator && comment.user_id !== localStorage.getItem("userId") && (
-                          <div className="mod-delete-container">
-                            <FontAwesomeIcon
-                              icon={faTrash}
-                              className="delete-icon"
-                              onClick={() => {
-                                setCommentToDelete(comment.id); // Store comment ID
-                                setShowDeleteModal(true); // Show modal
-                              }}
-                              title="Delete Comment (Moderator)"
-                              style={{ cursor: "pointer", color: "white", marginLeft: "10px" }}
-                            />
-                          </div>
-                        )}
-
-                        {showDeleteModal && (
-                          <div className="mod-delete-overlay" onClick={() => setShowDeleteModal(false)}>
-                            <div className="mod-delete-content" onClick={(e) => e.stopPropagation()}>
-                              <h3>Confirm Deletion</h3>
-                              <p>Are you sure you want to delete this comment?</p>
-                              <div className="mod-delete-buttons">
-                                <button className="mod-confirm-delete" onClick={() => handleModDeleteComment(commentToDelete)}>
-                                  Delete
-                                </button>
-                                <button className="mod-cancel-delete" onClick={() => setShowDeleteModal(false)}>
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-
-
-                      </div>
-
-                    );
-                  })}
-
+                      );
+                    })}
                 </div>
-
 
                 <div className="modal-input-container">
                   <div className="textarea-container">

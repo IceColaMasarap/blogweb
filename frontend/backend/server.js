@@ -1247,7 +1247,6 @@ app.get("/api/get-comments", (req, res) => {
   });
 });
 
-
 app.listen(5005, () => {
   console.log("Server running on port 5005");
 });
@@ -1370,7 +1369,6 @@ app.get("/api/get-comments", async (req, res) => {
   }
 });
 
-
 app.post("/api/check-email", async (req, res) => {
   const { email } = req.body;
 
@@ -1447,7 +1445,9 @@ app.put("/api/edit-comment", async (req, res) => {
       }
 
       if (result.affectedRows === 0) {
-        return res.status(403).json({ message: "Unauthorized or comment not found." });
+        return res
+          .status(403)
+          .json({ message: "Unauthorized or comment not found." });
       }
 
       res.status(200).json({ message: "Comment updated successfully!" });
@@ -1462,7 +1462,9 @@ app.delete("/api/delete-comment", async (req, res) => {
   const { commentId, userId } = req.body;
 
   if (!commentId || !userId) {
-    return res.status(400).json({ message: "Comment ID and User ID are required." });
+    return res
+      .status(400)
+      .json({ message: "Comment ID and User ID are required." });
   }
 
   try {
@@ -1474,7 +1476,8 @@ app.delete("/api/delete-comment", async (req, res) => {
       }
 
       const decryptedRole = decrypt(results[0].isModerator); // Decrypt the role
-      const isModerator = decryptedRole === "Admin" || decryptedRole === "Moderator";
+      const isModerator =
+        decryptedRole === "Admin" || decryptedRole === "Moderator";
 
       // Allow deletion if the user is the owner OR a moderator
       const deleteSql = isModerator
@@ -1490,7 +1493,9 @@ app.delete("/api/delete-comment", async (req, res) => {
         }
 
         if (result.affectedRows === 0) {
-          return res.status(403).json({ message: "Unauthorized or comment not found." });
+          return res
+            .status(403)
+            .json({ message: "Unauthorized or comment not found." });
         }
 
         res.status(200).json({ message: "Comment deleted successfully!" });
@@ -1501,7 +1506,6 @@ app.delete("/api/delete-comment", async (req, res) => {
     res.status(500).json({ message: "Error processing request." });
   }
 });
-
 
 const getCommentsWithUserRole = (postId) => {
   return new Promise((resolve, reject) => {
@@ -1518,10 +1522,12 @@ const getCommentsWithUserRole = (postId) => {
           reject(err);
         } else {
           // Ensure isModerator is decrypted
-          const formattedResults = results.map(comment => ({
+          const formattedResults = results.map((comment) => ({
             ...comment,
             content: decrypt(comment.content), // Ensure content is decrypted
-            isModerator: decrypt(comment.isModerator) === "Admin" || decrypt(comment.isModerator) === "Moderator"
+            isModerator:
+              decrypt(comment.isModerator) === "Admin" ||
+              decrypt(comment.isModerator) === "Moderator",
           }));
           resolve(formattedResults);
         }
@@ -1530,10 +1536,9 @@ const getCommentsWithUserRole = (postId) => {
   });
 };
 
-
 app.get("/api/get-comments-with-role", async (req, res) => {
   const { postId } = req.query;
-  
+
   if (!postId) {
     return res.status(400).json({ message: "Post ID is required." });
   }
@@ -1546,5 +1551,3 @@ app.get("/api/get-comments-with-role", async (req, res) => {
     res.status(500).json({ message: "Error retrieving comments." });
   }
 });
-
-
