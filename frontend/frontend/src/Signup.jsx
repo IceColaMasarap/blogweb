@@ -17,6 +17,41 @@ function Signup() {
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
+  // 🚀 Redirect if user is already logged in (except admin)
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const isModerator = localStorage.getItem("isModerator");
+
+    if (userId && isModerator !== "Admin") {
+      navigate("/home"); // Redirect regular users to home
+    }
+  }, [navigate]); // Runs only when component mounts
+
+
+  const handleFirstNameChange = (e) => {
+    const input = e.target.value;
+    const regex = /^[A-Za-z\s]*$/; // Only letters and spaces
+
+    if (regex.test(input)) {
+      setFirstName(input);
+    } else {
+      setError("First name can only contain letters and spaces.");
+    }
+  };
+
+  const handleLastNameChange = (e) => {
+    const input = e.target.value;
+    const regex = /^[A-Za-z\s]*$/; // Only letters and spaces
+
+    if (regex.test(input)) {
+      setLastName(input);
+    } else {
+      setError("Last name can only contain letters and spaces.");
+    }
+  };
+
+
+
   const handleEmailChange = async (e) => {
     const inputEmail = e.target.value;
     setEmail(inputEmail);
@@ -105,13 +140,16 @@ function Signup() {
               type="text"
               placeholder="First Name"
               className="input"
-              onChange={(e) => setFirstName(e.target.value)}
+              value={firstName}
+              onChange={handleFirstNameChange}
             />
+
             <input
               type="text"
               placeholder="Last Name"
               className="input"
-              onChange={(e) => setLastName(e.target.value)}
+              value={lastName}
+              onChange={handleLastNameChange}
             />
             <div className="input-container">
               <label className="bdaylabel">Birthdate</label>

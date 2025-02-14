@@ -1,6 +1,6 @@
 import TS from "./assets/tsaaritsa.png";
 import "./Login.css"; // Importing the CSS file
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Use axios for making HTTP requests
 
@@ -9,6 +9,17 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const isModerator = localStorage.getItem("isModerator");
+
+    if (userId && isModerator !== "Admin") {
+      navigate("/home"); // Redirect regular users to home
+    }
+  }, [navigate]);
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Reset error message
