@@ -1,28 +1,73 @@
 import TS from "./assets/tsaaritsa.png";
-import "./Login.css"; // Importing the CSS file
+import "./Login.css";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Use axios for making HTTP requests
+import axios from "axios";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [cooldown, setCooldown] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    const isModerator = localStorage.getItem("isModerator");
+    // Check localStorage for previous attempt count and cooldown
+    const storedAttempts = parseInt(localStorage.getItem("attemptCount")) || 0;
+    const cooldownStart = parseInt(localStorage.getItem("cooldownStart"));
 
-    if (userId && isModerator !== "Admin") {
-      navigate("/home"); // Redirect regular users to home
+    setAttemptCount(storedAttempts);
+
+    // Check if cooldown is still active
+    if (cooldownStart) {
+      const now = Date.now();
+      const elapsed = now - cooldownStart;
+      if (elapsed < 10000) {
+        setCooldown(true);
+        setError("Too many failed attempts. Please try again in 10 seconds.");
+
+        // Set a timer for the remaining cooldown time
+        const remainingCooldown = 10000 - elapsed;
+        const timer = setTimeout(() => {
+          resetCooldown();
+        }, remainingCooldown);
+
+        return () => clearTimeout(timer);
+      } else {
+        resetCooldown(); // Reset if cooldown has expired
+      }
     }
-  }, [navigate]);
+  }, []);
 
+  const resetCooldown = () => {
+    setAttemptCount(0);
+    setCooldown(false);
+    setError("");
+    localStorage.removeItem("attemptCount");
+    localStorage.removeItem("cooldownStart");
+  };
+
+  useEffect(() => {
+    if (attemptCount >= 5) {
+      setCooldown(true);
+      setError("Too many failed attempts. Please try again in 10 seconds.");
+      localStorage.setItem("cooldownStart", Date.now().toString());
+
+      // Start a 10-second cooldown
+      const timer = setTimeout(() => {
+        resetCooldown();
+      }, 10000); // 10 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [attemptCount]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Reset error message
+    if (cooldown) return;
+
+    setError("");
 
     if (!email || !password) {
       setError("Please fill in both fields");
@@ -30,7 +75,6 @@ function Login() {
     }
 
     try {
-      // Send a POST request to the login endpoint
       const response = await axios.post("http://localhost:5005/api/login", {
         email,
         password,
@@ -38,53 +82,47 @@ function Login() {
 
       const data = response.data;
 
-      console.log("Logged in user data:", data); // Log user data here
-
-      // Check if login is successful
       if (data.error) {
         setError("Invalid credentials, please try again.");
+        const newAttemptCount = attemptCount + 1;
+        setAttemptCount(newAttemptCount);
+        localStorage.setItem("attemptCount", newAttemptCount.toString());
       } else {
-        // Save only the necessary user details to localStorage
-        localStorage.setItem("userId", data.user.id); // Save user ID
+        localStorage.setItem("userId", data.user.id);
         if (data.user.isModerator !== undefined) {
           localStorage.setItem("isModerator", data.user.isModerator.toString());
         }
 
-        // Check if isModerator is "Admin", count it as wrong regardless of the credentials
         if (data.user.isModerator === "Admin") {
           setError("An error occurred during login.");
         } else {
-          // Redirect based on user role
           if (data.user.email === "admin@gmail.com") {
-            navigate("/adminpage/"); // Redirect to admin page
+            navigate("/adminpage/");
           } else {
-            navigate("/home"); // Redirect to homepage for regular users
+            navigate("/home");
           }
         }
       }
     } catch (err) {
       setError("An error occurred during login");
       console.log("Error logging in:", err);
+      const newAttemptCount = attemptCount + 1;
+      setAttemptCount(newAttemptCount);
+      localStorage.setItem("attemptCount", newAttemptCount.toString());
     }
   };
 
   return (
     <div className="container">
-      {/* Left Section */}
       <div className="left-sectionl">
         <div className="logo-container">
           <div className="logo">
-            <img
-              src={TS} // Placeholder for the tea cup logo
-              alt="Tsaaritsa"
-              className="logo-image"
-            />
+            <img src={TS} alt="Tsaaritsa" className="logo-image" />
           </div>
           <h1 className="brand-titler">Tsaaritsa.</h1>
         </div>
       </div>
 
-      {/* Right Section */}
       <div className="right-sectionl">
         <h1 className="main-headingr">Everyone’s cup</h1>
         <h1 className="main-headingr">of tea 🍃</h1>
@@ -106,14 +144,14 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit" className="buttonr">
+          <button type="submit" className="buttonr" disabled={cooldown}>
             Login
           </button>
           {error && (
             <p className="errormsg" style={{ color: "red" }}>
               {error}
             </p>
-          )}{" "}
+          )}
           <div className="linkers">
             <label className="linklabel1">No account yet? </label>
             <label
