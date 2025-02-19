@@ -374,9 +374,11 @@ td {
   font-weight: 700;
 }
 
-.addButton {
+
+
+.downloadButton {
   background-color: #252728;
-  padding: 5px;
+  padding: 15px;
 }
 
 textarea {

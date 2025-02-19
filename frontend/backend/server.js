@@ -460,150 +460,306 @@ app.get("/api/users", (req, res) => {
   });
 });
 
+
 // Endpoint: Update Post
 app.put("/api/updatepost2", (req, res) => {
-  const { post_id, title, content } = req.body;
+  const { post_id, title, content, adminId } = req.body;
 
-  // Encrypt title and content before updating
-  const encTitle = encrypt(title);
-  const encContent = encrypt(content);
+  if (!adminId) {
+    return res.status(400).json({ message: "Admin ID is required for logging." });
+  }
 
-  const query = "UPDATE posts SET title = ?, content = ? WHERE id = ?";
-  db.query(query, [encTitle, encContent, post_id], (err, result) => {
-    if (err) {
-      console.error("Error updating post:", err);
-      return res.status(500).json({ error: "Database query failed" });
-    }
-    res.status(200).json({ message: "Post updated successfully" });
-  });
-});
+  // Fetch the current post details before updating
+  const getPostDetailsQuery = `
+    SELECT users.email, posts.title, posts.content FROM posts 
+    INNER JOIN users ON posts.author_id = users.id 
+    WHERE posts.id = ?
+  `;
 
-// Endpoint: Update Account
-app.put("/api/updateaccount", async (req, res) => {
-  const { id, firstname, lastname, dateofbirth, email, password, isModerator } =
-    req.body;
-
-  const encfirstname = encrypt(firstname);
-  const enclastname = encrypt(lastname);
-  const encdateofbirth = encrypt(dateofbirth);
-  const encemail = encrypt(email);
-  const encisMod = encrypt(isModerator);
-
-  try {
-    let query =
-      "UPDATE users SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?, isModerator = ?";
-    const queryParams = [
-      encfirstname,
-      enclastname,
-      encdateofbirth,
-      encemail,
-      encisMod,
-    ];
-
-    // Add password to the query only if it's provided
-    if (password) {
-      // Hash the password
-      const hashedPassword = crypto
-        .createHash("sha256")
-        .update(password)
-        .digest("hex");
-
-      query += ", password = ?";
-      queryParams.push(hashedPassword);
+  db.query(getPostDetailsQuery, [post_id], (postErr, postResult) => {
+    if (postErr || postResult.length === 0) {
+      console.error("Error fetching post details:", postErr);
+      return res.status(500).json({ error: "Failed to retrieve post details." });
     }
 
-    query += " WHERE id = ?";
-    queryParams.push(id);
+    const authorEmail = decrypt(postResult[0].email);
+    const originalTitle = decrypt(postResult[0].title);
+    const originalContent = decrypt(postResult[0].content);
 
-    db.query(query, queryParams, (err, result) => {
+    const updates = [];
+    const values = [];
+    let logChanges = [];
+    let titleChanged = false;
+
+    // Only log title update if it's actually different
+    if (title && title !== originalTitle) {
+      updates.push("title = ?");
+      values.push(encrypt(title));
+      logChanges.push("Title updated");
+      titleChanged = true;
+    }
+
+    // Only log content update if it's actually different
+    if (content && content !== originalContent) {
+      updates.push("content = ?");
+      values.push(encrypt(content));
+      logChanges.push("Content updated");
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ message: "No changes detected" });
+    }
+
+    values.push(post_id);
+    const query = `UPDATE posts SET ${updates.join(", ")} WHERE id = ?`;
+
+    // Proceed with updating the post
+    db.query(query, values, (err, result) => {
       if (err) {
-        console.error("Error updating account:", err);
+        console.error("Error updating post:", err);
         return res.status(500).json({ error: "Database query failed" });
       }
 
-      res.status(200).json({ message: "Account updated successfully" });
+      // ✅ Store timestamp as ISO string and encrypt
+      const encTimestamp = encrypt(new Date().toISOString());
+
+      // ✅ Format the log details dynamically
+      const postLabel = titleChanged ? "OldTitle" : "Title";
+      const logMessage = `
+        [Author]: ${authorEmail}
+        [${postLabel}]: ${originalTitle}
+        [Changes]: ${logChanges.join(", ")}
+      `.trim();
+
+      // ✅ Insert log entry
+      const logQuery = "INSERT INTO admin_logs (id, admin_id, timestamp, action_type, details) VALUES (?, ?, ?, ?, ?)";
+      const logData = [
+        uuidv4(),
+        adminId,
+        encTimestamp,
+        encrypt("Updated post"),
+        encrypt(logMessage)
+      ];
+
+      db.query(logQuery, logData, (logErr) => {
+        if (logErr) {
+          console.error("Error logging admin action:", logErr);
+        }
+      });
+
+      res.status(200).json({ message: "Post updated successfully" });
     });
-  } catch (error) {
-    console.error("Error processing update:", error);
-    res.status(500).json({ error: "Failed to process update" });
-  }
+  });
 });
-// Endpoint: Update Account
-app.put("/api/updateaccount2", async (req, res) => {
-  const { id, firstname, lastname, dateofbirth, email, password } = req.body;
 
-  const encfirstname = encrypt(firstname);
-  const enclastname = encrypt(lastname);
-  const encdateofbirth = encrypt(dateofbirth);
-  const encemail = encrypt(email);
 
-  try {
-    // Update admin query
-    let adminQuery =
-      "UPDATE admin SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?";
-    const adminQueryParams = [
-      encfirstname,
-      enclastname,
-      encdateofbirth,
-      encemail,
-    ];
 
-    if (password) {
-      // Hash the password
-      const hashedPassword = crypto
-        .createHash("sha256")
-        .update(password)
-        .digest("hex");
+// Endpoint: Update Accounts
+app.put("/api/updateaccount", async (req, res) => {
+  const { id, firstname, lastname, dateofbirth, email, password, isModerator, adminId } = req.body;
 
-      adminQuery += ", password = ?";
-      adminQueryParams.push(hashedPassword);
+  if (!adminId) {
+    return res.status(400).json({ message: "Admin ID is required for logging." });
+  }
+
+  // Fetch existing account details before updating
+  const getUserQuery = "SELECT firstname, lastname, dateofbirth, email, isModerator FROM users WHERE id = ?";
+
+  db.query(getUserQuery, [id], (userErr, userResult) => {
+    if (userErr || userResult.length === 0) {
+      console.error("Error fetching user details:", userErr);
+      return res.status(500).json({ error: "Failed to retrieve user details." });
     }
 
-    adminQuery += " WHERE id = ?";
-    adminQueryParams.push(id);
+    const original = {
+      firstname: decrypt(userResult[0].firstname),
+      lastname: decrypt(userResult[0].lastname),
+      dateofbirth: decrypt(userResult[0].dateofbirth),
+      email: decrypt(userResult[0].email),
+      isModerator: decrypt(userResult[0].isModerator),
+    };
 
-    // Update users query
-    let usersQuery =
-      "UPDATE users SET firstname = ?, lastname = ?, dateofbirth = ?, email = ?";
-    const usersQueryParams = [
-      encfirstname,
-      enclastname,
-      encdateofbirth,
-      encemail,
-    ];
+    const updates = [];
+    const values = [];
+    let logChanges = [];
 
-    if (password) {
-      // Hash the password
-      const hashedPassword = crypto
-        .createHash("sha256")
-        .update(password)
-        .digest("hex");
-
-      usersQuery += ", password = ?";
-      usersQueryParams.push(hashedPassword);
+    // Check for changes and log them
+    if (firstname && firstname !== original.firstname) {
+      updates.push("firstname = ?");
+      values.push(encrypt(firstname));
+      logChanges.push("First Name updated");
+    }
+    if (lastname && lastname !== original.lastname) {
+      updates.push("lastname = ?");
+      values.push(encrypt(lastname));
+      logChanges.push("Last Name updated");
+    }
+    if (dateofbirth && dateofbirth !== original.dateofbirth) {
+      updates.push("dateofbirth = ?");
+      values.push(encrypt(dateofbirth));
+      logChanges.push("Date of Birth updated");
+    }
+    if (email && email !== original.email) {
+      updates.push("email = ?");
+      values.push(encrypt(email));
+      logChanges.push("Email updated");
+    }
+    if (isModerator && isModerator !== original.isModerator) {
+      updates.push("isModerator = ?");
+      values.push(encrypt(isModerator));
+      logChanges.push("Account Type updated");
     }
 
-    usersQuery += " WHERE id = ?";
-    usersQueryParams.push(id);
+    // Add password if it's being updated
+    if (password) {
+      const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+      updates.push("password = ?");
+      values.push(hashedPassword);
+      logChanges.push("Password updated");
+    }
 
-    // Execute both queries
-    db.query(adminQuery, adminQueryParams, (err, adminResult) => {
-      if (err) {
-        console.error("Error updating admin account:", err);
-        return res
-          .status(500)
-          .json({ error: "Failed to update admin account" });
+    if (updates.length === 0) {
+      return res.status(400).json({ message: "No changes detected" });
+    }
+
+    values.push(id);
+    const query = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
+
+    // Proceed with update
+    db.query(query, values, (updateErr, result) => {
+      if (updateErr) {
+        console.error("Error updating account:", updateErr);
+        return res.status(500).json({ error: "Database query failed" });
       }
 
-      db.query(usersQuery, usersQueryParams, (err, usersResult) => {
-        if (err) {
-          console.error("Error updating users account:", err);
-          return res
-            .status(500)
-            .json({ error: "Failed to update users account" });
+      // ✅ Store timestamp as ISO string and encrypt
+      const encTimestamp = encrypt(new Date().toISOString());
+
+      // ✅ Fix log message format for consistency
+      const logMessage = `
+        [User]: ${original.email}
+        [Changes]: ${logChanges.join(" , ")}
+      `.trim();
+
+      const logQuery = "INSERT INTO admin_logs (id, admin_id, timestamp, action_type, details) VALUES (?, ?, ?, ?, ?)";
+      const logData = [
+        uuidv4(),
+        adminId,
+        encTimestamp,
+        encrypt("Updated account"),
+        encrypt(logMessage),
+      ];
+
+      db.query(logQuery, logData, (logErr) => {
+        if (logErr) {
+          console.error("Error logging admin action:", logErr);
+        }
+      });
+
+      res.status(200).json({ message: "Account updated successfully" });
+    });
+  });
+});
+
+
+// Endpoint: Update Account
+app.put("/api/updateaccount2", async (req, res) => {
+  const { id, firstname, lastname, dateofbirth, email, password, adminId } = req.body;
+
+  if (!adminId) {
+    return res.status(400).json({ message: "Admin ID is required for logging." });
+  }
+
+  try {
+    // Fetch current account details before updating
+    const getUserQuery = "SELECT firstname, lastname, dateofbirth, email FROM admin WHERE id = ?";
+    db.query(getUserQuery, [id], (err, result) => {
+      if (err || result.length === 0) {
+        console.error("Error fetching admin details:", err);
+        return res.status(500).json({ error: "Failed to retrieve admin details." });
+      }
+
+      // Decrypt existing details
+      const original = {
+        firstname: decrypt(result[0].firstname),
+        lastname: decrypt(result[0].lastname),
+        dateofbirth: decrypt(result[0].dateofbirth),
+        email: decrypt(result[0].email),
+      };
+
+      const updates = [];
+      const values = [];
+      let logChanges = [];
+
+      // Check for changes and log them
+      if (firstname && firstname !== original.firstname) {
+        updates.push("firstname = ?");
+        values.push(encrypt(firstname));
+        logChanges.push("First Name updated");
+      }
+      if (lastname && lastname !== original.lastname) {
+        updates.push("lastname = ?");
+        values.push(encrypt(lastname));
+        logChanges.push("Last Name updated");
+      }
+      if (dateofbirth && dateofbirth !== original.dateofbirth) {
+        updates.push("dateofbirth = ?");
+        values.push(encrypt(dateofbirth));
+        logChanges.push("Date of Birth updated");
+      }
+      if (email && email !== original.email) {
+        updates.push("email = ?");
+        values.push(encrypt(email));
+        logChanges.push("Email updated");
+      }
+
+      if (password) {
+        const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+        updates.push("password = ?");
+        values.push(hashedPassword);
+        logChanges.push("Password updated");
+      }
+
+      if (updates.length === 0) {
+        return res.status(400).json({ message: "No changes detected" });
+      }
+
+      values.push(id);
+      const query = `UPDATE admin SET ${updates.join(", ")} WHERE id = ?`;
+
+      // Execute update query
+      db.query(query, values, (updateErr, result) => {
+        if (updateErr) {
+          console.error("Error updating admin account:", updateErr);
+          return res.status(500).json({ error: "Failed to update admin account" });
         }
 
-        res.status(200).json({ message: "Accounts updated successfully" });
+        // ✅ Store timestamp as ISO string and encrypt
+        const encTimestamp = encrypt(new Date().toISOString());
+
+        // ✅ Format log details to match other logs
+        const logMessage = `
+          [Admin]: ${original.email}
+          [Changes]: ${logChanges.join(" , ")}
+        `.trim();
+
+        // ✅ Insert log entry
+        const logQuery = "INSERT INTO admin_logs (id, admin_id, timestamp, action_type, details) VALUES (?, ?, ?, ?, ?)";
+        const logData = [
+          uuidv4(),
+          adminId,
+          encTimestamp,
+          encrypt("Updated admin account"),
+          encrypt(logMessage),
+        ];
+
+        db.query(logQuery, logData, (logErr) => {
+          if (logErr) {
+            console.error("Error logging admin action:", logErr);
+          }
+        });
+
+        res.status(200).json({ message: "Admin account updated successfully" });
       });
     });
   } catch (error) {
@@ -611,6 +767,8 @@ app.put("/api/updateaccount2", async (req, res) => {
     res.status(500).json({ error: "Failed to process update" });
   }
 });
+
+
 
 app.put("/api/user/:id", async (req, res) => {
   const userId = req.params.id;
@@ -686,46 +844,134 @@ app.put("/api/user/:id", async (req, res) => {
 });
 
 // Endpoint: Delete Post
-app.delete("/api/deletepost2/:post_id", (req, res) => {
-  const { post_id } = req.params;
+app.delete("/api/deletepost2/:post_id/:adminId", (req, res) => {
+  const { post_id, adminId } = req.params;
 
-  const query = "DELETE FROM posts WHERE id = ?";
-  db.query(query, [post_id], (err, result) => {
-    if (err) {
-      console.error("Error deleting post:", err);
-      return res.status(500).json({ error: "Database query failed" });
+  if (!adminId) {
+    return res.status(400).json({ message: "Admin ID is required for logging." });
+  }
+
+  // Fetch post details before deletion
+  const fetchPostQuery = `
+    SELECT posts.title, users.firstname, users.lastname
+    FROM posts
+    INNER JOIN users ON posts.author_id = users.id
+    WHERE posts.id = ?`;
+
+  db.query(fetchPostQuery, [post_id], (fetchErr, fetchResult) => {
+    if (fetchErr) {
+      console.error("Error fetching post details:", fetchErr);
+      return res.status(500).json({ error: "Database query failed." });
     }
-    res.status(200).json({ message: "Post deleted successfully" });
+
+    if (fetchResult.length === 0) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Extract decrypted post details
+    const postTitle = decrypt(fetchResult[0].title);
+    const authorName = `${decrypt(fetchResult[0].firstname)} ${decrypt(fetchResult[0].lastname)}`;
+
+    // Proceed with deletion
+    const deleteQuery = "DELETE FROM posts WHERE id = ?";
+    db.query(deleteQuery, [post_id], (deleteErr, result) => {
+      if (deleteErr) {
+        console.error("Error deleting post:", deleteErr);
+        return res.status(500).json({ error: "Database query failed" });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // ✅ Store timestamp as ISO string and encrypt
+      const encTimestamp = encrypt(new Date().toISOString());
+
+      // ✅ Log format: [Author]: name | [Post]: title
+      const logMessage = `[Author]: ${authorName} [Title]: ${postTitle}`;
+
+      // ✅ Insert log entry
+      const logQuery = "INSERT INTO admin_logs (id, admin_id, timestamp, action_type, details) VALUES (?, ?, ?, ?, ?)";
+      const logData = [
+        uuidv4(),
+        adminId,
+        encTimestamp,
+        encrypt("Deleted post"),
+        encrypt(logMessage)
+      ];
+
+      db.query(logQuery, logData, (logErr) => {
+        if (logErr) {
+          console.error("Error logging admin action:", logErr);
+        }
+      });
+
+      res.status(200).json({ message: "Post deleted successfully" });
+    });
   });
 });
 
+
+
 app.delete("/api/deleteaccount/:id", (req, res) => {
   const { id } = req.params;
+  const adminId = req.query.adminId; // Capture the admin who is deleting
 
-  // Delete from the 'users' table
-  const deleteUserQuery = "DELETE FROM users WHERE id = ?";
+  if (!adminId) {
+    return res.status(400).json({ message: "Admin ID is required for logging." });
+  }
 
-  // Delete from the 'admin' table
-  const deleteAdminQuery = "DELETE FROM admin WHERE id = ?";
-
-  // Start by deleting from the users table
-  db.query(deleteUserQuery, [id], (err, result) => {
+  // Fetch the account's email before deletion
+  const getEmailQuery = "SELECT email FROM users WHERE id = ?";
+  db.query(getEmailQuery, [id], (err, result) => {
     if (err) {
-      console.error("Error deleting from users:", err);
-      return res.status(500).json({ error: "Database query failed for users" });
+      console.error("Error fetching user email:", err);
+      return res.status(500).json({ error: "Error retrieving user details." });
     }
 
-    // After successfully deleting from users, delete from the admin table
-    db.query(deleteAdminQuery, [id], (err) => {
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    const userEmail = decrypt(result[0].email); // Decrypt email for logging
+
+    // Delete from the 'users' table
+    const deleteUserQuery = "DELETE FROM users WHERE id = ?";
+
+    // Delete from the 'admin' table
+    const deleteAdminQuery = "DELETE FROM admin WHERE id = ?";
+
+    db.query(deleteUserQuery, [id], (err, result) => {
       if (err) {
-        console.error("Error deleting from admin:", err);
-        return res
-          .status(500)
-          .json({ error: "Database query failed for admin" });
+        console.error("Error deleting from users:", err);
+        return res.status(500).json({ error: "Database query failed for users" });
       }
 
-      // Respond with success if both deletions are successful
-      res.status(200).json({ message: "Account deleted successfully" });
+      // Proceed to delete from admin table (if applicable)
+      db.query(deleteAdminQuery, [id], (err) => {
+        if (err) {
+          console.error("Error deleting from admin:", err);
+          return res.status(500).json({ error: "Database query failed for admin" });
+        }
+
+        // ✅ Log admin action
+        const logQuery = "INSERT INTO admin_logs (id, admin_id, timestamp, action_type, details) VALUES (?, ?, ?, ?, ?)";
+        const logData = [
+          uuidv4(),
+          adminId,
+          encrypt(new Date().toISOString()),
+          encrypt("Deleted Account"),
+          encrypt(`Deleted account: ${userEmail}`)
+        ];
+
+        db.query(logQuery, logData, (logErr) => {
+          if (logErr) {
+            console.error("Error logging admin action:", logErr);
+          }
+        });
+
+        res.status(200).json({ message: "Account deleted successfully" });
+      });
     });
   });
 });
@@ -902,9 +1148,13 @@ app.post("/api/adminlogin", (req, res) => {
 });
 
 app.post("/api/adminregister", async (req, res) => {
-  const { firstName, lastName, email, dateofbirth, password } = req.body;
+  const { firstName, lastName, email, dateofbirth, password, adminId } = req.body;
   const userId = uuidv4();
   const isMod = "Admin";
+
+  if (!adminId) {
+    return res.status(400).json({ message: "Admin ID is required for logging." });
+  }
 
   try {
     const encryptedFirstName = encrypt(firstName);
@@ -913,10 +1163,7 @@ app.post("/api/adminregister", async (req, res) => {
     const encryptedDateOfBirth = encrypt(dateofbirth);
     const encryptedIsModerator = encrypt(isMod);
     const encryptedCreatedAt = encrypt(new Date().toISOString());
-    const hashedPassword = crypto
-      .createHash("sha256")
-      .update(password)
-      .digest("hex");
+    const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
 
     const sql = `
       INSERT INTO admin (id, firstname, lastname, dateofbirth, email, password, isModerator, created_at)
@@ -960,10 +1207,33 @@ app.post("/api/adminregister", async (req, res) => {
           (error) => {
             if (error) {
               console.error("Error inserting into users:", error);
-              return res
-                .status(500)
-                .json({ message: "Error registering user" });
+              return res.status(500).json({ message: "Error registering user" });
             }
+
+            // ✅ Store timestamp as ISO string and encrypt
+            const encTimestamp = encrypt(new Date().toISOString());
+
+            // ✅ Format log details to match other logs
+            const logMessage = `
+              [Admin Created]: ${email}
+              [Name]: ${firstName} ${lastName}
+            `.trim();
+
+            // ✅ Insert log entry
+            const logQuery = "INSERT INTO admin_logs (id, admin_id, timestamp, action_type, details) VALUES (?, ?, ?, ?, ?)";
+            const logData = [
+              uuidv4(),
+              adminId,
+              encTimestamp,
+              encrypt("Created admin account"),
+              encrypt(logMessage),
+            ];
+
+            db.query(logQuery, logData, (logErr) => {
+              if (logErr) {
+                console.error("Error logging admin action:", logErr);
+              }
+            });
 
             res.status(201).json({ message: "Account created successfully!" });
           }
@@ -976,11 +1246,15 @@ app.post("/api/adminregister", async (req, res) => {
   }
 });
 
+
 app.post("/api/addpost2", upload.single("image"), (req, res) => {
   const { title, content, adminId } = req.body;
   const image = req.file ? req.file.filename : null;
-  const id = uuidv4();
-  const aid = "8f701e57-7f28-41e4-813e-fe9b2f18d355"; // Ensure this exists in the users table
+  const postId = uuidv4(); // Generate post ID
+
+  if (!adminId) {
+    return res.status(400).json({ message: "Admin ID is required for logging." });
+  }
 
   try {
     // Encrypt the post details
@@ -995,11 +1269,14 @@ app.post("/api/addpost2", upload.single("image"), (req, res) => {
     const isHidden = encrypt("0"); // Adding the "isHidden" field with initial value of 0
 
     // Insert the encrypted data into the posts table
+    const insertPostQuery = `
+      INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl, isHidden) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
     db.query(
-      `INSERT INTO posts (id, author_id, title, content, postdate, isFlagged, like_count, imageurl, isHidden) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      insertPostQuery,
       [
-        id,
+        postId,
         adminId,
         encryptedTitle,
         encryptedContent,
@@ -1015,9 +1292,44 @@ app.post("/api/addpost2", upload.single("image"), (req, res) => {
           return res.status(500).json({ message: "Error adding post" });
         }
 
-        res.status(201).json({
-          message: "Post added successfully",
-          postId: result.insertId,
+        // ✅ Fetch author details
+        const fetchAuthorQuery = `SELECT email FROM users WHERE id = ?`;
+        db.query(fetchAuthorQuery, [adminId], (authorErr, authorResult) => {
+          if (authorErr || authorResult.length === 0) {
+            console.error("Error fetching author details:", authorErr);
+            return res.status(500).json({ message: "Error retrieving author" });
+          }
+
+          const authorEmail = decrypt(authorResult[0].email); // Decrypt email
+
+          // ✅ Store timestamp as ISO string and encrypt
+          const encTimestamp = encrypt(new Date().toISOString());
+
+          // ✅ Format the log details
+          const logMessage = `
+            [Author]: ${authorEmail}
+            [Title]: ${title}
+          `.trim();
+
+          // ✅ Insert log entry into admin_logs
+          const logQuery = `
+            INSERT INTO admin_logs (id, admin_id, timestamp, action_type, details) 
+            VALUES (?, ?, ?, ?, ?)`;
+
+          db.query(
+            logQuery,
+            [uuidv4(), adminId, encTimestamp, encrypt("Added post"), encrypt(logMessage)],
+            (logErr) => {
+              if (logErr) {
+                console.error("Error logging admin action:", logErr);
+              }
+            }
+          );
+
+          res.status(201).json({
+            message: "Post added successfully",
+            postId: postId,
+          });
         });
       }
     );
@@ -1026,6 +1338,7 @@ app.post("/api/addpost2", upload.single("image"), (req, res) => {
     res.status(500).json({ message: "Error processing post" });
   }
 });
+
 
 app.post("/api/addpost", (req, res) => {
   const { title, content, imageUrl } = req.body;
@@ -1194,10 +1507,11 @@ app.post("/api/add-comment", async (req, res) => {
   try {
     const commentId = uuidv4(); // Generate a unique ID for the comment
     const encContent = encrypt(content); // Encrypt the comment content
+    const encIsFlagged = encrypt("0"); // Encrypt default '0' for isFlagged
 
     const query =
-      "INSERT INTO comments (id, post_id, user_id, content, created_at) VALUES (?, ?, ?, ?, NOW())";
-    await db.query(query, [commentId, post_id, user_id, encContent]); // Insert encrypted content
+      "INSERT INTO comments (id, post_id, user_id, content, isFlagged, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+    await db.query(query, [commentId, post_id, user_id, encContent, encIsFlagged]); // Insert encrypted content
     res.status(201).json({ message: "Comment added successfully." });
   } catch (err) {
     console.error("Failed to add comment:", err);
@@ -1205,7 +1519,9 @@ app.post("/api/add-comment", async (req, res) => {
   }
 });
 
+
 // Decrypt the commenter's name and content when fetching comments
+
 app.get("/api/get-comments", (req, res) => {
   const { postId } = req.query;
 
@@ -1220,7 +1536,8 @@ app.get("/api/get-comments", (req, res) => {
       c.content, 
       u.firstname, 
       u.lastname, 
-      c.created_at 
+      c.created_at,
+      c.isFlagged 
     FROM comments c
     INNER JOIN users u ON c.user_id = u.id
     WHERE c.post_id = ?
@@ -1233,19 +1550,21 @@ app.get("/api/get-comments", (req, res) => {
       return res.status(500).json({ message: "Error retrieving comments." });
     }
 
-    // Decrypt comment content and commenter's name
+    // Safely decrypt values
     const decryptedResults = results.map((comment) => ({
-      id: comment.id, // Ensure ID is included
-      user_id: comment.user_id, // Ensure user_id is included
-      content: decrypt(comment.content), // Decrypt content
-      firstname: decrypt(comment.firstname), // Decrypt first name
-      lastname: decrypt(comment.lastname), // Decrypt last name
-      created_at: comment.created_at, // Keep timestamp as-is
+      id: comment.id,
+      user_id: comment.user_id,
+      content: decrypt(comment.content),
+      firstname: decrypt(comment.firstname),
+      lastname: decrypt(comment.lastname),
+      created_at: comment.created_at,
+      isFlagged: decrypt(comment.isFlagged) === "true", // Properly decrypted
     }));
 
     res.status(200).json(decryptedResults);
   });
 });
+
 
 app.listen(5005, () => {
   console.log("Server running on port 5005");
@@ -1551,3 +1870,167 @@ app.get("/api/get-comments-with-role", async (req, res) => {
     res.status(500).json({ message: "Error retrieving comments." });
   }
 });
+
+app.post("/api/flag-comment", async (req, res) => {
+  const { commentId } = req.body;
+
+  if (!commentId) {
+    return res.status(400).json({ message: "Comment ID is required." });
+  }
+
+  try {
+    // Query to check if the comment's author is a moderator
+    const checkModeratorQuery = `
+      SELECT u.isModerator 
+      FROM comments c
+      JOIN users u ON c.user_id = u.id
+      WHERE c.id = ?
+    `;
+
+    db.query(checkModeratorQuery, [commentId], (err, results) => {
+      if (err) {
+        console.error("Error checking comment author:", err);
+        return res.status(500).json({ message: "Error checking comment author." });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: "Comment not found." });
+      }
+
+      const decryptedIsModerator = decrypt(results[0].isModerator); // Decrypt moderator status
+
+      // Prevent flagging if the comment belongs to a moderator
+      if (decryptedIsModerator === "Moderator" || decryptedIsModerator === "Admin") {
+        return res.status(403).json({ message: "You cannot flag a moderator's comment." });
+      }
+
+      // Encrypt the flag status as 'true'
+      const encryptedFlagged = encrypt("true");
+
+      // SQL query to update the isFlagged field for the comment
+      const query = "UPDATE comments SET isFlagged = ? WHERE id = ?";
+
+      db.query(query, [encryptedFlagged, commentId], (err, result) => {
+        if (err) {
+          console.error("Error flagging comment:", err);
+          return res.status(500).json({ message: "Error flagging comment." });
+        }
+
+        if (result.affectedRows > 0) {
+          return res.status(200).json({ message: "Comment flagged successfully." });
+        } else {
+          return res.status(404).json({ message: "Comment not found." });
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Error processing flagging request:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+
+app.post("/api/flag-comment", (req, res) => {
+  const { commentId } = req.body;
+
+  if (!commentId) {
+    return res.status(400).json({ message: "Comment ID is required." });
+  }
+
+  // Check if the comment belongs to a moderator
+  const checkModQuery = "SELECT isModerator FROM comments WHERE id = ?";
+  db.query(checkModQuery, [commentId], (err, results) => {
+    if (err) {
+      console.error("Error checking moderator status:", err);
+      return res.status(500).json({ message: "Error processing request." });
+    }
+
+    if (results.length > 0 && results[0].isModerator === "true") {
+      return res.status(403).json({ message: "You cannot report a moderator's comment." });
+    }
+
+    // Proceed to flag the comment
+    const encryptedFlagged = encrypt("true");
+    const updateQuery = "UPDATE comments SET isFlagged = ? WHERE id = ?";
+    db.query(updateQuery, [encryptedFlagged, commentId], (err, result) => {
+      if (err) {
+        console.error("Error flagging comment:", err);
+        return res.status(500).json({ message: "Error flagging comment." });
+      }
+
+      if (result.affectedRows > 0) {
+        return res.status(200).json({ message: "Comment flagged successfully." });
+      } else {
+        return res.status(404).json({ message: "Comment not found." });
+      }
+    });
+  });
+});
+
+app.post("/api/unflag-comment", (req, res) => {
+  const { commentId } = req.body;
+
+  if (!commentId) {
+    return res.status(400).json({ message: "Comment ID is required." });
+  }
+
+  const encryptedFlagged = encrypt("false"); // Encrypt "false" for consistency
+
+  const query = "UPDATE comments SET isFlagged = ? WHERE id = ?";
+  db.query(query, [encryptedFlagged, commentId], (err, result) => {
+    if (err) {
+      console.error("Error unflagging comment:", err);
+      return res.status(500).json({ message: "Error unflagging comment." });
+    }
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: "Comment unflagged successfully." });
+    } else {
+      return res.status(404).json({ message: "Comment not found." });
+    }
+  });
+});
+
+app.get("/api/adminlogs", (req, res) => {
+  const sql = `
+    SELECT admin_logs.id, admin_logs.admin_id, admin_logs.timestamp, admin_logs.action_type, admin_logs.details, admin.email
+    FROM admin_logs
+    JOIN admin ON admin_logs.admin_id = admin.id
+    ORDER BY admin_logs.timestamp DESC
+  `;
+
+  db.query(sql, (error, results) => {
+    if (error) {
+      console.error("Error fetching admin logs:", error);
+      return res.status(500).json({ message: "Error retrieving admin logs" });
+    }
+
+    try {
+      // Decrypt all fields before sending response
+      const decryptedLogs = results.map((log) => {
+        let decryptedTimestamp;
+        try {
+          decryptedTimestamp = new Date(decrypt(log.timestamp)).toLocaleString();
+        } catch (err) {
+          decryptedTimestamp = "Invalid Date"; // Handle potential timestamp issues
+        }
+
+        return {
+          id: log.id,
+          admin_email: decrypt(log.email), // Decrypt admin email
+          timestamp: decryptedTimestamp, // Fix invalid date issue
+          action_type: decrypt(log.action_type),
+          details: decrypt(log.details),
+        };
+      });
+
+      res.status(200).json(decryptedLogs);
+    } catch (decryptionError) {
+      console.error("Error decrypting logs:", decryptionError);
+      res.status(500).json({ message: "Error decrypting logs" });
+    }
+  });
+});
+
+
+

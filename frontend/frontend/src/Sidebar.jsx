@@ -8,6 +8,7 @@ import {
   faAddressCard,
   faComment,
   faUserTie,
+  faClipboardList,
 } from "@fortawesome/free-solid-svg-icons";
 
 import "./App.css";
@@ -26,6 +27,8 @@ function Sidebar() {
       setActiveButton("accounts");
     } else if (currentPath === "/adminpage/adminaccounts") {
       setActiveButton("adminaccount");
+    } else if (currentPath === "/adminpage/adminlogs") {
+      setActiveButton("adminlogs");
     } else if (currentPath === "/adminpage/") {
       setActiveButton("dashboard");
     }
@@ -42,9 +45,8 @@ function Sidebar() {
         <div className="sidebarmiddle">
           <div className="menu-items">
             <button
-              className={`button ${
-                activeButton === "dashboard" ? "active" : ""
-              }`}
+              className={`button ${activeButton === "dashboard" ? "active" : ""
+                }`}
               onClick={() => navigate("/adminpage/")}
             >
               <FontAwesomeIcon icon={faHome} />
@@ -58,24 +60,35 @@ function Sidebar() {
               Posts
             </button>
             <button
-              className={`button ${
-                activeButton === "accounts" ? "active" : ""
-              }`}
+              className={`button ${activeButton === "accounts" ? "active" : ""
+                }`}
               onClick={() => navigate("/adminpage/accounts")}
             >
               <FontAwesomeIcon icon={faComment} />
               Accounts
             </button>
             <button
-              className={`button ${
-                activeButton === "adminaccount" ? "active" : ""
-              }`}
+              className={`button ${activeButton === "adminaccount" ? "active" : ""
+                }`}
               onClick={() => navigate("/adminpage/adminaccounts")}
             >
               <FontAwesomeIcon icon={faUserTie} />
               Admin Accounts
             </button>
+
+            <button
+              className={`button ${activeButton === "adminlogs" ? "active" : ""}`}
+              onClick={() => navigate("/adminpage/adminlogs")}
+            >
+              <FontAwesomeIcon icon={faClipboardList} />
+              Admin Logs
+            </button>
+
+
           </div>
+
+
+
           <div className="logout-container">
             <button
               className="logoutbtn"

@@ -149,49 +149,45 @@ function Accounts() {
   const handleUpdateAccount = async () => {
     setError("");
 
-    // Ensure mandatory fields are filled
-    if (!editFirstName || !editLastName || !editDateOfBirth || !editEmail) {
-      alert(
-        "Please fill in all fields except password if you want to keep it unchanged"
-      );
+    const adminId = localStorage.getItem("userId"); // Get admin ID from local storage
+
+    if (!adminId) {
+      alert("Admin ID is missing.");
       return;
     }
 
-    // Prepare the payload
+    if (!editFirstName || !editLastName || !editDateOfBirth || !editEmail) {
+      alert("Please fill in all fields except password if you want to keep it unchanged.");
+      return;
+    }
+
     const payload = {
       id: selectedAccount?.id,
       firstname: editFirstName,
       lastname: editLastName,
       dateofbirth: editDateOfBirth,
       email: editEmail,
-      isModerator:
-        editIsModerator === "" ? selectedAccount?.isModerator : editIsModerator, // Use existing value if not explicitly changed
+      isModerator: editIsModerator === "" ? selectedAccount?.isModerator : editIsModerator,
+      adminId, // Ensure this is included for logging
     };
 
-    // Include password only if provided
     if (password) {
       if (password !== confirmPassword) {
         alert("Passwords do not match");
         return;
       }
-      payload.password = password; // Add password to payload only if entered
+      payload.password = password;
     }
 
     try {
       console.log("Update data:", payload);
-      const response = await axios.put(
-        "http://localhost:5005/api/updateaccount",
-        payload
-      );
+      const response = await axios.put("http://localhost:5005/api/updateaccount", payload);
 
       alert("Account updated successfully");
       setIsModalOpen2(false);
       setSelectedAccount(null);
 
-      // Refresh user list
-      const updatedUsers = await axios.get(
-        "http://localhost:5005/api/usershow"
-      );
+      const updatedUsers = await axios.get("http://localhost:5005/api/usershow");
       setUsers(updatedUsers.data);
     } catch (error) {
       console.error("Error updating account:", error);
@@ -199,22 +195,31 @@ function Accounts() {
     }
   };
 
+
   // Handle Delete Post
   const handleDeleteAccount = async () => {
     try {
-      const response = await axios.delete(
-        `http://localhost:5005/api/deleteaccount/${selectedAccount.id}`
+      const adminId = localStorage.getItem("userId"); // Retrieve logged-in admin ID
+  
+      if (!adminId) {
+        alert("Admin ID is missing.");
+        return;
+      }
+  
+      await axios.delete(
+        `http://localhost:5005/api/deleteaccount/${selectedAccount.id}?adminId=${adminId}`
       );
+  
       alert("Account deleted successfully");
       setIsModalOpen2(false);
       setSelectedAccount(null);
-      // Optionally, refresh the posts
-      window.location.reload(); // Refresh the entire page
+      window.location.reload(); // Refresh the page after deletion
     } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("Failed to delete post.");
+      console.error("Error deleting account:", error);
+      alert("Failed to delete account.");
     }
   };
+  
 
   return (
     <div className="dashboardbg">
@@ -405,7 +410,7 @@ function Accounts() {
               <input
                 className="addpostforminput"
                 type="date"
-                value={new Date(editDateOfBirth).toISOString().slice(0, 10)}
+                value={editDateOfBirth ? new Date(editDateOfBirth).toISOString().slice(0, 10) : ""}
                 onChange={(e) => setEditDateOfBirth(e.target.value)}
               />
               <label className="overlaylabel">New Password</label>

@@ -69,29 +69,31 @@ function Posts() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    const userId = localStorage.getItem("userId"); // Retrieve admin ID from localStorage
+  
     const formData = new FormData();
-    formData.append("adminId", adminId);
+    formData.append("adminId", userId); // Ensure adminId is included
     formData.append("title", title);
     formData.append("content", content);
-    formData.append("image", image); // Attach image to formData
+    formData.append("image", image); // Attach image
+  
     console.log("Form Data:", formData);
-    console.log("Title:", title);
-    console.log("Content:", content);
-    console.log("Image:", image);
+    console.log("Admin ID:", userId); // Debugging check
+  
     try {
       const response = await axios.post(
         "http://localhost:5005/api/addpost2",
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data", // Ensure the header supports file upload
+            "Content-Type": "multipart/form-data",
           },
         }
       );
       alert("Post added successfully");
-      window.location.reload(); // Refresh the entire page
-
+      window.location.reload();
+  
       setTitle("");
       setContent("");
       setImage(null);
@@ -101,6 +103,7 @@ function Posts() {
       alert("Error adding post.");
     }
   };
+  
   const handleRowClick = (post) => {
     console.log("Row clicked:", post); // Debug log
     setSelectedPost(post);
@@ -114,42 +117,43 @@ function Posts() {
         post_id: selectedPost?.post_id,
         title: selectedPost?.title,
         content: selectedPost?.content,
+        adminId: adminId, // Ensure adminId is included
       });
-      const response = await axios.put(
-        "http://localhost:5005/api/updatepost2",
-        {
-          post_id: selectedPost.post_id,
-          title: selectedPost.title,
-          content: selectedPost.content,
-        }
-      );
+  
+      const response = await axios.put("http://localhost:5005/api/updatepost2", {
+        post_id: selectedPost.post_id,
+        title: selectedPost.title,
+        content: selectedPost.content,
+        adminId: adminId, // Include adminId
+      });
+  
       alert("Post updated successfully");
       setIsModalOpen2(false);
       setSelectedPost(null);
-      // Optionally, refresh the posts
       window.location.reload(); // Refresh the entire page
     } catch (error) {
       console.error("Error updating post:", error);
       alert("Failed to update post.");
     }
   };
+  
 
   // Handle Delete Post
   const handleDeletePost = async () => {
     try {
       const response = await axios.delete(
-        `http://localhost:5005/api/deletepost2/${selectedPost.post_id}`
+        `http://localhost:5005/api/deletepost2/${selectedPost.post_id}/${adminId}`
       );
       alert("Post deleted successfully");
       setIsModalOpen2(false);
       setSelectedPost(null);
-      // Optionally, refresh the posts
       window.location.reload(); // Refresh the entire page
     } catch (error) {
       console.error("Error deleting post:", error);
       alert("Failed to delete post.");
     }
   };
+  
 
   return (
     <div className="dashboardbg">

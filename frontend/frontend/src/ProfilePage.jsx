@@ -79,29 +79,36 @@ function ProfilePage() {
 
   const handleUpdatePost = async () => {
     try {
+      const adminId = localStorage.getItem("userId"); // Ensure adminId is sent
+      if (!adminId) {
+        alert("Admin ID is missing.");
+        return;
+      }
+  
       console.log("Update data:", {
         post_id: selectedPost?.id,
         title: selectedPost?.title,
         content: selectedPost?.content,
+        adminId: adminId, // ✅ Now sending Admin ID
       });
-      const response = await axios.put(
-        "http://localhost:5005/api/updatepost2",
-        {
-          post_id: selectedPost.id,
-          title: selectedPost.title,
-          content: selectedPost.content,
-        }
-      );
+  
+      const response = await axios.put("http://localhost:5005/api/updatepost2", {
+        post_id: selectedPost.id,
+        title: selectedPost.title,
+        content: selectedPost.content,
+        adminId: adminId, // ✅ Admin ID is required for logging
+      });
+  
       alert("Post updated successfully");
       setIsModalOpen2(false);
       setSelectedPost(null);
-      // Optionally, refresh the posts
-      window.location.reload(); // Refresh the entire page
+      window.location.reload();
     } catch (error) {
       console.error("Error updating post:", error);
       alert("Failed to update post.");
     }
   };
+  
 
   // Handle Delete Post
   const handleDeletePost = async () => {

@@ -699,6 +699,13 @@ body {
   font-family: "Poppins";
 }
 
+.modal-comment-container {
+  max-height: 430px; /* Limit height */
+  overflow-y: auto; /* Enable scrolling */
+  scrollbar-width: thin; /* Thin scrollbar for Firefox */
+  scrollbar-color: #444 transparent; /* Scrollbar color for Firefox */
+}
+
 /* Container for the comment menu button */
 .comment-menu-container {
   position: relative;
@@ -959,4 +966,91 @@ body {
 .comment-delete-button:hover {
   color: #4e9af1; /* Add hover effect */
   transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+
+.flag-icon {
+  cursor: pointer; /* Makes the cursor change to a pointer on hover */
+
+}
+
+/* Change flag icon color to #4e9af1 on hover */
+.flag-icon:hover {
+  color: #4e9af1 !important;
+
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* Change moderator delete icon color to #4e9af1 on hover */
+.mod-delete-container:hover .delete-icon {
+  color: red !important;
+ 
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.comment-moderation-container {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: flex-start; /* Align items to the left */
+  gap: 5px; /* Adds space between elements */
+}
+
+.comment-flag-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align content to the left */
+  cursor: pointer;
+  gap: 5px;
+}
+
+/* Flag icon and "Unflag?" text in a single row */
+.flag-unflag-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between icon and text */
+}
+
+/* Default flag color */
+.comment-flag-icon {
+  color: red;
+  transition: color 0.3s ease;
+}
+
+/* Style for Flagged/Unflag text */
+.comment-flag-icon,
+.flagged-text {
+  color: #aaa;
+
+}
+
+.comment-flag-container:hover .comment-flag-icon,
+.comment-flag-container:hover .flagged-text {
+  color: red;
+}
+
+.flagged-text {
+  font-size: 14px; 
+}
+
+.unflag-text {
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+
+}
+
+
+/* Moderator delete icon positioned below */
+.mod-delete-container {
+  margin-top: 5px;
+}
+
+.delete-icon {
+  color: white;
+  cursor: pointer;
+  
+}
+
+.delete-icon:hover {
+  color: red;
 }

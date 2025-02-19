@@ -14,6 +14,8 @@ import "./Homepage.css";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+
 import {
   faFlag,
   faEyeSlash,
@@ -52,6 +54,8 @@ const Homepage = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
+
+  const [hoveredFlaggedPost, setHoveredFlaggedPost] = useState(null);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -496,6 +500,53 @@ const Homepage = () => {
     }
   };
 
+  const handleFlagComment = async (commentId, isCommentUserMod) => {
+    if (isCommentUserMod) {
+      alert("Moderator cannot be reported."); // This should show now
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:5005/api/flag-comment", { commentId });
+
+      if (response.status === 200) {
+        alert("Comment reported successfully.");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        alert("You cannot report a moderator's comment.");
+      } else {
+        console.error("Error reporting comment:", error.message);
+        alert("Failed to report comment. Please try again.");
+      }
+    }
+  };
+
+
+
+
+  const handleUnflagComment = async (commentId) => {
+    try {
+      const response = await axios.post("http://localhost:5005/api/unflag-comment", { commentId });
+
+      if (response.status === 200) {
+        alert("Comment unflagged successfully!");
+        setComments((prevComments) =>
+          prevComments.map((comment) =>
+            comment.id === commentId ? { ...comment, isFlagged: false } : comment
+          )
+        );
+      } else {
+        alert("Failed to unflag comment.");
+      }
+    } catch (error) {
+      console.error("Error unflagging comment:", error);
+      alert("Failed to unflag comment. Please try again.");
+    }
+  };
+
+
+
   const trends = [
     {
       category: "Politics",
@@ -669,6 +720,7 @@ const Homepage = () => {
                         ) : (
                           <div className="flagged-label hidden" />
                         )}
+
                       </div>
                     </div>
                   </div>
@@ -799,9 +851,8 @@ const Homepage = () => {
                       return (
                         <div
                           key={comment.id}
-                          className={`modal-comment-author ${
-                            clickedCommentId === comment.id ? "expanded" : ""
-                          }`}
+                          className={`modal-comment-author ${clickedCommentId === comment.id ? "expanded" : ""
+                            }`}
                           onMouseEnter={() => setHoveredCommentId(comment.id)}
                           onMouseLeave={() => setHoveredCommentId(null)}
                         >
@@ -813,9 +864,8 @@ const Homepage = () => {
 
                           {/* Apply 'editing' class to modal-author-details when editing */}
                           <div
-                            className={`modal-author-details ${
-                              editingCommentId === comment.id ? "editing" : ""
-                            }`}
+                            className={`modal-author-details ${editingCommentId === comment.id ? "editing" : ""
+                              }`}
                           >
                             {editingCommentId === comment.id ? (
                               <div className="edit-comment-container">
@@ -855,6 +905,66 @@ const Homepage = () => {
                               </>
                             )}
                           </div>
+
+
+                          {!isUserComment && !isModerator && hoveredCommentId === comment.id && (
+                            <FontAwesomeIcon
+                              icon={faFlag}
+                              className="flag-icon"
+                              title="Report Comment"
+
+                              onClick={() => handleFlagComment(comment.id, comment.isModerator)}
+                            />
+                          )}
+
+                          {/* Container to Stack Elements */}
+
+                          <div
+                            className="comment-moderation-container"
+                            onMouseEnter={() => setHoveredCommentId(comment.id)}
+                            onMouseLeave={() => setHoveredCommentId(null)}
+                          >
+                            {/* Flag Section (Visible only if flagged) */}
+                            {isModerator && String(comment.isFlagged) === "true" && (
+                              <div className="comment-flag-container">
+                                {/* Flag Icon & Flagged/Unflag Text Side by Side */}
+                                <div
+                                  className="flag-unflag-wrapper"
+                                  onClick={() => handleUnflagComment(comment.id)} // Ensures click works on both icon & text
+                                  style={{ cursor: "pointer" }} // Indicate clickable action
+                                >
+                                  <FontAwesomeIcon icon={faFlag} className="comment-flag-icon" />
+                                  <span className="flagged-text">
+                                    {hoveredCommentId === comment.id ? (
+                                      <span className="unflag-text">Unflag?</span>
+                                    ) : (
+                                      "Flagged"
+                                    )}
+                                  </span>
+                                </div>
+
+                              </div>
+                            )}
+
+
+                            {/* Delete Button (Only Visible on Hover) */}
+                            {isModerator && !comment.isModerator && comment.user_id !== localStorage.getItem("userId") && hoveredCommentId === comment.id && (
+                              <div className="mod-delete-container">
+                                <FontAwesomeIcon
+                                  icon={faTrash}
+                                  className="delete-icon"
+                                  onClick={() => {
+                                    setCommentToDelete(comment.id);
+                                    setShowDeleteModal(true);
+                                  }}
+                                  title="Delete Comment (Moderator)"
+                                />
+                              </div>
+                            )}
+                          </div>
+
+
+
 
                           {isUserComment && (
                             <div className="modal-comment-actions">
@@ -907,27 +1017,6 @@ const Homepage = () => {
                             </div>
                           )}
 
-                          {isModerator &&
-                            !comment.isModerator &&
-                            comment.user_id !==
-                              localStorage.getItem("userId") && (
-                              <div className="mod-delete-container">
-                                <FontAwesomeIcon
-                                  icon={faTrash}
-                                  className="delete-icon"
-                                  onClick={() => {
-                                    setCommentToDelete(comment.id); // Store comment ID
-                                    setShowDeleteModal(true); // Show modal
-                                  }}
-                                  title="Delete Comment (Moderator)"
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "white",
-                                    marginLeft: "10px",
-                                  }}
-                                />
-                              </div>
-                            )}
 
                           {showDeleteModal && (
                             <div

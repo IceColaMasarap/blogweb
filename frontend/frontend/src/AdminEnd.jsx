@@ -4,6 +4,7 @@ import Dashboard from "./Dashboard";
 import Posts from "./Posts";
 import Accounts from "./Accounts";
 import AdminAccount from "./AdminAccounts";
+import AdminLogs from "./AdminLogs"; 
 
 import "./App.css";
 
@@ -16,6 +17,7 @@ function AdminEnd() {
         <Route path="/posts" element={<Posts />} />
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/adminaccounts" element={<AdminAccount />} />
+        <Route path="/adminlogs" element={<AdminLogs />} /> {/* Added AdminLogs route */}
       </Routes>
     </div>
   );

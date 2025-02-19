@@ -58,82 +58,91 @@ function AdminAccounts() {
     setIsModalOpen2(true);
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setSuccessMessage("");
-
-  if (
-    !firstName ||
-    !lastName ||
-    !dateofbirth ||
-    !email1 ||
-    !password ||
-    !confirmPassword
-  ) {
-    setError("Please fill in all fields");
-    alert("Please fill in all fields");
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    setError("Passwords do not match");
-    alert("Passwords do not match");
-    return;
-  }
-
-  try {
-    // Check if the email already exists
-    const emailCheckResponse = await axios.post(
-      "http://localhost:5005/api/check-email-admin",
-      { email: email1 }
-    );
-
-    if (emailCheckResponse.data.exists) {
-      setError("Email is already registered");
-      alert("Email is already registered");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+  
+    const adminId = localStorage.getItem("userId"); // ✅ Get the logged-in admin ID
+  
+    if (!adminId) {
+      alert("Admin ID is missing.");
       return;
     }
-
-    // Proceed with registration
-    const response = await axios.post(
-      "http://localhost:5005/api/adminregister",
-      {
-        firstName,
-        lastName,
-        email: email1,
-        dateofbirth,
-        password,
+  
+    if (
+      !firstName ||
+      !lastName ||
+      !dateofbirth ||
+      !email1 ||
+      !password ||
+      !confirmPassword
+    ) {
+      setError("Please fill in all fields");
+      alert("Please fill in all fields");
+      return;
+    }
+  
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      alert("Passwords do not match");
+      return;
+    }
+  
+    try {
+      // Check if the email already exists
+      const emailCheckResponse = await axios.post(
+        "http://localhost:5005/api/check-email-admin",
+        { email: email1 }
+      );
+  
+      if (emailCheckResponse.data.exists) {
+        setError("Email is already registered");
+        alert("Email is already registered");
+        return;
       }
-    );
-
-    // Set success message and alert
-    setSuccessMessage(response.data.message);
-    alert(response.data.message);
-
-    // Refresh the user list
-    const updatedUsers = await axios.get(
-      "http://localhost:5005/api/adminshow"
-    );
-    setUsers(updatedUsers.data);
-
-    // Clear input fields and modal state after registration
-    setFirstName("");
-    setLastName("");
-    setEmail1("");
-    setDateOfBirth("");
-    setPassword("");
-    setConfirmPassword("");
-    toggleModal();
-  } catch (err) {
-    const errorMsg = err.response
-      ? err.response.data.message
-      : "Error occurred during registration";
-    setError(errorMsg);
-    alert(errorMsg);
-    console.error(err);
-  }
-};
+  
+      // ✅ Proceed with registration, including adminId
+      const response = await axios.post(
+        "http://localhost:5005/api/adminregister",
+        {
+          firstName,
+          lastName,
+          email: email1,
+          dateofbirth,
+          password,
+          adminId, // ✅ Include admin ID for logging
+        }
+      );
+  
+      // Set success message and alert
+      setSuccessMessage(response.data.message);
+      alert(response.data.message);
+  
+      // Refresh the user list
+      const updatedUsers = await axios.get(
+        "http://localhost:5005/api/adminshow"
+      );
+      setUsers(updatedUsers.data);
+  
+      // Clear input fields and modal state after registration
+      setFirstName("");
+      setLastName("");
+      setEmail1("");
+      setDateOfBirth("");
+      setPassword("");
+      setConfirmPassword("");
+      toggleModal();
+    } catch (err) {
+      const errorMsg = err.response
+        ? err.response.data.message
+        : "Error occurred during registration";
+      setError(errorMsg);
+      alert(errorMsg);
+      console.error(err);
+    }
+  };
+  
 
 
   const handleModeratorFilter = (e) => {
@@ -164,71 +173,79 @@ const handleSubmit = async (e) => {
   });
   const handleUpdateAccount = async () => {
     setError("");
-
-    // Ensure mandatory fields are filled
-    if (!editFirstName || !editLastName || !editDateOfBirth || !editEmail) {
-      alert(
-        "Please fill in all fields except password if you want to keep it unchanged"
-      );
+  
+    const adminId = localStorage.getItem("userId"); // Get the logged-in admin ID
+  
+    if (!adminId) {
+      alert("Admin ID is missing.");
       return;
     }
-
-    // Prepare the payload
+  
+    if (!editFirstName || !editLastName || !editDateOfBirth || !editEmail) {
+      alert("Please fill in all fields except password if you want to keep it unchanged.");
+      return;
+    }
+  
     const payload = {
       id: selectedAccount?.id,
       firstname: editFirstName,
       lastname: editLastName,
       dateofbirth: editDateOfBirth,
       email: editEmail,
+      adminId, // ✅ Include admin ID for logging
     };
-
-    // Include password only if provided
+  
     if (password) {
       if (password !== confirmPassword) {
         alert("Passwords do not match");
         return;
       }
-      payload.password = password; // Add password to payload only if entered
+      payload.password = password;
     }
-
+  
     try {
       console.log("Update data:", payload);
-      const response = await axios.put(
-        "http://localhost:5005/api/updateaccount2",
-        payload
-      );
-
+      const response = await axios.put("http://localhost:5005/api/updateaccount2", payload);
+  
       alert("Account updated successfully");
       setIsModalOpen2(false);
       setSelectedAccount(null);
-
+  
       // Refresh user list
-      const updatedUsers = await axios.get(
-        "http://localhost:5005/api/adminshow"
-      );
+      const updatedUsers = await axios.get("http://localhost:5005/api/adminshow");
       setUsers(updatedUsers.data);
     } catch (error) {
       console.error("Error updating account:", error);
       alert("Failed to update account.");
     }
   };
+  
 
   // Handle Delete Post
   const handleDeleteAccount = async () => {
     try {
+      const adminId = localStorage.getItem("userId"); // Get admin ID
+  
+      if (!adminId) {
+        alert("Admin ID is missing.");
+        return;
+      }
+  
       const response = await axios.delete(
-        `http://localhost:5005/api/deleteaccount/${selectedAccount.id}`
+        `http://localhost:5005/api/deleteaccount/${selectedAccount.id}?adminId=${adminId}`
       );
+  
       alert("Account deleted successfully");
       setIsModalOpen2(false);
       setSelectedAccount(null);
-      // Optionally, refresh the posts
-      window.location.reload(); // Refresh the entire page
+      window.location.reload();
     } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("Failed to delete post.");
+      console.error("Error deleting account:", error);
+      alert("Failed to delete account.");
     }
   };
+  
+  
 
   return (
     <div className="dashboardbg">
