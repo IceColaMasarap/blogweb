@@ -24,75 +24,79 @@ const AdminLogs = () => {
     };
 
     const handlePrintLogs = async () => {
-        try {
+      try {
           // Fetch admin logs from API
           const response = await axios.get("http://localhost:5005/api/adminlogs");
-      
+  
           if (!response.data || response.data.length === 0) {
-            alert("No logs found.");
-            return;
+              alert("No logs found.");
+              return;
           }
-      
+  
+          // Sort logs by timestamp (latest first)
+          const sortedLogs = response.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
           // Format logs as a printable table
-          const logData = response.data.map(
-            (log, index) => `
-            <tr>
-              <td>${index + 1}</td>
-              <td>${log.admin_email}</td>
-              <td>${log.action_type}</td>
-              <td>${log.details}</td>
-              <td>${log.timestamp}</td>
-            </tr>
+          const logData = sortedLogs.map(
+              (log, index) => `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${log.admin_email}</td>
+                <td>${log.action_type}</td>
+                <td>${log.details}</td>
+                <td>${new Date(log.timestamp).toLocaleString()}</td>
+              </tr>
           `
           );
-      
+  
           // Create printable content
           const printableContent = `
-            <html>
-            <head>
-              <title>Admin Logs Report</title>
-              <style>
-                body { font-family: Arial, sans-serif; text-align: center; }
-                h2 { margin-bottom: 20px; }
-                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th, td { border: 1px solid black; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; }
-              </style>
-            </head>
-            <body>
-              <h2>Admin Logs Report</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Admin Email</th>
-                    <th>Action Type</th>
-                    <th>Details</th>
-                    <th>Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${logData.join("")}
-                </tbody>
-              </table>
-              <script>
-                window.onload = function() {
-                  window.print();
-                };
-              </script>
-            </body>
-            </html>
+              <html>
+              <head>
+                <title>Admin Logs Report</title>
+                <style>
+                  body { font-family: Arial, sans-serif; text-align: center; }
+                  h2 { margin-bottom: 20px; }
+                  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                  th, td { border: 1px solid black; padding: 8px; text-align: left; }
+                  th { background-color: #f2f2f2; }
+                </style>
+              </head>
+              <body>
+                <h2>Admin Logs Report</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Admin Email</th>
+                      <th>Action Type</th>
+                      <th>Details</th>
+                      <th>Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${logData.join("")}
+                  </tbody>
+                </table>
+                <script>
+                  window.onload = function() {
+                    window.print();
+                  };
+                </script>
+              </body>
+              </html>
           `;
-      
+  
           // Open print window
           const printWindow = window.open("", "", "width=800,height=600");
           printWindow.document.write(printableContent);
           printWindow.document.close();
-        } catch (error) {
+      } catch (error) {
           console.error("Error fetching logs:", error);
           alert("Failed to fetch admin logs.");
-        }
-      };
+      }
+  };
+  
       
       
 
