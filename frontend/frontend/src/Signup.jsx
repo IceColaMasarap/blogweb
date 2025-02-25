@@ -12,62 +12,43 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [maxDate, setMaxDate] = useState("");
-  const [emailError, setEmailError] = useState(""); // For email availability feedback
+  const [emailError, setEmailError] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
-  // 🚀 Redirect if user is already logged in (except admin)
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const isModerator = localStorage.getItem("isModerator");
 
     if (userId && isModerator !== "Admin") {
-      navigate("/home"); // Redirect regular users to home
+      navigate("/home");
     }
-  }, [navigate]); // Runs only when component mounts
+  }, [navigate]);
 
-
-  const handleFirstNameChange = (e) => {
-    const input = e.target.value;
-    const regex = /^[A-Za-z\s]*$/; // Only letters and spaces
-
-    if (regex.test(input)) {
-      setFirstName(input);
-    } else {
-      setError("First name can only contain letters and spaces.");
+  // ✅ Password Strength Checker
+  const checkPasswordStrength = (password) => {
+    if (password.length < 6) {
+      return "Too short";
     }
+
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[\W_]/.test(password);
+
+    const strength = hasUpperCase + hasLowerCase + hasNumber + hasSpecialChar;
+
+    if (strength === 4) return "Strong ✅";
+    if (strength === 3) return "Moderate ⚠️";
+    return "Weak ❌";
   };
 
-  const handleLastNameChange = (e) => {
-    const input = e.target.value;
-    const regex = /^[A-Za-z\s]*$/; // Only letters and spaces
-
-    if (regex.test(input)) {
-      setLastName(input);
-    } else {
-      setError("Last name can only contain letters and spaces.");
-    }
-  };
-
-
-
-  const handleEmailChange = async (e) => {
-    const inputEmail = e.target.value;
-    setEmail(inputEmail);
-    setEmailError(""); // Clear any previous error message
-
-    if (inputEmail) {
-      try {
-        const response = await axios.post("http://localhost:5005/api/check-email", { email: inputEmail });
-        if (response.data.exists) {
-          setEmailError("This email is already registered.");
-        }
-      } catch (err) {
-        console.error("Error checking email:", err);
-        setEmailError("Error checking email availability.");
-      }
-    }
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    setPasswordStrength(checkPasswordStrength(newPassword));
   };
 
   const handleSubmit = async (e) => {
@@ -90,6 +71,11 @@ function Signup() {
       return;
     }
 
+    if (passwordStrength === "Too short" || passwordStrength === "Weak ❌") {
+      setError("Password is too weak! Please use a stronger password.");
+      return;
+    }
+
     try {
       const response = await axios.post("http://localhost:5005/api/register", {
         firstName,
@@ -108,27 +94,20 @@ function Signup() {
 
   useEffect(() => {
     const today = new Date();
-    const formattedDate = today.toISOString().split("T")[0];
-    setMaxDate(formattedDate);
+    setMaxDate(today.toISOString().split("T")[0]);
   }, []);
 
   return (
     <div className="containerr">
-      {/* Left Section */}
       <div className="left-sectionr">
         <div className="logo-containerr">
           <div className="logor">
-            <img
-              src={TS}
-              alt="Tsaaritsa"
-              className="logo-imager"
-            />
+            <img src={TS} alt="Tsaaritsa" className="logo-imager" />
           </div>
           <h1 className="brand-titler">Tsaaritsa.</h1>
         </div>
       </div>
 
-      {/* Right Section */}
       <div className="right-sectionr">
         <h1 className="main-headingr">Everyone’s cup</h1>
         <h1 className="main-headingr">of tea 🍃</h1>
@@ -136,64 +115,34 @@ function Signup() {
         <p className="sub-headingr">Join Today.</p>
         <form className="formr" onSubmit={handleSubmit}>
           <div className="form-rowr">
-            <input
-              type="text"
-              placeholder="First Name"
-              className="input"
-              value={firstName}
-              onChange={handleFirstNameChange}
-            />
-
-            <input
-              type="text"
-              placeholder="Last Name"
-              className="input"
-              value={lastName}
-              onChange={handleLastNameChange}
-            />
+            <input type="text" placeholder="First Name" className="input" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            <input type="text" placeholder="Last Name" className="input" value={lastName} onChange={(e) => setLastName(e.target.value)} />
             <div className="input-container">
               <label className="bdaylabel">Birthdate</label>
-              <input
-                type="date"
-                className="inputDate"
-                max={maxDate}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-              />
+              <input type="date" className="inputDate" max={maxDate} onChange={(e) => setDateOfBirth(e.target.value)} />
             </div>
           </div>
-          <input
-            type="email"
-            placeholder="Email Address"
-            className="input"
-            onChange={handleEmailChange}
-          />
+          <input type="email" placeholder="Email Address" className="input" onChange={(e) => setEmail(e.target.value)} />
+
           <div className="form-rowr">
-            <input
-              type="password"
-              placeholder="Password"
-              className="input"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              className="input"
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+            <input type="password" placeholder="Password" className="input" onChange={handlePasswordChange} />
+            <input type="password" placeholder="Confirm Password" className="input" onChange={(e) => setConfirmPassword(e.target.value)} />
           </div>
-          <button type="submit" className="buttonr" disabled={!!emailError}>
+
+          {/* 🚀 Display password strength feedback */}
+          {password && <p className={`password-strength ${passwordStrength.includes("Weak") ? "weak" : passwordStrength.includes("Moderate") ? "moderate" : "strong"}`}>{passwordStrength}</p>}
+
+          <button type="submit" className="buttonr" disabled={!!emailError || passwordStrength.includes("Weak")}>
             Register
           </button>
+
           {emailError && <p className="errormsg" style={{ color: "red" }}>{emailError}</p>}
           {error && <p className="errormsg" style={{ color: "red" }}>{error}</p>}
           {successMessage && <p className="errormsg" style={{ color: "#15bc11" }}>{successMessage}</p>}
+
           <div className="linkers">
             <label className="linklabel1">Already have an account? </label>
-            <label
-              className="linklabel2"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/login")}
-            >
+            <label className="linklabel2" style={{ cursor: "pointer" }} onClick={() => navigate("/login")}>
               Login here
             </label>
           </div>

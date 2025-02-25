@@ -113,19 +113,28 @@ function ProfilePage() {
   // Handle Delete Post
   const handleDeletePost = async () => {
     try {
-      const response = await axios.delete(
-        `http://localhost:5005/api/deletepost2/${selectedPost.id}`
-      );
-      alert("Post deleted successfully");
-      setIsModalOpen2(false);
-      setSelectedPost(null);
-      // Optionally, refresh the posts
-      window.location.reload(); // Refresh the entire page
+        const adminId = localStorage.getItem("userId"); // Get admin ID
+
+        if (!selectedPost || !selectedPost.id || !adminId) {
+            alert("Post ID or Admin ID is missing.");
+            return;
+        }
+
+        // ✅ Ensure both post_id and adminId are included in the request
+        const response = await axios.delete(
+            `http://localhost:5005/api/deletepost2/${selectedPost.id}/${adminId}`
+        );
+
+        alert("Post deleted successfully");
+        setIsModalOpen2(false);
+        setSelectedPost(null);
+        window.location.reload(); // Refresh the page
     } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("Failed to delete post.");
+        console.error("Error deleting post:", error);
+        alert("Failed to delete post.");
     }
-  };
+};
+
   const autoResize = (e) => {
     const textarea = e.target;
     textarea.style.height = "auto"; // Resetting the height

@@ -97,7 +97,9 @@ const AdminLogs = () => {
       
 
     // Filter logs based on email and date range
-    const filteredLogs = logs.filter((log) => {
+// Filter logs based on email and date range, then sort by timestamp (latest first)
+const filteredLogs = logs
+    .filter((log) => {
         const matchesEmail = email ? log.admin_email.toLowerCase().includes(email.toLowerCase()) : true;
         const logDate = new Date(log.timestamp);
         const matchesDateRange =
@@ -105,7 +107,9 @@ const AdminLogs = () => {
             (!endDate || logDate <= new Date(endDate));
 
         return matchesEmail && matchesDateRange;
-    });
+    })
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort in descending order (latest first)
+
 
     return (
         <div className="dashboardbg">
